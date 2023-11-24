@@ -1,0 +1,623 @@
+<template>
+	<view class="content-box">
+		<u-toast ref="uToast" />
+		<!-- 报警弹框 -->
+		<view class="call-police-dialog-box">
+			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="help-center-title">
+					<text>求助中心</text>
+				</view>
+				<view class="help-center-content">
+					<text>如遇突发情况，请立即进行报警。</text>
+				</view>
+				<view class="help-bottom-btn">
+					<image src="@/static/img/call-police-dialog.png"></image>
+				</view>
+			</u-popup>
+		</view>
+		<!-- 报警按钮 -->
+		<view class="call-police-box" @click="callPoliceDialogShow = true">
+			<image src="@/static/img/call-police-btn.png"></image>
+		</view>
+		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
+		<!-- 我的客服弹框 -->
+		<view class="support-staff-box">
+			<u-popup :show="showSupportStaffBox" :closeable="true" mode="center"  @close="closeSupportStaffBox">
+				<view class="support-staff-content">
+					<view class="support-staff-top">
+							<image src="@/static/img/support-staff.png"></image>
+							<text>服务电话</text>
+							<text>409-5646-89893434</text>
+					</view>
+					<view class="support-staff-bottom">
+						<view class="support-staff-left">
+							<image src="@/static/img/message.png"></image>
+							<text>发送消息</text>
+						</view>
+						<view class="support-staff-right">
+							<image src="@/static/img/phone.png"></image>
+							<text>拨打电话</text>
+						</view>
+					</view>
+				</view>
+			</u-popup>
+		</view>
+		<view class="top-area-box">
+			<view class="nav">
+				<nav-bar :home="false" backState='2000' bgColor="none" title="个人中心">
+				</nav-bar> 
+			</view>
+			<image :src="loginBackgroundPng"></image>
+			<view class="user-info">
+				<view class="user-photo" @click="enterPersonMessagePageEvent">
+					<image :src="personPhotoSource"></image>
+				</view>
+				<view class="user-nickname">
+					<view>
+						<text>{{ niceNameValue }}</text>
+					</view>
+					<view>
+						<image :src="authenticationIconPng"></image>
+						<text>已认证</text>
+					</view>
+				</view>
+				<view class="qr-code">
+					<image :src="qrCodeIconPng"></image>
+				</view>
+			</view>
+			<view class="data-area-box">
+				<view class="today-earnings">
+					<text>今日收益</text>
+					<text>568.00</text>
+				</view>
+				<view class="classified-statistic">
+					<view>
+						<view>
+							<text>接单总数</text>
+						</view>
+						<view>
+							<text>50</text>
+							<text>单</text>
+						</view>
+					</view>
+					<view>
+						<view>
+							<text>累计收益</text>
+						</view>
+						<view>
+							<text>50</text>
+							<text>元</text>
+						</view>
+					</view>
+					<view>
+						<view>
+							<text>可提现额度</text>
+						</view>
+						<view>
+							<text>50</text>
+							<text>元</text>
+							<text>提现</text>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
+		<view class="switch-box">
+			<text>派单开关</text>
+			<u-switch v-model="isSendOrdersValue" activeColor="#5A7BF4"></u-switch>
+		</view>
+		<view class="bottom-area-box">
+			<view v-for="(item,index) in bottomFunctionList" :key="index" @click="bottomFunctionClickEvent(item.name)">
+				<view class="function-item-left">
+					<image :src="item.iconImg"></image>
+					<text>{{ item.name }}</text>
+				</view>
+				<view class="function-item-right">
+					<u-icon name="arrow-right" color="#737373" size="20"></u-icon>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import {
+		mapGetters,
+		mapMutations
+	} from 'vuex'
+	import {
+		setCache,
+		removeAllLocalStorage
+	} from '@/common/js/utils'
+	import { getUserMessage } from '@/api/user.js'
+	import navBar from "@/components/zhouWei-navBar"
+	export default {
+		components: {
+			navBar
+		},
+		data() {
+			return {
+				qrCodeIconPng: require("@/static/img/qr-code-icon.png"),
+				authenticationIconPng: require("@/static/img/authentication-icon.png"),
+				loginBackgroundPng: require("@/static/img/login-background.png"),
+				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
+				infoText: '',
+				showLoadingHint: false,
+				isSendOrdersValue: true,
+				callPoliceDialogShow: false,
+				showSupportStaffBox: false,
+				personPhotoSource: '',
+				niceNameValue: '张三',
+				bottomFunctionList: [
+					{
+						name: '我的账单',
+						iconImg: require("@/static/img/my-bill.png")
+					},
+					{
+						name: '身份认证',
+						iconImg: require("@/static/img/authentication.png")
+					},
+					{
+						name: '关于我们',
+						iconImg: require("@/static/img/about-us.png")
+					},
+					{
+						name: '帮助和反馈',
+						iconImg: require("@/static/img/help-feedback.png")
+					},
+					{
+						name: '设置中心',
+						iconImg: require("@/static/img/set-center.png")
+					}
+				]
+			}
+		},
+		computed: {
+			...mapGetters([
+				'userBasicInfo'
+			]),
+			userName() {
+			},
+			proId() {
+			},
+			proName() {
+			},  
+			workerId() {
+			},
+			depName() {
+			},
+			accountName() {
+			}
+		},
+		onShow() {
+			// 初次进入该页面时，查询用户基本信息
+			if (!this.userBasicInfo) {
+				this.queryUserBasicMessage()
+			} else {
+				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname
+			}
+		},
+		methods: {
+			...mapMutations([
+				'changeUserBasicInfo'
+			]),
+			
+			// 头像点击事件
+			enterPersonMessagePageEvent () {
+				uni.navigateTo({
+					url: '/generalSetPackage/pages/privateInfo/privateInfo'
+				})
+			},
+			
+			// 获取用户基本信息
+			queryUserBasicMessage () {
+				this.showLoadingHint = true;
+				this.infoText = '加载中...';
+				getUserMessage().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.changeUserBasicInfo(res.data.data);
+						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
+						this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname
+					} else {
+						this.$refs.uToast.show({
+							title: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}	
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						title: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			//客服弹框关闭事件
+			closeSupportStaffBox () {
+				this.showSupportStaffBox = false
+			},
+			
+			//底部功能区点击事件
+			bottomFunctionClickEvent (name) {
+				if (name == '我的医护') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myNurse/myNurse'
+					})
+				} else if (name == '收藏') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myCollect/myCollect'
+					})
+				} else if (name == '我的地址') {
+					uni.navigateTo({
+						url: '/minePackage/pages/addressManagement/addressManagement'
+					})
+				} else if (name == '相关协议') {
+					uni.navigateTo({
+						url: '/minePackage/pages/aboutAgreement/aboutAgreement'
+					})
+				} else if (name == '我的被护人') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myProtectedPersons/myProtectedPersons'
+					})
+				} else if (name == '初步评估单管理') {
+					uni.navigateTo({
+						url: '/minePackage/pages/mine/index/index'
+					})
+				} else if (name == '客服') {
+					this.showSupportStaffBox = true
+				}
+			}
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "~@/common/stylus/variable.scss";
+	page {
+		width: 100%;
+		height: 100%;
+	};
+	.content-box {
+		@include content-wrapper;
+		.call-police-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						padding: 20px 10px;
+						box-sizing: border-box;
+						.help-center-title {
+							text-align: center;
+							font-size: 20px;
+							color: #101010;
+							margin-bottom: 10px
+						};
+						.help-center-content {
+							text-align: center;
+							font-size: 14px;
+							color: #101010;
+							margin: 20px 0
+						};
+						.help-bottom-btn {
+							text-align: center;
+							image {
+								height: 116px;
+								width: 280px;
+							}
+						}
+					}
+				}
+			}	
+		};
+		.call-police-box {
+			position: fixed;
+			left: 0;
+			z-index: 100;
+			bottom: 16vh;
+			image {
+				width: 73px;
+				height: 43px
+			}
+		};
+		::v-deep .u-popup {
+			.u-popup__content {
+				width: 90%;
+				padding: 30px 10px 20px 10px;
+				box-sizing: border-box;
+				border-radius: 14px;
+				.u-popup__content__close {
+					.u-icon__icon {
+						color: #101010 !important
+					}
+				};
+				.support-staff-content {
+					.support-staff-top {
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						>image {
+							width: 106px;
+							height: 129px
+						};
+						>text {
+							font-size: 18px;
+							color: #101010;
+							&:nth-of-type(1) {
+								margin: 10px 0;
+							}
+						}
+					};
+					.support-staff-bottom {
+						display: flex;
+						margin-top: 20px;
+						.support-staff-left {
+							flex: 1;
+							display: flex;
+							flex-direction: column;
+							justify-content: center;
+							align-items: center;
+							>image {
+								width: 24px;
+								height: 24px;
+								margin-bottom: 6px
+							};
+							>text {
+								font-size: 14px;
+								color: #4E9FD5
+							}
+						};
+						.support-staff-right {
+							flex: 1;
+							display: flex;
+							flex-direction: column;
+							justify-content: center;
+							align-items: center;
+							>image {
+								width: 24px;
+								height: 24px;
+								margin-bottom: 6px
+							};
+							>text {
+								font-size: 14px;
+								color: #4E9FD5
+							}
+						}
+					}
+				}
+			}
+		};
+		.top-area-box {
+			position: relative;
+			width: 100%;
+			height: 330px;
+			::v-deep .nav {
+				width: 100%;
+				background: #fff;
+				position: absolute;
+				top: 0;
+				left: 0;
+				.header_title_center {
+					color: #fff !important;
+					text {
+						color: #fff !important;
+					}
+				}
+			};
+			> image {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 230px
+			};
+			.user-info {
+				width: 100%;
+				height: 230px;
+				display: flex;
+				align-items: center;
+				color: #fff;
+				font-size: 20px;
+				padding: 0 10px;
+				box-sizing: border-box;
+				.user-photo {
+					width: 63px;
+					height: 63px;
+					background: #fff;
+					margin-right: 15px;
+					border-radius: 50%;
+					z-index:1;
+					image {
+						width: 63px;
+						height: 63px;
+						border-radius: 50%;
+					}
+				}
+			};
+			.user-nickname {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				flex: 1;
+				padding-right: 10px;
+				box-sizing: border-box;
+				z-index: 1;
+				@include no-wrap;
+				>view {
+					&:first-child {
+						width: 100%;
+						text {
+							width: 100%;
+							display: inline-block;
+							@include no-wrap;
+							font-size: 12px;
+							color: #fff
+						}
+					};
+					&:nth-child(2) {
+						width: 75px;
+						height: 22px;
+						background: #E8CB51;
+						border-radius: 20px;
+						margin-top: 10px;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						text {
+							font-size: 10px;
+							color: #fff
+						};
+						image {
+							width: 15px;
+							height: 15px;
+							margin-right: 10px;
+						}
+					}
+				}
+			};
+			.qr-code {
+				image {
+					width: 42px;
+					height: 42px
+				}
+			};
+			.data-area-box {
+				width: 94%;
+				position: absolute;
+				left: 3%;
+				top: 190px;
+				max-height: 130px;
+				overflow: auto;
+				background: #fff;
+				margin: 0 auto;
+				border-radius: 10px;
+				display: flex;
+				flex-direction: column;
+				padding: 14px 0;
+				box-sizing: border-box;
+				box-shadow: 0px 2px 6px 0 rgba(92, 133, 136, 0.29);
+				.today-earnings {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					text {
+						font-weight: bold;
+						&:nth-child(1) {
+							font-size: 14px;
+							color: #2C2C2C;
+							margin-right: 6px
+						};
+						&:nth-child(2) {
+							font-size: 20px;
+							color: #E86F50
+						}
+					}
+				};
+				.classified-statistic {
+					margin-top: 14px;
+					flex: 1;
+					display: flex;
+					align-items: center;
+					>view {
+						flex: 1;
+						display: flex;
+						flex-direction: column;
+						justify-content: center;
+						align-items: center;
+						&:nth-child(3) {
+							>view {
+								&:nth-child(2) {
+									>text {
+										&:nth-child(3) {
+											margin-left: 10px;
+											font-size: 14px;
+											color: #5064EB
+										}
+									}
+								}
+							}
+						};
+						>view {
+							width: 100%;
+							text-align: center;
+							padding: 0 4px;
+							box-sizing: border-box;
+							word-break: break-all;
+							&:nth-child(1) {
+								margin-bottom: 10px;
+								font-size: 12px;
+								color: #898C8C
+							};
+							&:nth-child(2) {
+								>text {
+									color: #898C8C;
+									font-size: 12px;
+									&:nth-child(1) {
+										font-size: 14px;
+										font-weight: bold;
+										color: #101010
+									}
+								}
+							};
+						}
+					}
+				}
+			}
+		};
+		.switch-box {
+			display: flex;
+			align-items: center;
+			width: 90%;
+			margin: 0 auto;
+			padding: 0 4px;
+			box-sizing: border-box;
+			>text {
+				flex: 1;
+				text-align: left;
+				font-size: 14px;
+				color: #101010
+			};
+			::v-deep .u-switch{
+			}
+		};
+		.bottom-area-box {
+			width: 90%;
+			margin: 0 auto;
+			padding: 0 2px;
+			box-sizing: border-box;
+			margin-top: 6px;
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			overflow: auto;
+			>view {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				height: 40px;
+				margin-bottom: 16px;
+				.function-item-left {
+					>image {
+						width: 24px;
+						height: 24px;
+						margin-right: 6px;
+						vertical-align: middle
+					};
+					>text {
+						color: #101010;
+						font-size: 14px;
+						vertical-align: middle
+					}
+				};
+				.function-item-right {
+					
+				}
+			}
+		}
+	}
+</style>

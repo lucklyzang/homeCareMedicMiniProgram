@@ -1,0 +1,686 @@
+<template>
+	<view class="content-box">
+		<u-toast ref="uToast" />
+		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
+		<view class="top-area-box">
+			<view class="nav">
+				<nav-bar :home="false" backState='3000' bgColor="none" title="订单详情" @backClick="backTo">
+				</nav-bar> 
+		  </view>
+		</view>
+		<view class="order-form-list-wrapper">
+			<view class="order-form-list">
+				<view class="order-form-top">
+					<view class="order-form-title">
+						<text>婴儿全身按摩</text>
+					</view>
+					<view class="order-form-status">
+						<text>已完成</text>
+					</view>
+				</view>
+				<view class="order-form-center">
+					<view class="order-form-center-left">
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+					</view>
+					<view class="order-form-center-right">
+						<view class="brotected-person">
+							<text>被护人</text>
+							<text>燕双鹰 26岁</text>
+						</view>
+						<view class="service-address">
+							<text>服务地址</text>
+							<text>环球中心一号楼2单元403</text>
+						</view>
+						<view class="expectation-date">
+							<text>期望时间</text>
+							<text>06月14日 (星期二) 上午8：00-9：00</text>
+						</view>
+						<view class="evaluation-form">
+							<text>初步评估单</text>
+							<text>点击查看</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="price-list">
+				<view class="price-list-top">
+					<view class="price-list-title">
+						<text>订单价格清单</text>
+					</view>
+				</view>
+				<view class="price-list-content">
+					<view class="price-list-one">
+						<text>婴儿全身按摩</text>
+						<text>￥998</text>
+					</view>
+					<view class="price-list-one price-list-two">
+						<text>路程费用</text>
+						<text>￥0</text>
+					</view>
+					<view class="price-list-one price-list-three">
+						<text>超时费用</text>
+						<text>￥0</text>
+					</view>
+					<view class="price-list-one price-list-four">
+						<text>材料费用</text>
+						<text>￥0</text>
+					</view>
+					<view class="price-list-one price-list-five">
+						<text>优惠</text>
+						<text>￥0</text>
+					</view>
+					<view class="price-list-one price-list-last">
+						<text>实付款</text>
+						<text>￥998.00</text>
+					</view>
+				</view>
+			</view>
+			<view class="evaluate-message">
+				<view class="evaluate-message-top">
+					<view class="evaluate-message-title">
+						<text>评价信息</text>
+					</view>
+				</view>
+				<view class="evaluate-message-bottom">
+					<view class="service-attitude">
+						<view class="service-attitude-title">
+							<text>服务态度</text>
+						</view>
+						<view class="service-attitude-score">
+							<u-rate readonly active-color="#F2A15F" size="30" :count="serviceAttitudeCount" v-model="serviceAttitudeValue"></u-rate>
+						</view>
+					</view>
+					<view class="service-attitude">
+						<view class="service-attitude-title">
+							<text>服务速度</text>
+						</view>
+						<view class="service-attitude-score">
+							<u-rate readonly active-color="#F2A15F" size="30" :count="serviceAttitudeCount" v-model="serviceSpeedValue"></u-rate>
+						</view>
+					</view>
+					<view class="service-attitude">
+						<view class="service-attitude-title">
+							<text>专业程度</text>
+						</view>
+						<view class="service-attitude-score">
+							<u-rate readonly active-color="#F2A15F" size="30" :count="serviceAttitudeCount" v-model="majorLevelValue"></u-rate>
+						</view>
+					</view>
+					<view class="evaluate-text">
+						<text>啥就看啥酷酷酷酷酷酷酷酷酷酷酷酷给大家都开始了萨迪克</text>
+					</view>
+					<view class="evaluate-picture">
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+					</view>
+				</view>
+			</view>
+			<view class="order-flow">
+				<view class="order-flow-title">
+					<text>订单流程</text>
+				</view>
+				<view class="order-flow-content">
+					<u-steps current="4" dot inactiveColor="rgba(255, 255, 255, 0.5)" activeColor="#fff">
+						<u-steps-item title="已支付"></u-steps-item>
+						<u-steps-item title="派单中"></u-steps-item>
+						<u-steps-item title="待出发"></u-steps-item>
+						<u-steps-item title="待服务"></u-steps-item>
+						<u-steps-item title="服务中"></u-steps-item>
+						<u-steps-item title="待评价"></u-steps-item>
+						<u-steps-item title="已完成"></u-steps-item>
+					</u-steps>
+				</view>
+			</view>
+			<view class="order-message">
+				<view class="order-message-top">
+					<view class="order-message-title">
+						<text>订单信息</text>
+					</view>
+				</view>
+				<view class="order-message-content">
+					<view class="order-message-one-special">
+						<view class="order-message-one-special-left">
+							<text>订单编号:</text>
+						</view>
+						<view class="order-message-one-special-right">
+							<text>asasa34343</text>
+							<text  @click="copyContent(copyValue)">复制</text>
+						</view>
+					</view>
+					<view class="order-message-one">
+						<text>交易号:</text>
+						<text>飒飒飒飒</text>
+					</view>
+					<view class="order-message-one">
+						<text>创建时间:</text>
+						<text>2012-01-10 12:45:23</text>
+					</view>
+					<view class="order-message-one">
+						<text>付款时间:</text>
+						<text>2012-05-09 19:45:20</text>
+					</view>
+					<view class="order-message-one">
+						<text>派单时间:</text>
+						<text>2012-05-09 19:45:20</text>
+					</view>
+					<view class="order-message-one">
+						<text>完成服务时间:</text>
+						<text>2012-05-09 19:45:20</text>
+					</view>
+				</view>
+			</view>
+			<view class="btn-area">
+				<text>申请退款</text>
+				<text>删除订单</text>
+				<text>再次预约</text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import {
+		mapGetters,
+		mapMutations
+	} from 'vuex'
+	import {
+		setCache,
+		removeAllLocalStorage
+	} from '@/common/js/utils'
+	import navBar from "@/components/zhouWei-navBar"
+	export default {
+		components: {
+			navBar
+		},
+		data() {
+			return {
+				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
+				infoText: '',
+				copyValue: '复制测试',
+				serviceAttitudeCount: 5,
+				serviceAttitudeValue: 4,
+				serviceSpeedValue: 3,
+				majorLevelValue: 2,
+				showLoadingHint: false
+			}
+		},
+		computed: {
+			...mapGetters([
+				'userBasicInfo'
+			]),
+			userName() {
+			},
+			proId() {
+			}
+		},
+		onShow() {
+		},
+		methods: {
+			...mapMutations([
+			]),
+			
+			copyContent(data) {
+				uni.setClipboardData({
+					data,
+					success: () => {
+						uni.getClipboardData({ 
+							success: (res) => {
+								uni.showToast({
+										title: "复制成功"
+								})
+							}
+						})
+					}
+				})
+			},
+			
+			// 顶部导航返回事件
+			backTo () {
+				uni.navigateBack()
+			}	
+		}
+	}
+</script>
+
+<style lang="scss">
+	@import "~@/common/stylus/variable.scss";
+	page {
+		width: 100%;
+		height: 100%;
+	};
+	.content-box {
+		@include content-wrapper;
+		.top-area-box {
+			position: relative;
+			width: 100%;
+			height: 100px;
+			::v-deep .nav {
+				width: 100%;
+				background: #fff;
+				position: absolute;
+				top: 0;
+				left: 0;
+				.header_title_center {
+					color: #101010 !important;
+					text {
+						color: #101010 !important;
+					}
+				}
+			}
+		}
+		.order-form-list-wrapper {
+			flex: 1;
+			background: #f5f5f5;
+			overflow: auto;
+			width: 100%;
+			padding: 10px 0;
+			box-sizing: border-box;
+			position: relative;
+			.order-form-list {
+				padding: 0px 4px 8px 4px;
+				background: #fff;
+				box-sizing: border-box;
+				margin-bottom: 10px;
+				.order-form-top {
+					display: flex;
+					align-items: center;
+					height: 50px;
+					@include bottom-border-1px(#BBBBBB);
+					justify-content: space-between;
+					padding: 0 8px 0 10px;
+					box-sizing: border-box;
+					.order-form-title {
+						flex: 1;
+						@include no-wrap();
+						>text {
+							font-size: 16px;
+							color: #444444;
+							font-weight: bold
+						}
+					};
+					.order-form-status {
+						>text {
+							display: inline-block;
+							padding: 0 0 0 4px;
+							box-sizing: border-box;
+							font-size: 14px;
+							color: #444444;
+							font-weight: bold
+						}
+					}
+				};
+				.order-form-center {
+					display: flex;
+					justify-content: space-between;
+					padding: 8px;
+					box-sizing: border-box;
+					.order-form-center-left {
+						margin-right: 10px;
+						::v-deep .u-image {
+							width: 88px !important;
+							height: 88px !important
+						}
+					};
+					.order-form-center-right {
+						padding-top: 10px;
+						box-sizing: border-box;
+						.brotected-person {
+							margin-bottom: 6px;
+							display: flex;
+							justify-content: space-between;
+							>text {
+								display: inline-block;
+								font-size: 12px;
+								&:nth-child(1) {
+									width: 60px;
+									color: #777777;
+									margin-right: 6px;
+								};
+								&:nth-child(2) {
+									flex: 1;
+									color: #F16C8C;
+									word-break: break-all
+								}
+							}
+						};
+						.service-address {
+							margin-bottom: 6px;
+							display: flex;
+							justify-content: space-between;
+							>text {
+								display: inline-block;
+								font-size: 12px;
+								&:nth-child(1) {
+									width: 60px;
+									color: #777777;
+									margin-right: 6px;
+								};
+								&:nth-child(2) {
+									flex: 1;
+									color: #F16C8C;
+									word-break: break-all
+								}
+							}
+						};
+						.expectation-date {
+							margin-bottom: 6px;
+							display: flex;
+							justify-content: space-between;
+							>text {
+								display: inline-block;
+								font-size: 12px;
+								&:nth-child(1) {
+									width: 60px;
+									color: #777777;
+									margin-right: 6px;
+								};
+								&:nth-child(2) {
+									flex: 1;
+									color: #F16C8C;
+									word-break: break-all
+								}
+							}
+						};
+						.evaluation-form {
+							margin-bottom: 6px;
+							display: flex;
+							justify-content: space-between;
+							>text {
+								display: inline-block;
+								font-size: 12px;
+								&:nth-child(1) {
+									width: 66px;
+									color: #777777;
+									margin-right: 6px;
+								};
+								&:nth-child(2) {
+									flex: 1;
+									color: #3388FF;
+									word-break: break-all
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+		.price-list {
+			background: #fff;
+			margin-bottom: 10px;
+			.price-list-top {
+				display: flex;
+				align-items: center;
+				height: 50px;
+				@include bottom-border-1px(#BBBBBB);
+				justify-content: space-between;
+				padding: 0 12px;
+				box-sizing: border-box;
+				.price-list-title {
+					flex: 1;
+					@include no-wrap();
+					>text {
+						font-size: 16px;
+						color: #444444;
+						font-weight: bold
+					}
+				}
+			};
+			.price-list-content {
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.price-list-one {
+					display: flex;
+					justify-content: space-between;
+					margin-bottom: 6px;
+					>text {
+						display: inline-block;
+						font-size: 14px;
+						color: #3E4248;
+						font-weight: bold;
+						&:first-child {
+							flex: 1;
+							word-break: break-all
+						};
+						&:last-child {
+							
+						}
+					}
+				};
+				.price-list-last {
+					>text {
+						&:last-child {
+							color: #E82050;
+							font-size: 16px;
+							font-weight: bold;
+						}
+					}
+				}
+			}
+		};
+		.evaluate-message {
+			background: #fff;
+			margin-bottom: 10px;
+			.evaluate-message-top {
+				display: flex;
+				align-items: center;
+				height: 50px;
+				@include bottom-border-1px(#BBBBBB);
+				justify-content: space-between;
+				padding: 0 12px;
+				box-sizing: border-box;
+				.evaluate-message-title {
+					flex: 1;
+					@include no-wrap();
+					>text {
+						font-size: 16px;
+						color: #444444;
+						font-weight: bold
+					}
+				}
+			};
+			.evaluate-message-bottom {
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.service-attitude {
+					display: flex;
+					justify-content: space-between;
+					margin-top: 6px;
+					align-items: center;
+					.service-attitude-title {
+						>text {
+							font-size: 14px;
+							color: #3E4248;
+							font-weight: bold;
+						}
+					};
+					.service-attitude-score {
+						flex: 1;
+						padding-left: 20px;
+						box-sizing: border-box;
+					}
+				};
+				.evaluate-text {
+					padding: 4px 6px;
+					margin-top: 20px;
+					box-sizing: border-box;
+					word-break: break-all;
+					border: 1px solid #BBBBBB
+				};
+				.evaluate-picture {
+					margin-top: 20px;
+					display: flex;
+					flex-wrap: wrap;
+					::v-deep .u-transition {
+						width: 32% !important;
+						height: 88px !important;
+						margin-right: 2%;
+						margin-bottom: 10px;
+						&:nth-child(3n+3) {
+							margin-right: 0 !important
+						};
+						.u-image {
+							.uni-image {
+								width: 100% !important
+							}
+						}
+					}
+				}
+			}
+		};
+		.order-flow {
+			height: 113px;
+			background: #EB3E67;
+			margin-bottom: 10px;
+			padding: 6px 16px 10px 16px;
+			box-sizing: border-box;
+			.order-flow-title {
+				padding-left: 4px;
+				box-sizing: border-box;
+				font-size: 14px;
+				color: #fff;
+				margin-bottom: 20px
+			};
+			.order-flow-content {
+				::v-deep .u-steps {
+					.u-steps-item {
+						.u-steps-item__wrapper {
+							background: transparent !important
+						};
+						.u-steps-item__content {
+							.u-text {
+								.u-text__value {
+									color: #fff !important
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+		.order-message {
+			background: #fff;
+			margin-bottom: 10px;
+			.order-message-top {
+				display: flex;
+				align-items: center;
+				height: 50px;
+				@include bottom-border-1px(#BBBBBB);
+				justify-content: space-between;
+				padding: 0 12px;
+				box-sizing: border-box;
+				.order-message-title {
+					flex: 1;
+					@include no-wrap();
+					>text {
+						font-size: 16px;
+						color: #444444;
+						font-weight: bold
+					}
+				}
+			};
+			.order-message-content {
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.order-message-one-special {
+					display: flex;
+					justify-content: space-between;
+					margin-bottom: 10px;
+					.order-message-one-special-left {
+						font-size: 14px;
+						font-weight: bold;
+						color: #3E4248;
+					};
+					.order-message-one-special-right {
+						display: flex;
+						flex: 1;
+						justify-content: flex-end;
+						>text {
+							display: inline-block;
+							font-size: 14px;
+							color: #3E4248;
+							font-weight: bold;
+							&:first-child {
+								flex: 1;
+								color: #B7B6B6;
+								margin-right: 4px;
+								text-align: right;
+								word-break: break-all
+							};
+							&:last-child {
+								color: #3E4248
+							}
+						}
+					}
+				};
+				.order-message-one {
+					display: flex;
+					justify-content: space-between;
+					margin-bottom: 10px;
+					>text {
+						display: inline-block;
+						font-size: 14px;
+						color: #3E4248;
+						font-weight: bold;
+						&:first-child {
+							flex: 1;
+							word-break: break-all
+						};
+						&:last-child {
+							color: #B7B6B6
+						}
+					}
+				}
+			}
+		};
+		.btn-area {
+			flex: 1;
+			background: #fff;
+			margin: 10px 0;
+			padding: 0 10px;
+			box-sizing: border-box;
+			display: flex;
+			height: 62px;
+			align-items: center;
+			justify-content: flex-end;
+			>text {
+				min-width: 78px;
+				display: inline-block;
+				height: 26px;
+				padding: 0 12px;
+				box-sizing: border-box;
+				text-align: center;
+				line-height: 26px;
+				font-size: 13px;
+				color: #5E5E5E;
+				border: 1px solid #BBBBBB;
+				border-radius: 22px;
+				margin-right: 10px;
+				&:last-child {
+					margin-right: 0
+				}
+			}
+		}
+	}
+</style>

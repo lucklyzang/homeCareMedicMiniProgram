@@ -1,0 +1,71 @@
+// 颜色定义规范
+$color-big-icon: #0e89ec;  //主色调（大图标）
+$color-bottom-nav: #2f99f1 ;  //主色调（底部导航）
+$color-text-left: #7d7d7d;  //字体颜色（左边说明文字）
+$color-text-right: black;  //字体颜色（右边内容文字）
+$color-underline: #e5e5e5; // 下划线颜色
+@mixin content-wrapper () {
+  display: flex;
+	min-height: 100vh;
+	height: 100%;
+  width: 100%;
+  flex-direction: column;
+	// position: fixed;
+	// top:0;
+	// left:0;
+	// bottom: 0;
+	// right: 0
+};
+// 不换行
+@mixin no-wrap() {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+};
+// 指定行数显示省略号
+@mixin no-wrap-line($line) {
+	text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: $line;
+  line-clamp: $line;
+  -webkit-box-orient: vertical
+};
+@mixin main-wrapper () {
+   position:absolute;
+   width:100%;
+   top:48px;
+   bottom:65px;
+   overflow:auto;
+};
+// 一像素下边框
+@mixin bottom-border-1px($color) {
+  position: relative;
+  border: none;
+  &:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background-color: $color;
+    transform: scaleY(0.5)
+  }
+}
+// 一像素上边框
+@mixin top-border-1px($color) {
+  position: relative;
+  border: none;
+  &:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 1px;
+    background-color: $color;
+    transform: scaleY(0.5)
+  }
+}
