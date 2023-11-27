@@ -583,11 +583,13 @@
 						flex: 1;
 						margin: 0 10px;
 						font-size: 12px;
+						margin-top: 2px;
 						color: #000000;
 						word-break: break-all
 					};
 					&:nth-child(3) {
 						font-size: 12px;
+						margin-top: 2px;
 						color: #000000
 					}
 				}
