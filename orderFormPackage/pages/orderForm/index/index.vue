@@ -1,12 +1,57 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<!-- 订单详情弹框 -->
+		<view class="order-form-details-dialog-box">
+			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="accept-order-date">
+					<view class="accept-order-date-title">
+						<text>接受服务订单时间</text>
+					</view>
+					<view class="accept-order-date-content">
+						<text>2023-09-12 14:23:23</text>
+					</view>
+				</view>
+				<view class="accept-order-date">
+					<view class="accept-order-date-title">
+						<text>出发时间</text>
+					</view>
+					<view class="accept-order-date-content">
+						<text>2023-09-12 14:23:23</text>
+					</view>
+				</view>
+				<view class="accept-order-date">
+					<view class="accept-order-date-title">
+						<text>开始服务时间</text>
+					</view>
+					<view class="accept-order-date-content">
+						<text>2023-09-12 14:23:23</text>
+					</view>
+				</view>
+				<view class="accept-order-date">
+					<view class="accept-order-date-title">
+						<text>完成服务时间</text>
+					</view>
+					<view class="accept-order-date-content">
+						<text>2023-09-12 14:23:23</text>
+					</view>
+				</view>
+			</u-popup>
+		</view>
 		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="订单详情" @backClick="backTo">
 				</nav-bar> 
 		  </view>
+		</view>
+		<view class="top-view-details">
+			<view class="service-status">
+				<text>服务完成</text>
+			</view>
+			<view class="btn-details" @click="orderFormDetailsDialogShow = true">
+				<text>点击详情</text>
+			</view>
 		</view>
 		<view class="order-form-list-wrapper">
 			<view class="order-form-list">
@@ -79,6 +124,42 @@
 					</view>
 				</view>
 			</view>
+			<view class="patient-data">
+				<view class="patient-data-title">
+					<text>患者资料</text>
+				</view>
+				<view class="patient-data-image">
+					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
+						 <template v-slot:loading>
+						    <u-loading-icon color="red"></u-loading-icon>
+						  </template>
+					</u-image>
+					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
+						 <template v-slot:loading>
+						    <u-loading-icon color="red"></u-loading-icon>
+						  </template>
+					</u-image>
+					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
+						 <template v-slot:loading>
+						    <u-loading-icon color="red"></u-loading-icon>
+						  </template>
+					</u-image>
+					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
+						 <template v-slot:loading>
+						    <u-loading-icon color="red"></u-loading-icon>
+						  </template>
+					</u-image>
+				</view>
+			</view>
+			<view class="service-site">
+				<view class="service-site-title">
+					<text>服务地点</text>
+					<text>环球中心1号门1栋1单元1楼1011</text>
+					<text>11.2km</text>
+				</view>
+				<view class="service-site-map-area">
+				</view>
+			</view>
 			<view class="order-flow">
 				<view class="order-flow-title">
 					<text>订单流程</text>
@@ -95,42 +176,36 @@
 					</u-steps>
 				</view>
 			</view>
-			<view class="order-message">
-				<view class="order-message-top">
-					<view class="order-message-title">
-						<text>订单信息</text>
-					</view>
+			<view class="contact-patient">
+				<view class="contact-patient-title">
+					<text>联系患者</text>
 				</view>
-				<view class="order-message-content">
-					<view class="order-message-one-special">
-						<view class="order-message-one-special-left">
-							<text>订单编号:</text>
-						</view>
-						<view class="order-message-one-special-right">
-							<text>asasa34343</text>
-							<text
-							 @click="copyContent(copyValue)"
-							>复制</text>
-						</view>
+				<view class="contact-patient-content">
+					<view class="phone-box">
+						<image src="@/static/img/order-form-phone.png"></image>
+						<text>拨打电话</text>
 					</view>
-					<view class="order-message-one">
-						<text>交易号:</text>
-						<text>飒飒飒飒</text>
-					</view>
-					<view class="order-message-one">
-						<text>创建时间:</text>
-						<text>2012-01-10 12:45:23</text>
-					</view>
-					<view class="order-message-one">
-						<text>付款时间:</text>
-						<text>2012-05-09 19:45:20</text>
+					<view class="message-box">
+						<image src="@/static/img/order-form-message.png"></image>
+						<text>发送消息</text>
 					</view>
 				</view>
 			</view>
-			<view class="btn-area">
-				<text>申请退款</text>
-				<text>取消订单</text>
-				<text>提醒派单</text>
+			<view class="notice-box">
+				<view class="notice-title">
+					<text>须知</text>
+				</view>
+				<view class="notice-content">
+					<view class="notice-list">
+						1、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
+					</view>
+					<view class="notice-list">
+						2、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
+					</view>
+					<view class="notice-list">
+						3、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -155,7 +230,7 @@
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				infoText: '',
 				showLoadingHint: false,
-				copyValue: 'asasa34343'
+				orderFormDetailsDialogShow: false
 			}
 		},
 		computed: {
@@ -204,6 +279,38 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		.order-form-details-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						.accept-order-date {
+							margin-bottom: 19px;
+							padding-left: 20px;
+							box-sizing: border-box;
+							.accept-order-date-title {
+								font-size: 14px;
+								color: #101010;
+								margin-bottom: 4px
+							};
+							.accept-order-date-content {
+								font-size: 14px;
+								color: #101010
+							}
+						}
+					}
+				}
+			}	
+		};
 		.top-area-box {
 			position: relative;
 			width: 100%;
@@ -221,7 +328,30 @@
 					}
 				}
 			}
-		}
+		};
+		.top-view-details {
+			height: 100px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			.service-status {
+				font-size: 18px;
+				color: #E86F50;
+				margin-bottom: 10px;
+			};
+			.btn-details {
+				width: 172px;
+				height: 40px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: #1983FD;
+				border-radius: 18px;
+				font-size: 14px;
+				color: #fff;
+			}
+		};
 		.order-form-list-wrapper {
 			flex: 1;
 			background: #f5f5f5;
@@ -292,7 +422,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -311,7 +441,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -330,7 +460,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -411,9 +541,62 @@
 				}
 			}
 		};
+		.patient-data {
+			background: #fff;
+			margin: 10px 0;
+			padding: 6px 16px;
+			box-sizing: border-box;
+			.patient-data-title {
+				font-size: 14px;
+				color: #3E4248;
+				margin-bottom: 10px
+			};
+			.patient-data-image {
+				display: flex;
+				flex-wrap: wrap;
+				.u-transition {
+					width: 32%;
+					margin-right: 2%;
+					margin-bottom: 10px;
+					&:nth-child(3n) {
+						margin-right: 0 !important
+					};
+					::v-deep .u-image {
+						width: 100% !important
+					}
+				}	
+			}
+		};
+		.service-site {
+			background: #fff;
+			margin-bottom: 10px;
+			padding: 6px 16px;
+			box-sizing: border-box;
+			.service-site-title {
+				display: flex;
+				font-size: 14px;
+				color: #3E4248;
+				margin-bottom: 10px;
+				>text {
+					display: inline-block;
+					&:nth-child(2) {
+						flex: 1;
+						margin: 0 10px;
+						font-size: 12px;
+						color: #000000;
+						word-break: break-all
+					};
+					&:nth-child(3) {
+						font-size: 12px;
+						color: #000000
+					}
+				}
+			};
+			.service-site-map-area {}
+		};
 		.order-flow {
 			height: 113px;
-			background: #EB3E67;
+			background: #5064EB;
 			margin-bottom: 10px;
 			padding: 6px 16px 10px 16px;
 			box-sizing: border-box;
@@ -441,106 +624,64 @@
 				}
 			}
 		};
-		.order-message {
+		.contact-patient {
 			background: #fff;
 			margin-bottom: 10px;
-			.order-message-top {
+			padding: 6px 16px;
+			box-sizing: border-box;
+			.contact-patient-title {
 				display: flex;
-				align-items: center;
-				height: 50px;
-				@include bottom-border-1px(#BBBBBB);
-				justify-content: space-between;
-				padding: 0 12px;
-				box-sizing: border-box;
-				.order-message-title {
-					flex: 1;
-					@include no-wrap();
-					>text {
-						font-size: 16px;
-						color: #444444;
-						font-weight: bold
-					}
-				}
+				font-size: 14px;
+				color: #3E4248;
+				margin-bottom: 10px;
 			};
-			.order-message-content {
-				padding: 6px 16px;
-				box-sizing: border-box;
-				.order-message-one-special {
-					display: flex;
-					justify-content: space-between;
-					margin-bottom: 10px;
-					.order-message-one-special-left {
-						font-size: 14px;
-						font-weight: bold;
-						color: #3E4248;
+			.contact-patient-content {
+				display: flex;
+				.phone-box {
+					flex: 1;
+					image {
+						width: 24px;
+						height: 24px;
+						margin-right: 10px;
+						vertical-align: middle
 					};
-					.order-message-one-special-right {
-						display: flex;
-						flex: 1;
-						justify-content: flex-end;
-						>text {
-							display: inline-block;
-							font-size: 14px;
-							color: #3E4248;
-							font-weight: bold;
-							&:first-child {
-								flex: 1;
-								color: #B7B6B6;
-								margin-right: 4px;
-								text-align: right;
-								word-break: break-all
-							};
-							&:last-child {
-								color: #3E4248
-							}
-						}
+					text {
+						color: #5064EB;
+						font-size: 16px;
+						vertical-align: middle
 					}
 				};
-				.order-message-one {
-					display: flex;
-					justify-content: space-between;
-					margin-bottom: 10px;
-					>text {
-						display: inline-block;
-						font-size: 14px;
-						color: #3E4248;
-						font-weight: bold;
-						&:first-child {
-							flex: 1;
-							word-break: break-all
-						};
-						&:last-child {
-							color: #B7B6B6
-						}
+				.message-box {
+					flex: 1;
+					image {
+						width: 24px;
+						height: 24px;
+						margin-right: 10px;
+						vertical-align: middle
+					};
+					text {
+						color: #5064EB;
+						font-size: 16px;
+						vertical-align: middle
 					}
-				}
+				};
 			}
 		};
-		.btn-area {
-			flex: 1;
+		.notice-box {
 			background: #fff;
-			margin: 10px 0;
-			padding: 0 10px;
+			padding: 6px 16px;
 			box-sizing: border-box;
-			display: flex;
-			height: 62px;
-			align-items: center;
-			justify-content: flex-end;
-			>text {
-				min-width: 78px;
-				display: inline-block;
-				height: 26px;
-				padding: 0 12px;
-				box-sizing: border-box;
-				text-align: center;
-				line-height: 26px;
-				font-size: 13px;
-				color: #5E5E5E;
-				border: 1px solid #BBBBBB;
-				border-radius: 22px;
-				margin-right: 10px;
-				&:last-child {
-					margin-right: 0
+			.notice-title {
+				font-size: 14px;
+				color: #3E4248;
+				margin-bottom: 10px;
+			};
+			.notice-content {
+				.notice-list {
+					font-size: 12px;
+					color: #222222;
+					word-break: break-all;
+					margin-bottom: 4px;
 				}
 			}
 		}

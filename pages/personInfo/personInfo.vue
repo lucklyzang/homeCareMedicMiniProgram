@@ -290,6 +290,7 @@
 				flex: none !important;
 				.u-transition {
 					.u-popup__content {
+						width: 100%;
 						padding: 20px 10px;
 						box-sizing: border-box;
 						.help-center-title {

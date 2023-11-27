@@ -1,6 +1,101 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<!-- 筛选弹框 -->
+		<view class="screen-dialog-box">
+			<u-popup :show="screenDialogShow" @close="screenDialogShow = false" mode="right" :closeOnClickOverlay="false" :safeAreaInsetTop="true" :safeAreaInsetBottom="true">
+				<view class="screen-top">
+					<view class="service-category">
+						<view class="service-category-title">
+							<text>服务类别</text>
+						</view>
+						<view class="service-category-content">
+							<view class="service-category-list" :class="{'serviceCategoryListStyle': serviceCategoryIndex === index }" @click="serviceCategoryItemClickEvent(item,index)" v-for="(item,index) in serviceCategoryList" :key="index">
+								<text>{{ item.content }}</text>
+							</view>
+						</view>
+					</view>
+					<view class="service-category service-project">
+						<view class="service-category-title">
+							<text>服务项目</text>
+						</view>
+						<view class="service-category-content">
+							<view class="service-category-list" :class="{'serviceProjectListStyle': serviceProjectIndex === index }" @click="serviceProjectItemClickEvent(item,index)" v-for="(item,index) in serviceProjectList" :key="index">
+								<text>{{ item.content }}</text>
+							</view>
+						</view>
+					</view>
+					<view class="distance-section">
+						<view class="distance-section-title">
+							<text>距离区间 (km)</text>
+						</view>
+						<view class="distance-section-content">
+							<view class="distance-section-left">
+								<u--input
+									placeholderStyle="color:#BBBBBB;font-size:12px"
+									placeholder="自定义最近距离"
+									fontSize="12px"
+									color="#333"
+									type="number"
+									border="none"
+									v-model="minDistanceValue"
+								></u--input>
+							</view>
+							<view class="distance-section-center"></view>
+							<view class="distance-section-left distance-section-right">
+								<u--input
+									placeholderStyle="color:#BBBBBB;font-size:12px"
+									placeholder="自定义最远距离"
+									fontSize="12px"
+									color="#333"
+									type="number"
+									border="none"
+									v-model="maxDistanceValue"
+								></u--input>
+							</view>
+						</view>
+					</view>
+					<view class="distance-section price-section">
+						<view class="distance-section-title">
+							<text>价格区间 (元)</text>
+						</view>
+						<view class="distance-section-content">
+							<view class="distance-section-left">
+								<u--input
+									placeholderStyle="color:#BBBBBB;font-size:12px"
+									placeholder="自定义最低价格"
+									fontSize="12px"
+									color="#333"
+									type="number"
+									border="none"
+									v-model="minPriceValue"
+								></u--input>
+							</view>
+							<view class="distance-section-center"></view>
+							<view class="distance-section-left distance-section-right">
+								<u--input
+									placeholderStyle="color:#BBBBBB;font-size:12px"
+									placeholder="自定义最高价格"
+									fontSize="12px"
+									color="#333"
+									type="number"
+									border="none"
+									v-model="maxPriceValue"
+								></u--input>
+							</view>
+						</view>
+					</view>
+				</view>
+				<view class="screen-bottom">
+					<view class="screen-bottom-left" @click="screenResetEvent">
+						<text>重置</text>
+					</view>
+					<view class="screen-bottom-right" @click="screenSureEvent">
+						<text>确定</text>
+					</view>
+				</view>
+			</u-popup>
+		</view>
 		<!-- 报警弹框 -->
 		<view class="call-police-dialog-box">
 			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
@@ -36,11 +131,53 @@
 					<text>去认证</text>
 				</view>
 			</view>
+			<view class="select-box">
+				<view class="smart-sort">
+					<w-select
+							style="margin-left:10px;" 
+							v-model='smartSortValue'
+							defaultValue="智能排序"
+							:list='smartSortList'
+							valueName='content' 
+							keyName="id"
+							@change='smartSortChange'
+						>
+					</w-select>
+				</view>
+				<view class="service-category">
+					<w-select
+							style="margin-left:10px;"
+							:multiple="true"
+							v-model='serviceCategoryValue'
+							defaultValue="服务类别"
+							:list='serviceCategoryList'
+							valueName='content' 
+							keyName="id"
+							@change='serviceCategoryChange'
+						>
+					</w-select>
+				</view>
+				<view class="service-project">
+					<w-select
+							style="margin-left:10px;" 
+							:multiple="true"
+							v-model='serviceProjectValue'
+							defaultValue="服务项目"
+							:list='serviceProjectList'
+							valueName='content' 
+							keyName="id"
+							@change='serviceProjectChange'
+						>
+					</w-select>
+				</view>
+				<view class="screen-box" @click="screenEvent">
+					<text>筛选</text>
+					<text  :class="isShowScreenIcon ? 'w-select-arrow-up' : ''" class="w-select-arrow">
+					</text>
+				</view>
+			</view>
 			<view class="real-time-order-form-title-box">
 				<text>实时订单</text>
-			</view>
-			<view class="select-box">
-				
 			</view>
 			<view class="real-time-order-form-list-box">
 				<view class="real-time-order-form-list">
@@ -105,16 +242,75 @@
 	} from 'vuex'
 	import { getUserBannerList } from '@/api/user.js'
 	import _ from 'lodash'
+	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
 		components: {
+			wSelect
 		},
 		data() {
 			return {
 				infoText: '',
 				bannerList: [],
 				callPoliceDialogShow: false,
+				isShowScreenIcon: false,
+				screenDialogShow: false,
 				showLoadingHint: false,
-				isShowHomeNoData: false
+				isShowHomeNoData: false,
+				serviceCategoryIndex: null,
+				serviceProjectIndex: null,
+				minDistanceValue: '',
+				maxDistanceValue: '',
+				minPriceValue: '',
+				maxPriceValue: '',
+				smartSortValue: "",
+				smartSortList: [
+					{
+						id: 1,
+						content: '距离优先'
+					}, 
+					{
+						id: 2,
+						content: '价格优先'
+					}
+				],
+				serviceCategoryValue: [],
+				serviceCategoryList: [
+					{
+						id: 1,
+						content: '目婴护理'
+					}, 
+					{
+						id: 2,
+						content: '宝宝护理'
+					},
+					{
+						id: 3,
+						content: '慢病护理'
+					}, 
+					{
+						id: 4,
+						content: '基本护理'
+					}
+				],
+				serviceProjectValue: [],
+				serviceProjectList: [
+					{
+						id: 1,
+						content: '打针'
+					}, 
+					{
+						id: 2,
+						content: '喂奶'
+					},
+					{
+						id: 3,
+						content: '通乳'
+					}, 
+					{
+						id: 4,
+						content: '洗澡'
+					}
+				]
 			}
 		},	
 		onShow() {
@@ -146,6 +342,53 @@
 				uni.navigateTo({
 					url: '/messagePackage/pages/advertisingDetails/advertisingDetails'
 				})
+			},
+			
+			// 服务类别点击事件
+			serviceCategoryItemClickEvent (item,index) {
+				this.serviceCategoryIndex = index
+			},
+			
+			// 服务项目点击事件
+			serviceProjectItemClickEvent (item,index) {
+				this.serviceProjectIndex = index
+			},
+			
+			// 筛选弹框显示事件
+			screenEvent () {
+				this.screenDialogShow = !this.screenDialogShow;
+				if (this.screenDialogShow) {
+					this.isShowScreenIcon = true
+				} else {
+					this.isShowScreenIcon = false
+				}
+			},
+			
+			// 筛选重置事件
+			screenResetEvent () {
+				this.screenDialogShow = false;
+				this.isShowScreenIcon = false
+			},
+			
+			// 筛选确定事件
+			screenSureEvent () {
+				this.screenDialogShow = false;
+				this.isShowScreenIcon = false
+			},
+			
+			// 智能排序下拉框值改变事件
+			smartSortChange(e) {
+				console.log(e)
+			},
+			
+			// 服务类别下拉框值改变事件
+			serviceCategoryChange(e) {
+				console.log(e)
+			},
+			
+			// 服务项目下拉框值改变事件
+			serviceProjectChange(e) {
+				console.log(e)
 			},
 			
 			// 获取首页banner列表
@@ -196,6 +439,124 @@
 		padding-bottom: 0;
 		::v-deep .u-popup {
 			flex: none !important;
+		};
+		.screen-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					width: 80%;
+					.u-popup__content {
+						padding: 20px;
+						.screen-top {
+							flex: 1;
+							overflow: auto;
+							.service-category {
+								margin-bottom: 14px;
+								.service-category-title {
+									font-size: 12px;
+									color: #666666;
+									margin-bottom: 10px;
+								};
+								.service-category-content {
+									display: flex;
+									flex-wrap: wrap;
+									.service-category-list {
+										display: flex;
+										align-items: center;
+										justify-content: center;
+										margin: 0 10px 10px 0;
+										background: #EEEEEE;
+										border-radius: 4px;
+										padding: 4px 10px;
+										box-sizing: border-box;
+										font-size: 12px;
+										color: #333333;
+									};
+									.serviceCategoryListStyle {
+										background: rgba(80, 100, 235, 0.65) !important;
+										color: #fff;
+									}
+								}
+							};
+							.service-project {
+								margin-bottom: 14px;
+								.service-category-list {
+									padding: 4px 20px !important;
+								};
+								.service-category-content {
+									.serviceProjectListStyle {
+										background: rgba(80, 100, 235, 0.65) !important;
+										color: #fff;
+									}
+								}
+							};
+							.distance-section {
+								margin-bottom: 20px;
+								.distance-section-title {
+									font-size: 12px;
+									color: #666666;
+									margin-bottom: 10px;
+								};
+								.distance-section-content {
+									display: flex;
+									align-items: center;
+									.distance-section-left {
+										.u-input {
+											background: #F1F1F1 !important;
+											border-radius: 20px !important;
+											padding: 0 10px !important;
+											box-sizing: border-box !important;
+										}
+									};
+									.distance-section-center {
+										width: 24px;
+										height: 1px;
+										background: #BBBBBB;
+										margin: 0 10px;
+									}
+								}
+							};
+							.price-section {
+								margin-bottom: 0 !important
+							}
+						};
+						.screen-bottom {
+							width: 100%;
+							height: 80px;
+							display: flex;
+							align-items: flex-end;
+							justify-content: flex-end;
+							.screen-bottom-left {
+								height: 34px;
+								width: 95px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								border-top-left-radius: 20px;
+								border-bottom-left-radius: 20px;
+								font-size: 17px;
+								color: #5064EB;
+								border: 1px solid #5064EB;
+								box-sizing: border-box;
+								font-weight: bold
+							};
+							.screen-bottom-right {
+								height: 34px;
+								width: 95px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								border-top-right-radius: 20px;
+								border-bottom-right-radius: 20px;
+								background: #5064EB;
+								font-size: 17px;
+								color: #fff;
+								font-weight: bold
+							}
+						}
+					}
+				}
+			}	
 		};
 		.call-police-dialog-box {
 			::v-deep .u-popup {
@@ -314,10 +675,70 @@
 					}
 				}
 			};
+			.select-box {
+				display: flex;
+				>view {
+					flex: 1;
+					width: 25%;
+					display: flex;
+					align-content: center;
+					::v-deep .w-select {
+						.select-wrap {
+							border: none !important;
+							width: 100% !important;
+							input {
+								color: #454A58 !important;
+								font-size: 12px !important
+							};
+							.input-placeholder {
+								color: #454A58;
+								font-size: 12px;
+							};
+							.uni-input {
+								color: #454A58 !important;
+								font-size: 12px !important
+							}
+						}
+					}
+				};
+				.screen-box {
+					margin-left: 10px;
+					display: flex;
+					align-items: center;
+					>text {
+						display: inline-block;
+						&:first-child {
+							font-size: 12px;
+							color: #454A58;
+							flex: 1
+						}
+					};
+					.w-select-arrow {
+						display: inline-block;
+						margin: 3px 10px 0;
+						width: 0;
+						height: 0;
+						border: 5px solid transparent;
+						border-top-color: #60646F;
+						transition: all 0.3s;
+						transform: translateY(20%);
+					}
+					.w-select-arrow-up {
+						 display: inline-block;
+						 margin: 3px 10px 0;
+						 width: 0;
+						 height: 0;
+						 border: 5px solid transparent;
+						 border-bottom-color: #60646F;
+						 transition: all 0.3s;
+						 transform: translateY(20%);
+					}
+				}
+			};
 			.real-time-order-form-title-box {
 				padding: 0 10px;
 				box-sizing: border-box;
-				margin-bottom: 10px;
+				margin: 10px 0;
 				text {
 					font-size: 14px;
 					color: #101010

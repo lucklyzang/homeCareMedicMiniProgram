@@ -55,13 +55,14 @@
 				<nav-bar :home="false" backState='2000' bgColor="none" title="我的订单">
 				</nav-bar> 
 		  </view>
+			<image :src="loginBackgroundPng"></image>
 		</view>
 		<view class="order-form-tabs">
 			<u-tabs :list="list" :current="current" @change="change"
 				lineWidth="50"
-				lineColor="#FF698C"
+				lineColor="#5064EB"
 				:activeStyle="{
-					color: '#FF698C'
+					color: '#5064EB'
 				}"
 				:inactiveStyle="{
 					color: '#444444'
@@ -70,122 +71,13 @@
 		</view>
 		<view class="order-form-list-wrapper" v-show="current == 0">
 			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>待付款</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-left">
-						<text>剩余支付时间:</text>
-						<text>14:59</text>
-					</view>
-					<view class="consumption-rental-right">
-						<text>待付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-left">
-						<text>联系护士</text>
-					</view>
-					<view class="btn-area-right">
-						<text>取消订单</text>
-						<text @click="editOrderFormEvent">修改订单</text>
-						<text class="at-once-payment">立即付款</text>
-					</view>
-				</view>
-			</view>
-		</view>
-		<view class="order-form-list-wrapper" v-show="current == 1">
-			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>待付款</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-left">
-						<text>剩余支付时间:</text>
-						<text>14:59</text>
-					</view>
-					<view class="consumption-rental-right">
-						<text>待付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text @click="remindSendOrdersEvent">提醒派单</text>
-						<text>修改订单</text>
-						<text class="at-once-payment">立即付款</text>
-					</view>
-				</view>
-			</view>
-		</view>
-		<view class="order-form-list-wrapper" v-show="current == 2">
-			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
 			<view class="order-form-list" @click="enterOrderDetailsEvent">
 				<view class="order-form-top">
 					<view class="order-form-title">
 						<text>婴儿全身按摩</text>
 					</view>
 					<view class="order-form-status">
-						<text>派单中</text>
+						<text>待接单</text>
 					</view>
 				</view>
 				<view class="order-form-center">
@@ -212,68 +104,28 @@
 					</view>
 				</view>
 				<view class="consumption-rental">
+					<view class="consumption-rental-left">
+						<text>申请时间:</text>
+						<text>2023-05-45 12:23:45</text>
+					</view>
 					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text>取消订单</text>
-						<text>提醒派单</text>
-					</view>
-				</view>
-			</view>
-		</view>
-		<view class="order-form-list-wrapper" v-show="current == 3">
-			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>待出发</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
+						<text>￥:</text>
 						<text>￥998.00</text>
 					</view>
 				</view>
 				<view class="order-form-bottom">
 					<view class="btn-area-left">
-						<text>联系护士</text>
+						<text>联系被护人</text>
 					</view>
 					<view class="btn-area-right">
-						<text>取消订单</text>
+						<text>拒绝订单</text>
+						<text class="accept-payment">接受订单</text>
 					</view>
 				</view>
 			</view>
+		</view>
+		<view class="order-form-list-wrapper" v-show="current == 1">
+			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
 			<view class="order-form-list">
 				<view class="order-form-top">
 					<view class="order-form-title">
@@ -307,246 +159,73 @@
 					</view>
 				</view>
 				<view class="consumption-rental">
+					<view class="consumption-rental-left">
+						<text>申请时间:</text>
+						<text>2023-05-45 12:23:45</text>
+					</view>
 					<view class="consumption-rental-right">
-						<text>实付总额:</text>
+						<text>￥:</text>
 						<text>￥998.00</text>
 					</view>
 				</view>
 				<view class="order-form-bottom">
 					<view class="btn-area-left">
-						<text>联系护士</text>
+						<text>联系被护人</text>
 					</view>
+					<view class="btn-area-right">
+						<text class="accept-payment">开始服务</text>
+					</view>
+				</view>
+			</view>
+		</view>
+		<view class="order-form-list-wrapper" v-show="current == 2">
+			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
+			<view class="order-form-list">
+				<view class="order-form-top">
+					<view class="order-form-title">
+						<text>婴儿全身按摩</text>
+					</view>
+					<view class="order-form-status">
+						<text class="completeStyle">已完成</text>
+					</view>
+				</view>
+				<view class="order-form-center">
+					<view class="order-form-center-left">
+						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+							 <template v-slot:loading>
+							    <u-loading-icon color="red"></u-loading-icon>
+							  </template>
+						</u-image>
+					</view>
+					<view class="order-form-center-right">
+						<view class="brotected-person">
+							<text>被护人</text>
+							<text>燕双鹰 26岁</text>
+						</view>
+						<view class="service-address">
+							<text>服务地址</text>
+							<text>环球中心一号楼2单元403</text>
+						</view>
+						<view class="expectation-date">
+							<text>期望时间</text>
+							<text>06月14日 (星期二) 上午8：00-9：00</text>
+						</view>
+					</view>
+				</view>
+				<view class="consumption-rental">
+					<view class="consumption-rental-left">
+						<text>申请时间:</text>
+						<text>2023-05-45 12:23:45</text>
+					</view>
+					<view class="consumption-rental-right">
+						<text>￥:</text>
+						<text>￥998.00</text>
+					</view>
+				</view>
+				<view class="order-form-bottom">
 					<view class="btn-area-right">
 						<text>取消订单</text>
-					</view>
-				</view>
-			</view>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>服务中</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-left">
-						<text>联系护士</text>
-					</view>
-				</view>
-			</view>
-		</view>
-		<view class="order-form-list-wrapper" v-show="current == 4">
-			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>待评价</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text>再次预约</text>
-						<text class="evaluate" @click="orderFormEvaluateEvent">评价</text>
-					</view>
-				</view>
-			</view>
-		</view>
-		<view class="order-form-list-wrapper" v-show="current == 5">
-			<u-empty text="暂无订单" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="order-form-list" @click="enterOrderDetailsEventOther">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>已退款</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text>删除订单</text>
-						<text>再次预约</text>
-					</view>
-				</view>
-			</view>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>已取消</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text>删除订单</text>
-						<text>再次预约</text>
-					</view>
-				</view>
-			</view>
-			<view class="order-form-list">
-				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>退款中</text>
-					</view>
-				</view>
-				<view class="order-form-center">
-					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
-							 <template v-slot:loading>
-							    <u-loading-icon color="red"></u-loading-icon>
-							  </template>
-						</u-image>
-					</view>
-					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
-						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
-						</view>
-					</view>
-				</view>
-				<view class="consumption-rental">
-					<view class="consumption-rental-right">
-						<text>实付总额:</text>
-						<text>￥998.00</text>
-					</view>
-				</view>
-				<view class="order-form-bottom">
-					<view class="btn-area-right">
-						<text>再次预约</text>
+						<text class="at-once-payment">查看详情</text>
 					</view>
 				</view>
 			</view>
@@ -571,6 +250,7 @@
 		data() {
 			return {
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
+				loginBackgroundPng: require("@/static/img/login-background.png"),
 				infoText: '',
 				showLoadingHint: false,
 				deleteShow: false,
@@ -585,28 +265,13 @@
 				isShowNoData: false,
 				list: [
 					{
-						name: '全部',
-						badge: {
-							value: 5
-						}
-					}, 
-					{
-						name: '待付款'
-					}, 
-					{
-						name: '派单中',
-						badge: {
-							value: 90
-						}
+						name: '待处理',
 					},
 					{
 						name: '服务中',
 					},
 					{
-						name: '待评价'
-					},
-					{
-						name: '取消|退款'
+						name: '全部',
 					}
 				],
 				current: 0
@@ -632,53 +297,10 @@
 				this.current = index.index
 			},
 			
-			// 提醒派单事件
-			remindSendOrdersEvent () {
-				this.remindSendOrdersShow = true
-			},
-			
-			// 订单评价事件
-			orderFormEvaluateEvent () {
-				uni.navigateTo({
-					url: '/orderFormPackage/pages/serviceEvaluate/serviceEvaluate'
-				})
-			},
-			
-			// 修改订单事件
-			editOrderFormEvent () {
-				uni.navigateTo({
-					url: '/orderFormPackage/pages/orderFormEdit/orderFormEdit'
-				})
-			},
-			
 			// 订单详情点击事件
 			enterOrderDetailsEvent () {
-				// 派单中
-				// uni.navigateTo({
-				// 	url: '/orderFormPackage/pages/orderForm/index/index'
-				// })
-				// 已完成
 				uni.navigateTo({
-					url: '/orderFormPackage/pages/orderFormComplete/orderFormComplete'
-				})
-				// 待付款
-				// uni.navigateTo({
-				// 	url: '/orderFormPackage/pages/orderFormStayPayment/orderFormStayPayment'
-				// });
-				// 服务中
-				// uni.navigateTo({
-				// 	url: '/orderFormPackage/pages/orderFormInService/orderFormInService'
-				// });
-				// 待评价
-				// uni.navigateTo({
-				// 	url: '/orderFormPackage/pages/orderFormStayEvaluate/orderFormStayEvaluate'
-				// })
-			},
-			
-			// 订单详情点击事件(取消|退款)
-			enterOrderDetailsEventOther () {
-				uni.navigateTo({
-					url: '/orderFormPackage/pages/orderFormCancelOrRefund/orderFormCancelOrRefund'
+					url: '/orderFormPackage/pages/orderForm/index/index'
 				})
 			}
 		}
@@ -815,12 +437,19 @@
 				top: 0;
 				left: 0;
 				.header_title_center {
-					color: #101010 !important;
+					color: #fff !important;
 					text {
-						color: #101010 !important;
+						color: #fff !important;
 					}
 				}
-			}
+			};
+			> image {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100px
+			};
 		};
 		.order-form-tabs {
 			box-shadow: 0 2px 6px 0 rgba(202, 200, 200, 0.4);
@@ -829,24 +458,7 @@
 				.u-tabs__wrapper__scroll-view {
 					.u-tabs__wrapper__nav__item {
 						position: relative;
-						.u-badge {
-							position: absolute;
-							top: 0;
-							right: -6px;
-							background: #fff !important;
-							border: 1px solid #D84959;
-							color: #D84959 !important;
-							width: 16px !important;
-							height: 16px !important;
-							border-radius: 50%;
-							display: inline-block;
-							text-align: center;
-							line-height: 16px;
-							@include no-wrap
-						};
-						.u-badge--not-dot {
-							padding: 0 !important
-						}
+						flex: 1;
 					}
 				}
 			}
@@ -895,8 +507,14 @@
 							padding: 0 0 0 4px;
 							box-sizing: border-box;
 							font-size: 14px;
-							color: #444444;
+							color: #E86F50;
 							font-weight: bold
+						};
+						.serviceStyle {
+							color: #289E8E !important
+						};
+						.completeStyle {
+							color: #020202 !important
 						}
 					}
 				};
@@ -927,7 +545,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -946,7 +564,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -965,7 +583,7 @@
 								};
 								&:nth-child(2) {
 									flex: 1;
-									color: #F16C8C;
+									color: #5064EB;
 									word-break: break-all
 								}
 							}
@@ -982,8 +600,7 @@
 						>text {
 							display: inline-block;
 							font-size: 13px;
-							font-weight: bold;
-							color: #FF0000;
+							color: #505050;
 							&:nth-child(1) {
 								margin-right: 4px
 							};
@@ -999,12 +616,13 @@
 						>text {
 							display: inline-block;
 							font-size: 12px;
+							color: #505050;
 							&:nth-child(1) {
-								color: #777777;
+								color: #5C5C5C;
 								margin-right: 4px;
 							};
 							&:nth-child(2) {
-								color: #F16C8C;
+								color: #E82050;
 								font-weight: bold;
 								word-break: break-all
 							}
@@ -1055,21 +673,9 @@
 								margin-right: 0
 							}
 						};
-						.at-once-payment {
+						.accept-payment {
 							color: #fff;
-							background: #FF698C;
-							border: none !important;
-							margin-right: 0 !important;
-						};
-						.complete-service {
-							color: #fff;
-							background: #FF698C;
-							border: none !important;
-							margin-right: 0 !important;
-						};
-						.evaluate {
-							color: #fff;
-							background: #FF698C;
+							background: #1983FD;
 							border: none !important;
 							margin-right: 0 !important;
 						}

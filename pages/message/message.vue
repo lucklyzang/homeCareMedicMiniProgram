@@ -7,6 +7,12 @@
 				<nav-bar :home="false" backState='2000' bgColor="none" title="消息">
 				</nav-bar> 
 		  </view>
+			<image :src="loginBackgroundPng"></image>
+			<view class="tab-box">
+				<view class="tab-item" :class="{'tabItemStyle': tabIndex == index}" v-for="(item,index) in tabList" :key="index" @click="tabCutEvent(item,index)">
+					<text>{{ item }}</text>
+				</view>
+			</view>
 		</view>
 		<view class="message-list-wrapper">
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
@@ -89,8 +95,11 @@
 		data() {
 			return {
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
+				loginBackgroundPng: require("@/static/img/login-background.png"),
 				infoText: '',
 				showLoadingHint: false,
+				tabIndex: 0,
+				tabList: ['聊天消息','系统消息'],
 				isShowNoData: false
 			}
 		},
@@ -108,6 +117,11 @@
 		methods: {
 			...mapMutations([
 			]),
+			
+			// tab切换事件
+			tabCutEvent (item,index) {
+				this.tabIndex = index
+			},
 			
 			// 进入消息列表事件
 			enterMessageListEvent () {
@@ -130,7 +144,7 @@
 		.top-area-box {
 			position: relative;
 			width: 100%;
-			height: 100px;
+			height: 130px;
 			::v-deep .nav {
 				width: 100%;
 				background: #fff;
@@ -138,18 +152,55 @@
 				top: 0;
 				left: 0;
 				.header_title_center {
-					color: #101010 !important;
+					color: #fff !important;
 					text {
-						color: #101010 !important;
+						color: #fff !important;
 					}
 				}
-			}
+			};
+			.tab-box {
+				position: absolute;
+				bottom: -1px;
+				left: 0;
+				width: 100%;
+				height: 30px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				.tab-item {
+					width: 100px;
+					height: 30px;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					font-size: 14px;
+					color: #FFFFFF;
+					margin-right: 10px;
+					&:last-child {
+						margin-right: 0 !important
+					}
+				};
+				.tabItemStyle {
+					color: #5064EB !important;
+					background: #fff !important;
+					border-top-left-radius: 7px !important;
+					border-top-right-radius: 7px !important;
+				}
+			};
+			> image {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 130px
+			};
 		};
 		.message-list-wrapper {
 			width: 100%;
 			flex: 1;
 			overflow: auto;
 			position: relative;
+			margin-top: 10px;
 			::v-deep .u-empty {
 				position: absolute;
 				top: 50%;
