@@ -36,6 +36,16 @@
 						<text>2023-09-12 14:23:23</text>
 					</view>
 				</view>
+				<view class="btn-area">
+					<text>完成服务</text>
+					<text>14:23:23</text>
+				</view>
+				<view class="bottom-info-area">
+					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
+					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
+					<text>已进入服务范围</text>
+					<text>重新定位</text>
+				</view>
 			</u-popup>
 		</view>
 		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
@@ -305,6 +315,50 @@
 							.accept-order-date-content {
 								font-size: 14px;
 								color: #101010
+							}
+						};
+						.btn-area {
+							width: 118px;
+							height: 108px;
+							margin: 0 auto;
+							margin-top: 10px;
+							margin-bottom: 20px;
+							border-radius: 50%;
+							background: #5064EB;
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+							justify-content: center;
+							color: #fff;
+							font-size: 18px;
+							>text {
+								&:nth-child(2) {
+									margin-top: 6px;
+									font-size: 12px;
+								}
+							}
+						};
+						.bottom-info-area {
+							text-align: center;
+							>image {
+								width: 24px;
+								height: 24px;
+								vertical-align: middle;
+								&:nth-child(2) {
+									margin-left: 6px;
+									margin-right: 4px;
+								}
+							};
+							text {
+								vertical-align: middle;
+								&:nth-of-type(1) {
+									color: #101010;
+									font-size: 14px;
+								};
+								&:nth-of-type(2) {
+									color: #4095E5;
+									font-size: 14px;
+								}
 							}
 						}
 					}

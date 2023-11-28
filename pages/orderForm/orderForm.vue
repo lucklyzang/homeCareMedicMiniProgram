@@ -1,52 +1,63 @@
 <template>
 	<view class="content-box">
-		<!-- 删除订单提示 -->
-		<view class="delete-info">
-			<u-modal :show="deleteShow" @confirm="deleteShow=false" @cancel="deleteShow=false" confirmText="确定" cancelColor="#838C97" confirmColor="#EB3E67" :content="deleteInfoContent" :showCancelButton="true" title="是否删除订单">
-			</u-modal>
-		</view>
-		<!-- 取消订单提示 -->
-		<view class="cancel-info">
-			<u-modal :show="cancelOrderFormShow" @cancel="cancelOrderFormShow=false" @confirm="cancelOrderFormShow=false" confirmText="确定" cancelColor="#838C97" confirmColor="#EB3E67" :showCancelButton="true" title="取消订单">
-				<view class="slot-content">
-					为保障医护因无效订单而错过有效接单，每日最多取消3次，超过3次后当日不可再发布订单，请谅解。<br/>
-					今日剩余 3 次，确认取消订单吗？
+		<!-- 拒绝订单原因弹框 -->
+		<view class="refuse-order-form-dialog-box">
+			<u-popup :show="refuseOrderFormDialogShow" @close="refuseOrderFormDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="top-title">
+					<text>选择拒绝原因</text>
 				</view>
-			</u-modal>
-		</view>
-		<!-- 申请退款提示 -->
-		<view class="apply-refund-info">
-			<u-modal :show="applyRefundShow" @confirm="applyRefundShow=false" @cancel="applyRefundShow=false" confirmText="确定" cancelColor="#838C97" confirmColor="#EB3E67" :showCancelButton="true" title="申请退款">
-				<view class="slot-content">
-					<u-textarea height="100" v-model="refundReason" placeholder="请填写申请退款理由" count ></u-textarea>
+				<view class="center-content">
+					 <u-checkbox-group
+							v-model="checkReasonValue"
+							placement="column"
+							@change="checkboxReasonChange"
+						>
+							<u-checkbox
+								:customStyle="{marginBottom: '8px'}"
+								v-for="(item, index) in checkboxReasonList"
+								:key="index"
+								:label="item.name"
+								:name="item.name"
+							>
+							</u-checkbox>
+					</u-checkbox-group>
 				</view>
-			</u-modal>
-		</view>
-		<!-- 退出支付提示 -->
-		<view class="quit-pay-info">
-			<u-modal :show="quitPayShow" @confirm="quitPayShow=false" :buttonReverse="true" @cancel="quitPayShow=false" confirmText="确定" cancelText="取消" cancelColor="#838C97" confirmColor="#EB3E67" :showCancelButton="true" title="当前订单还未支付">
-				<view class="slot-content">
-					确定退出支付吗？
-				</view>
-			</u-modal>
-		</view>
-		<!-- 操作订单成功提示 -->
-		<view class="have-delete-info">
-			<u-modal :show="haveDeleteShow" @confirm="haveDeleteShow=false" confirmText="确定" confirmColor="#EB3E67" :content="haveDeleteInfoContent" title="">
-			</u-modal>
-		</view>
-		<!-- 提醒派单提示 -->
-		<view class="remind-send-orders-info">
-			<u-modal :show="remindSendOrdersShow" @confirm="remindSendOrdersShow=false" confirmText="确定" confirmColor="#EB3E67">
-				<view class="slot-content">
-					<view>
-						已提醒派单
+				<view class="bottom-btn">
+					<view class="sure-btn" @click="sureRefuseEvent">
+						<text>确定</text>
 					</view>
-					<view>
-						三分钟前已提醒了
+					<view class="cancel-btn" @click="refuseOrderFormDialogShow = false">
+						<text>取消</text>
 					</view>
 				</view>
-			</u-modal>
+			</u-popup>
+		</view>
+		<!-- 拒绝成功弹框 -->
+		<view class="refuse-order-form-success-dialog-box">
+			<u-popup :show="refuseOrderFormSuccessDialogShow" @close="refuseOrderFormSuccessDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<image src="@/static/img/refuse-order-form-success.png"></image>
+				<view class="operation-success-title">
+					<text>操作成功</text>
+				</view>
+				<view class="operation-success-content">
+					<text>已成功拒绝订单，请到详情中查看</text>
+				</view>
+				<view class="operation-success-btn" @click="refuseOrderFormSuccessDialogShow = false">
+					<text>确定</text>
+				</view>
+			</u-popup>
+		</view>
+		<!-- 接单成功弹框 -->
+		<view class="accept-order-form-success-dialog-box">
+			<u-popup :show="acceptOrderFormSuccessDialogShow" @close="acceptOrderFormSuccessDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<image src="@/static/img/accept-order-form-success.png"></image>
+				<view class="accept-success-title">
+					<text>接单成功</text>
+				</view>
+				<view class="operation-success-btn" @click="acceptOrderFormSuccessDialogShow = false">
+					<text>确定</text>
+				</view>
+			</u-popup>
 		</view>
 		<u-toast ref="uToast" />
 		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
@@ -118,8 +129,8 @@
 						<text>联系被护人</text>
 					</view>
 					<view class="btn-area-right">
-						<text>拒绝订单</text>
-						<text class="accept-payment">接受订单</text>
+						<text @click.stop="refuseOrderFormEvent">拒绝订单</text>
+						<text class="accept-payment" @click.stop="acceptOrderFormEvent">接受订单</text>
 					</view>
 				</view>
 			</view>
@@ -259,10 +270,28 @@
 				quitPayShow: false,
 				applyRefundShow: false,
 				remindSendOrdersShow: false,
+				refuseOrderFormDialogShow: false,
+				refuseOrderFormSuccessDialogShow: false,
+				acceptOrderFormSuccessDialogShow: false,
+				checkReasonValue: [],
 				refundReason: '',
 				deleteInfoContent: '删除订单不可恢复，如有疑问请联系客服人员资讯',
 				haveDeleteInfoContent: '已删除订单',
 				isShowNoData: false,
+				checkboxReasonList: [
+					{
+						name: '专业知识太强做不到',
+						disabled: false
+					},
+					{
+						name: '距离太远时间来不及了',
+						disabled: false
+					},
+					{
+						name: '晚上有约会',
+						disabled: false
+					}
+				],
 				list: [
 					{
 						name: '待处理',
@@ -297,6 +326,27 @@
 				this.current = index.index
 			},
 			
+			// 选择原因弹框值变化事件
+			checkboxReasonChange (n) {
+				console.log('change', n);
+			},
+			
+			// 拒绝订单事件
+			refuseOrderFormEvent () {
+				this.refuseOrderFormDialogShow = true
+			},
+			
+			// 接受订单事件
+			acceptOrderFormEvent () {
+				this.acceptOrderFormSuccessDialogShow = true
+			},
+			
+			// 确定拒绝事件
+			sureRefuseEvent () {
+				this.refuseOrderFormDialogShow = false;
+				this.refuseOrderFormSuccessDialogShow = true
+			},
+			
 			// 订单详情点击事件
 			enterOrderDetailsEvent () {
 				uni.navigateTo({
@@ -314,116 +364,156 @@
 		height: 100%;
 	};
 	.content-box {
-		::v-deep .u-popup__content{
-			.u-modal {
-				.u-modal__title {
-					font-size: 16px !important;
-					color: #101010 !important
-				};
-				.u-line {
-					border: none !important
-				};
-				.u-modal__content {
-					padding: 20px 10px 30px 10px !important;
-					font-size: 14px !important;
-					color: #898C8C !important
-				};
-				.u-modal__button-group {
-					height: 50px;
-					justify-content: center;
-					.u-line {
-						border: none !important
-					};
-					.u-modal__button-group__wrapper--cancel {
-						flex: none !important;
-						width: 100px !important;
-						height: 34px !important;
-						line-height: 34px !important;
-						border-radius: 7px !important;
-						border: 1px solid #FF698C !important;
-						.u-modal__button-group__wrapper__text {
-							font-size: 14px;
-							color: #FF698C !important;
-						}
-					};
-					.u-modal__button-group__wrapper--confirm {
-						flex: none !important;
-						width: 100px !important;
-						height: 34px !important;
-						line-height: 34px !important;
-						border-radius: 7px !important;
-						margin-right: 30px;
-						background: #FF698C !important;
-						border: none !important;
-						.u-modal__button-group__wrapper__text {
-							font-size: 14px;
-							color: #fff !important;
-						}
-					}
-				}
-			}
-		};
-		.apply-refund-info {
-			::v-deep .u-transition {
-				.u-popup__content {
-					.u-modal {
-						.slot-content {
-							width: 280px
-						}
-					}
-				}
-			}
-		};
-		.have-delete-info {
-			::v-deep .u-transition {
-				.u-popup__content {
-					.u-modal {
-						.u-modal__content {
-							padding: 40px 10px !important;
-							box-sizing: border-box;
-							.u-modal__content__text {
-								font-size: 18px !important;
-								color: #101010 !important;
-								text-align: center !important
+		.refuse-order-form-success-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
 							}
 						};
-						.u-modal__button-group {
-							.u-modal__button-group__wrapper--confirm {
-								margin-left: 0 !important
-							}
+						image {
+							width: 78px;
+							height: 78px;
+							margin: 0 auto;
+							margin-top: 50px;
+							margin-bottom: 30px;
+						};
+						.operation-success-title {
+							text-align: center;
+							font-size: 18px;
+							color: #101010
+						};
+						.operation-success-content {
+							text-align: center;
+							font-size: 14px;
+							color: #A0A0A0;
+							margin: 20px 0
+						};
+						.operation-success-btn {
+							width: 90%;
+							margin: 0 auto;
+							margin-bottom: 30px;
+							height: 44px;
+							border-radius: 8px;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							background: #4263EB;
+							font-size: 16px;
+							color: #fff;
+							margin-bottom: 50px
 						}
 					}
 				}
-			}
+			}	
 		};
-		.remind-send-orders-info {
-			::v-deep .u-transition {
-				.u-popup__content {
-					.u-modal {
-						.u-modal__content {
-							padding: 40px 10px !important;
-							box-sizing: border-box;
-							.slot-content {
-								>view {
-									text-align: center;
-									font-size: 18px !important;
-									color: #101010 !important;
-									&:first-child {
-										margin-bottom: 6px
-									}
-								}
+		.accept-order-form-success-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
 							}
 						};
-						.u-modal__button-group {
-							.u-modal__button-group__wrapper--confirm {
-								border-radius: 37px !important;
-								margin-left: 0 !important;
-								background: #EB3E67 !important
+						image {
+							width: 100px;
+							height: 100px;
+							margin: 0 auto;
+							margin-top: 50px;
+							margin-bottom: 30px;
+						};
+						.accept-success-title {
+							text-align: center;
+							font-size: 18px;
+							color: #101010;
+							margin-bottom: 30px;
+						};
+						.operation-success-btn {
+							width: 90%;
+							margin: 0 auto;
+							margin-bottom: 30px;
+							height: 44px;
+							border-radius: 8px;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							background: #4263EB;
+							font-size: 16px;
+							color: #fff;
+							margin-bottom: 50px
+						}
+					}
+				}
+			}	
+		};
+		.refuse-order-form-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						.top-title {
+							font-size: 18px;
+							color: #101010;
+							height: 40px;
+							display: flex;
+							justify-content: center;
+							align-items: center
+						};
+						.center-content {
+							margin: 20px 0
+						};
+						.bottom-btn {
+							.sure-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								border-radius: 8px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								background: #4263EB;
+								font-size: 16px;
+								color: #fff;
+								margin-bottom: 10px
+							};
+							.cancel-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								border-radius: 8px;
+								border: 1px solid #D0D5DD;
+								font-size: 16px;
+								color: #585B60
 							}
 						}
 					}
 				}
-			}
+			}	
 		};
 		@include content-wrapper;
 		.top-area-box {
