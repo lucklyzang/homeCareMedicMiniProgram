@@ -61,7 +61,7 @@
 						<text>已认证</text>
 					</view>
 				</view>
-				<view class="qr-code">
+				<view class="qr-code" @click="qrCodeClickEvent">
 					<image :src="qrCodeIconPng"></image>
 				</view>
 			</view>
@@ -243,34 +243,19 @@
 				this.showSupportStaffBox = false
 			},
 			
+			// 二维码点击事件
+			qrCodeClickEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/myQRcode/myQRcode'
+				})
+			},
+			
 			//底部功能区点击事件
 			bottomFunctionClickEvent (name) {
-				if (name == '我的医护') {
+				if (name == '关于我们') {
 					uni.navigateTo({
-						url: '/minePackage/pages/myNurse/myNurse'
+						url: '/minePackage/pages/aboutUs/aboutUs'
 					})
-				} else if (name == '收藏') {
-					uni.navigateTo({
-						url: '/minePackage/pages/myCollect/myCollect'
-					})
-				} else if (name == '我的地址') {
-					uni.navigateTo({
-						url: '/minePackage/pages/addressManagement/addressManagement'
-					})
-				} else if (name == '相关协议') {
-					uni.navigateTo({
-						url: '/minePackage/pages/aboutAgreement/aboutAgreement'
-					})
-				} else if (name == '我的被护人') {
-					uni.navigateTo({
-						url: '/minePackage/pages/myProtectedPersons/myProtectedPersons'
-					})
-				} else if (name == '初步评估单管理') {
-					uni.navigateTo({
-						url: '/minePackage/pages/mine/index/index'
-					})
-				} else if (name == '客服') {
-					this.showSupportStaffBox = true
 				}
 			}
 		}
@@ -482,6 +467,7 @@
 				}
 			};
 			.qr-code {
+				z-index: 100;
 				image {
 					width: 42px;
 					height: 42px

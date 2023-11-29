@@ -127,7 +127,7 @@
 				<view class="authentication-info-left">
 					请先完成实名认证、证书认证、完善个人信息审核通过后才可接单
 				</view>
-				<view class="authentication-info-right">
+				<view class="authentication-info-right" @click="identityAuthenticationEvent">
 					<text>去认证</text>
 				</view>
 			</view>
@@ -341,6 +341,13 @@
 			swiperClickEvent (index) {
 				uni.navigateTo({
 					url: '/messagePackage/pages/advertisingDetails/advertisingDetails'
+				})
+			},
+			
+			// 身份认证事件
+			identityAuthenticationEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/identityAuthenticationHome/identityAuthenticationHome'
 				})
 			},
 			

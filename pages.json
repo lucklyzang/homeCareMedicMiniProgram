@@ -116,7 +116,7 @@
 					}
 				},
 				{
-					"path": "pages/myCollect/myCollect",
+					"path": "pages/myQRcode/myQRcode",
 					"style": {
 						"navigationBarTitleText": "",
 						"navigationBarBackgroundColor": "#ffffff",
@@ -125,7 +125,7 @@
 					}
 				},
 				{
-					"path": "pages/addressManagement/addressManagement",
+					"path": "pages/aboutUs/aboutUs",
 					"style": {
 						"navigationBarTitleText": "",
 						"navigationBarBackgroundColor": "#ffffff",
@@ -134,7 +134,7 @@
 					}
 				},
 				{
-					"path": "pages/addAddress/addAddress",
+					"path": "pages/realNameAuthentication/realNameAuthentication",
 					"style": {
 						"navigationBarTitleText": "",
 						"navigationBarBackgroundColor": "#ffffff",
@@ -143,79 +143,7 @@
 					}
 				},
 				{
-					"path": "pages/editAddress/editAddress",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/mapChooseAddress/mapChooseAddress",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/aboutAgreement/aboutAgreement",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/myProtectedPersons/myProtectedPersons",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/addProtectedPersons/addProtectedPersons",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/evaluationFormList/evaluationFormList",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/createEvaluationForm/createEvaluationForm",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/editEvaluationForm/editEvaluationForm",
-					"style": {
-						"navigationBarTitleText": "",
-						"navigationBarBackgroundColor": "#ffffff",
-						"backgroundColorTop": "#fff,",
-						"backgroundColorBottom": "#fff"
-					}
-				},
-				{
-					"path": "pages/myNurse/myNurse",
+					"path": "pages/identityAuthenticationHome/identityAuthenticationHome",
 					"style": {
 						"navigationBarTitleText": "",
 						"navigationBarBackgroundColor": "#ffffff",
