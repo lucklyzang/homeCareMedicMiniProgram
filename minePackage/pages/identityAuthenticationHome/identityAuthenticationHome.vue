@@ -25,7 +25,7 @@
 			<view class="certificate-authentication-title">
 				<text>证书认证</text>
 			</view>
-			<view class="certificate-authentication">
+			<view class="certificate-authentication" @click="nurseQualificationAuthenticationEvent">
 				<view class="certificate-authentication-left">
 					<view class="image-box">
 						<image src="@/static/img/nurse-certification-icon.png"></image>
@@ -55,7 +55,7 @@
 			<view class="complete-personal-information-title">
 				<text>完善个人信息</text>
 			</view>
-			<view class="complete-personal-information">
+			<view class="complete-personal-information" @click="perfectPersonalMessageEvent">
 				<view class="complete-personal-information-left">
 					<view class="image-box">
 						<image src="@/static/img/personal-information-icon.png"></image>
@@ -111,6 +111,20 @@
 			realNameAuthenticationEvent () {
 				uni.navigateTo({
 					url: '/minePackage/pages/realNameAuthentication/realNameAuthentication'
+				})
+			},
+			
+			// 护士资格认证事件
+			nurseQualificationAuthenticationEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/nurseQualificationAuthentication/nurseQualificationAuthentication'
+				})
+			},
+			
+			// 完善个人信息事件
+			perfectPersonalMessageEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/perfectPersonalMessage/perfectPersonalMessage'
 				})
 			},
 			

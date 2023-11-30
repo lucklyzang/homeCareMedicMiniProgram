@@ -143,6 +143,24 @@
 					}
 				},
 				{
+					"path": "pages/perfectPersonalMessage/perfectPersonalMessage",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/nurseQualificationAuthentication/nurseQualificationAuthentication",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/identityAuthenticationHome/identityAuthenticationHome",
 					"style": {
 						"navigationBarTitleText": "",
