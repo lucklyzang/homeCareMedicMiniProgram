@@ -426,6 +426,10 @@
 							};
 							.select-wrap {
 								width: 100%;
+								// .select-options {
+								// 	top: 46px;
+								// 	bottom: none !important
+								// };
 								.uni-input-placeholder {
 									font-size: 14px !important;
 									color: #979797 !important

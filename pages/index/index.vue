@@ -599,7 +599,7 @@
 			position: fixed;
 			z-index: 100;
 			left: 0;
-			bottom: 16vh;
+			bottom: 4vh;
 			image {
 				width: 73px;
 				height: 43px
@@ -619,14 +619,14 @@
 			display: block;
 		};
 		.top-area {
-			height: 50px;
+			height: 120px;
 			background: #5A7BF4;
 			display: flex;
 			align-items: center;
 			padding: 10px;
 			box-sizing: border-box;
 			width: 100%;
-			margin: 80px 0 10px 0;
+			margin: 0 0 10px 0;
 			image {
 				width: 24px;
 				height: 24px;

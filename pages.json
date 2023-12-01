@@ -125,6 +125,42 @@
 					}
 				},
 				{
+					"path": "pages/setCenter/setCenter",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/myBill/myBill",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/myAllBillRecord/myAllBillRecord",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/updatePhoneNumber/updatePhoneNumber",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/aboutUs/aboutUs",
 					"style": {
 						"navigationBarTitleText": "",

@@ -273,9 +273,9 @@
 	methods: {
 	  showPositon () {
 		this.showPosition = 'bottom'
-		if (this.bottomDistance < this.windowHeight / 3) {
-		  this.showPosition = 'top'
-		}
+		// if (this.bottomDistance < this.windowHeight / 3) {
+		//   this.showPosition = 'top'
+		// }
 	  },
 	  changeShow () {
 		this.isShow = !this.isShow

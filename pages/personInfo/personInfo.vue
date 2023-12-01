@@ -42,6 +42,22 @@
 				</view>
 			</u-popup>
 		</view>
+		<!-- 选择提现方式弹框 -->
+		<view class="withdrawal-method-dialog-box">
+			<u-popup :show="withdrawalMethodDialogShow" @close="withdrawalMethodDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="top-title">
+					<text>选择提现方式</text>
+				</view>
+				<view class="center-content">
+					<view class="sure-btn">
+						<text>银行卡提现</text>
+					</view>
+					<view class="cancel-btn">
+						<text>支付宝提现</text>
+					</view>
+				</view>
+			</u-popup>
+		</view>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='2000' bgColor="none" title="个人中心">
@@ -96,7 +112,7 @@
 						<view>
 							<text>50</text>
 							<text>元</text>
-							<text>提现</text>
+							<text @click="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 					</view>
 				</view>
@@ -144,6 +160,7 @@
 				infoText: '',
 				showLoadingHint: false,
 				isSendOrdersValue: true,
+				withdrawalMethodDialogShow: false,
 				callPoliceDialogShow: false,
 				showSupportStaffBox: false,
 				personPhotoSource: '',
@@ -256,6 +273,18 @@
 					uni.navigateTo({
 						url: '/minePackage/pages/aboutUs/aboutUs'
 					})
+				} else if (name == '设置中心') {
+					uni.navigateTo({
+						url: '/minePackage/pages/setCenter/setCenter'
+					})
+				} else if (name == '身份认证') {
+					uni.navigateTo({
+						url: '/minePackage/pages/identityAuthenticationHome/identityAuthenticationHome'
+					})
+				} else if (name == '我的账单') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myBill/myBill'
+					})
 				}
 			}
 		}
@@ -270,6 +299,62 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		.withdrawal-method-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 100%;
+						padding: 30px 10px 20px 10px;
+						border-radius: 0 !important;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						.top-title {
+							font-size: 20px;
+							color: #101010;
+							height: 40px;
+							display: flex;
+							justify-content: center;
+							align-items: center
+						};
+						.center-content {
+							margin-top: 40px;
+							.sure-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								border-radius: 8px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								background: #1890FF;
+								font-size: 16px;
+								color: #fff;
+								margin-bottom: 20px
+							};
+							.cancel-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								border-radius: 8px;
+								background: #1890FF;
+								border: 1px solid #D0D5DD;
+								font-size: 16px;
+								color: #fff;
+							}
+						}
+					}
+				}
+			}	
+		};
 		.call-police-dialog-box {
 			::v-deep .u-popup {
 				flex: none !important;
@@ -305,7 +390,7 @@
 			position: fixed;
 			left: 0;
 			z-index: 100;
-			bottom: 16vh;
+			bottom: 4vh;
 			image {
 				width: 73px;
 				height: 43px
