@@ -539,7 +539,7 @@
 				left: 0;
 				width: 100%;
 				height: 100px
-			};
+			}
 		};
 		.order-form-tabs {
 			box-shadow: 0 2px 6px 0 rgba(202, 200, 200, 0.4);

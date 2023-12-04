@@ -235,6 +235,7 @@
 			padding-bottom: 10px;
 			box-sizing: border-box;
 			height: 0;
+			overflow: auto;
 			.real-name-authentication-step {
 				background: #fff;
 				padding: 20px 0;

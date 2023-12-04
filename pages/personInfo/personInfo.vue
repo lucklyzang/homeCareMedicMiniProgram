@@ -285,6 +285,10 @@
 					uni.navigateTo({
 						url: '/minePackage/pages/myBill/myBill'
 					})
+				} else if (name == '帮助和反馈') {
+					uni.navigateTo({
+						url: '/minePackage/pages/helpCenter/helpCenter'
+					})
 				}
 			}
 		}

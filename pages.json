@@ -170,6 +170,24 @@
 					}
 				},
 				{
+					"path": "pages/helpCenter/helpCenter",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/feedback/feedback",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/realNameAuthentication/realNameAuthentication",
 					"style": {
 						"navigationBarTitleText": "",
