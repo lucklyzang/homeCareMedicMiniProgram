@@ -122,7 +122,7 @@
 		  </view>
 		</scroll-view>
 	  </view>
-	  <view v-if="isShow" @click="closeContentSelect" class="contentMask" />
+	 <!-- <view v-if="isShow" @click="closeContentSelect" class="contentMask" /> -->
 	</view>
   </template>
   

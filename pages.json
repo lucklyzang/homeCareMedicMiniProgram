@@ -179,6 +179,15 @@
 					}
 				},
 				{
+					"path": "pages/dataStatistics/dataStatistics",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/feedback/feedback",
 					"style": {
 						"navigationBarTitleText": "",

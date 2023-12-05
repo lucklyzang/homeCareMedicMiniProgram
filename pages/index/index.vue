@@ -3,7 +3,7 @@
 		<u-toast ref="uToast" />
 		<!-- 筛选弹框 -->
 		<view class="screen-dialog-box">
-			<u-popup :show="screenDialogShow" @close="screenDialogShow = false" mode="right" :closeOnClickOverlay="false" :safeAreaInsetTop="true" :safeAreaInsetBottom="true">
+			<u-popup :show="screenDialogShow" @close="screenDialogCloseEvent" mode="right" :closeOnClickOverlay="true" :safeAreaInsetTop="true" :safeAreaInsetBottom="true">
 				<view class="screen-top">
 					<view class="service-category">
 						<view class="service-category-title">
@@ -98,7 +98,7 @@
 		</view>
 		<!-- 报警弹框 -->
 		<view class="call-police-dialog-box">
-			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
 				<view class="help-center-title">
 					<text>求助中心</text>
 				</view>
@@ -180,6 +180,56 @@
 				<text>实时订单</text>
 			</view>
 			<view class="real-time-order-form-list-box">
+				<view class="real-time-order-form-list">
+					<view class="real-time-order-form-list-top">
+						<view class="real-time-order-form-list-top-left">
+							<text>婴儿全身按摩</text>
+						</view>
+						<view class="real-time-order-form-list-top-right">
+							<text>3分钟前</text>
+						</view>
+					</view>
+					<view class="real-time-order-form-list-bottom">
+						<view class="price-box">
+							<image src="@/static/img/order-rmb.png"></image>
+							<text>398.99</text>
+						</view>
+						<view class="site-box">
+							<image src="@/static/img/order-site.png"></image>
+							<text>环球中心1号门1栋1单元1楼101</text>
+							<text>抢单</text>
+						</view>
+						<view class="date-box">
+							<image src="@/static/img/order-date.png"></image>
+							<text>06月14日（周三）上午8:00—9:00</text>
+						</view>
+					</view>
+				</view>
+				<view class="real-time-order-form-list">
+					<view class="real-time-order-form-list-top">
+						<view class="real-time-order-form-list-top-left">
+							<text>婴儿全身按摩</text>
+						</view>
+						<view class="real-time-order-form-list-top-right">
+							<text>3分钟前</text>
+						</view>
+					</view>
+					<view class="real-time-order-form-list-bottom">
+						<view class="price-box">
+							<image src="@/static/img/order-rmb.png"></image>
+							<text>398.99</text>
+						</view>
+						<view class="site-box">
+							<image src="@/static/img/order-site.png"></image>
+							<text>环球中心1号门1栋1单元1楼101</text>
+							<text>抢单</text>
+						</view>
+						<view class="date-box">
+							<image src="@/static/img/order-date.png"></image>
+							<text>06月14日（周三）上午8:00—9:00</text>
+						</view>
+					</view>
+				</view>
 				<view class="real-time-order-form-list">
 					<view class="real-time-order-form-list-top">
 						<view class="real-time-order-form-list-top-left">
@@ -369,6 +419,12 @@
 				} else {
 					this.isShowScreenIcon = false
 				}
+			},
+			
+			// 筛选弹框关闭事件
+			screenDialogCloseEvent () {
+				this.screenDialogShow = false;
+				this.isShowScreenIcon = false
 			},
 			
 			// 筛选重置事件
@@ -570,6 +626,9 @@
 				flex: none !important;
 				.u-transition {
 					.u-popup__content {
+						border-radius: 0;
+						border-top-left-radius: 20px;
+						border-top-right-radius: 20px;
 						padding: 20px 10px;
 						box-sizing: border-box;
 						.help-center-title {

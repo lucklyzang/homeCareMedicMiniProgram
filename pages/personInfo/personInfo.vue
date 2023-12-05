@@ -3,7 +3,7 @@
 		<u-toast ref="uToast" />
 		<!-- 报警弹框 -->
 		<view class="call-police-dialog-box">
-			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
 				<view class="help-center-title">
 					<text>求助中心</text>
 				</view>
@@ -20,28 +20,6 @@
 			<image src="@/static/img/call-police-btn.png"></image>
 		</view>
 		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
-		<!-- 我的客服弹框 -->
-		<view class="support-staff-box">
-			<u-popup :show="showSupportStaffBox" :closeable="true" mode="center"  @close="closeSupportStaffBox">
-				<view class="support-staff-content">
-					<view class="support-staff-top">
-							<image src="@/static/img/support-staff.png"></image>
-							<text>服务电话</text>
-							<text>409-5646-89893434</text>
-					</view>
-					<view class="support-staff-bottom">
-						<view class="support-staff-left">
-							<image src="@/static/img/message.png"></image>
-							<text>发送消息</text>
-						</view>
-						<view class="support-staff-right">
-							<image src="@/static/img/phone.png"></image>
-							<text>拨打电话</text>
-						</view>
-					</view>
-				</view>
-			</u-popup>
-		</view>
 		<!-- 选择提现方式弹框 -->
 		<view class="withdrawal-method-dialog-box">
 			<u-popup :show="withdrawalMethodDialogShow" @close="withdrawalMethodDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
@@ -81,7 +59,7 @@
 					<image :src="qrCodeIconPng"></image>
 				</view>
 			</view>
-			<view class="data-area-box">
+			<view class="data-area-box" @click="enterDataStatisticsEvent">
 				<view class="today-earnings">
 					<text>今日收益</text>
 					<text>568.00</text>
@@ -112,7 +90,7 @@
 						<view>
 							<text>50</text>
 							<text>元</text>
-							<text @click="withdrawalMethodDialogShow = true">提现</text>
+							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 					</view>
 				</view>
@@ -255,6 +233,13 @@
 				})
 			},
 			
+			// 进入数据统计页面事件
+			enterDataStatisticsEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/dataStatistics/dataStatistics'
+				})
+			},
+			
 			//客服弹框关闭事件
 			closeSupportStaffBox () {
 				this.showSupportStaffBox = false
@@ -365,6 +350,9 @@
 				.u-transition {
 					.u-popup__content {
 						width: 100%;
+						border-radius: 0;
+						border-top-left-radius: 20px;
+						border-top-right-radius: 20px;
 						padding: 20px 10px;
 						box-sizing: border-box;
 						.help-center-title {
