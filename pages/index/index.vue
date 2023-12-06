@@ -114,7 +114,6 @@
 		<view class="call-police-box" @click="callPoliceDialogShow = true">
 			<image src="@/static/img/call-police-btn.png"></image>
 		</view>
-		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="infoText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
 		<view class="top-area">
 			<image src="@/static/img/home-site.png"></image>
 			<text>成都市武侯区三和街道</text>

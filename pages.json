@@ -1,12 +1,11 @@
 {
 	"easycom": {
-		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue",
-		"y-toast": "@/components/y-toast/y-toast.vue"
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
 	},
 	"lazyCodeLoading": "requiredComponents ",
 	"pages": [
 		{
-			"path": "pages/login/login",
+			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationBarBackgroundColor": "#75b0f0",
@@ -15,7 +14,7 @@
 			}
 		},
 		{
-			"path": "pages/index/index",
+			"path": "pages/login/login",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationBarBackgroundColor": "#75b0f0",
@@ -53,6 +52,9 @@
 			}
 		}
 	],
+	"launch": {
+	    "path": "pages/index/index"
+	},
 	"subPackages": [
 		{
 			"root": "messagePackage",

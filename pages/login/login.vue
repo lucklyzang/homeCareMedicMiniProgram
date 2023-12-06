@@ -5,12 +5,12 @@
 			<u-popup :show="privacyPolicyBoxShow" mode="bottom" border-radius="30" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
 					<view class="privacy-policy-title">
 						<text>
-							守望家隐私政策概要
+							守护家隐私政策概要
 						</text>
 					</view>
 					<view class="privacy-policy-content">
 						<text>
-							欢迎您使用手望家小程序。您可以使用本小程序以实现智能设备的控制、共享功能。我们将严格遵守相关法律法规和隐私政策以保护您的个人信息。为提供基本服务,需要联网以及调用您的如下权限或功能,以搜集必要的个人信息:
+							欢迎您使用守护家小程序。您可以使用本小程序以实现智能设备的控制、共享功能。我们将严格遵守相关法律法规和隐私政策以保护您的个人信息。为提供基本服务,需要联网以及调用您的如下权限或功能,以搜集必要的个人信息:
 						</text>
 					</view>
 					<view class="privilege-box">
@@ -45,7 +45,7 @@
 				<view class="weixin-top-area">
 					<view class="weixin-top-area-left">
 						<image :src="logoSmallIcon"></image>
-						<text>守望家</text>
+						<text>守护家</text>
 					</view>
 					<view class="weixin-top-area-right">
 						<u-icon name="info-circle" size="24" color="#dbdbdb"></u-icon>
@@ -53,7 +53,7 @@
 				</view>
 				<view class="account-info-area">
 					<text>申请获取并验证你的手机号</text>
-					<text>登录并关联米家账号</text>
+					<text>登录并关联守护家账号</text>
 				</view>
 				<view class="phone-number-area">
 					<text>15669106075</text>
@@ -68,7 +68,6 @@
 			</u-popup>
 		</view>
 		<u-toast ref="uToast"></u-toast>
-		<ourLoading isFullScreen :active="showLoadingHint"  :translateY="50" :text="loadingText" color="#fff" textColor="#fff" background-color="rgb(143 143 143)"/>
 		<u-modal v-model="modalShow" :content="modalContent"
 		 :show-cancel-button="true" @confirm="sureCancel" @cancel="cancelSure">
 		</u-modal>
@@ -83,10 +82,10 @@
 						</text>
 					</view>
 					<view>
-						<image :src="loginLogoPng"></image>
+						<image src="@/static/img/app-logo.png"></image>
 					</view>
 					<view>
-						<text>守&nbsp;&nbsp;望&nbsp;&nbsp;家</text>
+						<text>守&nbsp;&nbsp;护&nbsp;&nbsp;家</text>
 					</view>
 				</view>
 			</view>
@@ -161,7 +160,6 @@
 		data() {
 			return {
 				loginBackgroundPng: require("@/static/img/login-background.png"),
-				loginLogoPng: require("@/static/img/login-logo.png"),
 				logoSmallIcon: require("@/static/img/logo-small-icon.png"),
 				noClick: true,
 				loadingText: '登录中,请稍候···',
@@ -928,8 +926,8 @@
 							}
 						};
 						&:nth-child(2) {
-							width: 64px;
-							height: 72px;
+							width: 80px;
+							height: 80px;
 							margin: 20px 0 10px 0;
 							 image {
 								 width: 100%;
@@ -1014,9 +1012,8 @@
         margin-top: 50px;
 				button {
 					font-size: 16px;
-					color: #000000;
-					background: #fff;
-					border: 1px solid #BBBBBB;
+					color: #fff;
+					background: #5064EB;
 					height: 46px;
 					line-height: 46px;
           border-radius: 10px;
@@ -1048,9 +1045,8 @@
 				margin-top: 50px;
 				button {
 					font-size: 16px;
-					color: #000000;
-					background: #fff;
-					border: 1px solid #BBBBBB;
+					color: #fff;
+					background: #5064EB;
 					height: 46px;
 					line-height: 46px;
 				  border-radius: 10px;
