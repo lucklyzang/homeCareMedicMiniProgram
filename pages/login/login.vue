@@ -68,7 +68,7 @@
 			</u-popup>
 		</view>
 		<u-toast ref="uToast"></u-toast>
-		<u-modal v-model="modalShow" :content="modalContent"
+		<u-modal :show="modalShow" :title="modalContent"
 		 :show-cancel-button="true" @confirm="sureCancel" @cancel="cancelSure">
 		</u-modal>
 		<view class="container-content">
@@ -120,7 +120,7 @@
 				</view>
 			</view>
 			<view class="form-btn" v-if="!isForgetPassword && !isSetPassword">
-				<button @click="$noMultipleClicks(sure)">{{ isPasswordLogin ? '登 录' : '登 录/注 册' }}</button>
+				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(sure)">{{  showLoadingHint ? isPasswordLogin ? '登录中···' : '登 录/注 册中···' : isPasswordLogin ? '登 录' : '登 录/注 册' }}</button>
 				<view class="form-btn-info-text">
 					<u-checkbox-group v-model="isReadAgreeChecked">
 						<u-checkbox 
@@ -136,7 +136,7 @@
 				</view>
 			</view>
 			<view class="enter-home-btn" v-if="isForgetPassword || isSetPassword">
-				<button @click="resetPasswordEvent">{{ isForgetPassword ? '确认' : '进入首页' }}</button>
+				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(resetPasswordEvent)">{{ showLoadingHint ? isForgetPassword ? '密码重置中···' : '密码设置中···' : isForgetPassword ? '确认' : '进入首页' }}</button>
 			</view>
       <view class="weixin-login" v-if="!isForgetPassword && !isSetPassword">
         <u-divider border-color="#DBDBDB" color="#919191" text="其他登录方式"></u-divider>
@@ -162,7 +162,6 @@
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				logoSmallIcon: require("@/static/img/logo-small-icon.png"),
 				noClick: true,
-				loadingText: '登录中,请稍候···',
 				userCode: '',
 				checkboxList: [
 					{
@@ -327,6 +326,9 @@
 			
 			// 手机号密码登录
 			accountLogin () {
+				if ( this.showLoadingHint ) {
+					return
+				}; 
 				if (!this.form.username) {
 					this.$refs.uToast.show({
 						message: '请输入手机号',
@@ -353,10 +355,10 @@
 				};	  
 				let loginMessage = {
 				  mobile: this.form.username,
-				  password: this.form.password
+				  password: this.form.password,
+					loginType: 1
 				};
 				this.showLoadingHint = true;
-				this.loadingText = '登录中...';
 				logIn(loginMessage).then((res) => {
 					if (res && res.data.code == 0) {
 						this.changeOverDueWay(false);
@@ -386,7 +388,6 @@
 			// 微信一键登录
 			weixinMiniAppLoginEvent (data) {
 				this.showLoadingHint = true;
-				this.loadingText = '登录中...';
 				weixinMiniAppLogin(data).then((res) => {
 					this.showLoadingHint = false;
 					if (res && res.data.code == 0) {
@@ -415,6 +416,9 @@
 			
 			// 手机号验证码登录
 			codeLogin () {
+				if ( this.showLoadingHint ) {
+					return
+				};
 				if (!this.form.username) {
 					this.$refs.uToast.show({
 						message: '请输入手机号',
@@ -441,10 +445,10 @@
 				};
 				let loginMessage = {
 				  mobile: this.form.username,
-				  code: this.form.verificationCode
+				  code: this.form.verificationCode,
+					loginType: 1
 				};
 				this.showLoadingHint = true;
-				this.loadingText = '登录中...';
 				logInByCode(loginMessage).then((res) => {
 					if (res && res.data.code == 0) {
 						this.changeOverDueWay(false);
@@ -494,8 +498,6 @@
 				  mobile: this.form.username,
 					scene: this.isForgetPassword ? 3 : 1
 				};
-				this.showLoadingHint = true;
-				this.loadingText = '获取中...';
 				sendPhoneCode(loginMessage).then((res) => {
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {
@@ -533,6 +535,9 @@
 			
 			// 密码重置和设置密码事件
 			resetPasswordEvent () {
+				if (this.showLoadingHint) {
+					return
+				};
 				// 密码重置
 				if (this.isForgetPassword) {
 					if (!this.form.username) {
@@ -564,8 +569,6 @@
 						code: this.form.verificationCode,
 					  mobile: this.form.username
 					};
-					this.showLoadingHint = true;
-					this.loadingText = '密码重置中...';
 					resetPassword(loginMessage).then((res) => {
 						if ( res && res.data.code == 0) {
 							this.$refs.uToast.show({
@@ -607,7 +610,6 @@
 					};
 					if (!this.isPasswordLogin && this.isSetPassword) {
 						this.showLoadingHint = true;
-						this.loadingText = '密码设置中...';
 						let loginMessage = {
 							password: this.form.password
 						};
@@ -657,16 +659,21 @@
 				if (e.detail.code) {
 					this.weixinMiniAppLoginEvent({
 						phoneCode: e.detail.code,
-						loginCode: this.userCode
+						loginCode: this.userCode,
+						loginType: 1
 					})
 				}
 			},
 			
 			// 弹框确定事件
-			sureCancel () {},
+			sureCancel () {
+				this.modalShow = false
+			},
 			
 			// 弹框取消事件
-			cancelSure () {}
+			cancelSure () {
+				this.modalShow = false
+			}
 		}
 	}
 </script>
@@ -1018,6 +1025,9 @@
 					line-height: 46px;
           border-radius: 10px;
 				};
+				.uniButtonStyle {
+					opacity: 0.5;
+				};
 				.form-btn-info-text {
 					margin-top: 8px;
 					align-items: center;
@@ -1050,6 +1060,9 @@
 					height: 46px;
 					line-height: 46px;
 				  border-radius: 10px;
+				};
+				.uniButtonStyle {
+					opacity: 0.5;
 				}
 			};
       .weixin-login {

@@ -1,6 +1,9 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-modal :show="modalShow" :title="modalContent"
+		 :show-cancel-button="true" @confirm="sureCancel" @cancel="cancelSure">
+		</u-modal>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="设置中心" @backClick="backTo">
@@ -62,8 +65,8 @@
 			</view>
 		</view>
 		<view class="quit-login-btn-box">
-			<view class="quit-login-btn">
-				<text>退出登录</text>
+			<view class="quit-login-btn" @click="logOutEvent" :class="{'quitLoginBtnStyle' : showLoadingHint }">
+				<text> {{ showLoadingHint ? '登出中···' : '退出登录' }}</text>
 			</view>
 		</view>
 	</view>
@@ -78,6 +81,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { userSignOut } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -87,7 +91,9 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中',
-				isNewMessageInformValue: true
+				isNewMessageInformValue: true,
+				modalShow: false,
+				modalContent: ''
 			}
 		},
 		computed: {
@@ -110,6 +116,50 @@
 				uni.navigateBack()
 			},
 			
+			// 退出登录事件
+			logOutEvent () {
+				this.modalShow = true;
+				this.modalContent = '确认退出登录?'
+			},
+			
+			// 是否退出登录弹框确定事件
+			sureCancel () {
+				this.modalContent = '';
+				this.modalShow = false;
+				userSignOut().then((res) => {
+					if (this.showLoadingHint) {
+						return
+					};
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							title: '退出登录成功!',
+							type: 'success',
+							position: 'bottom'
+						});
+						// 清空store和localStorage
+						this.$store.dispatch('resetLoginState');
+						removeAllLocalStorage();
+						uni.redirectTo({
+							url: '/pages/login/login'
+						})
+					} else {
+					 this.modalShow = true;
+					 this.modalContent = res.data.msg
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.modalShow = true;
+					this.modalContent = `${err.message}`
+				})
+			},
+			
+			// 是否退出登录弹框取消事件
+			cancelSure () {
+				this.modalShow = false
+			},
+			
 			// 更换手机号事件
 			updatePhoneNumberEvent () {
 				uni.navigateTo({
@@ -129,6 +179,9 @@
 	.content-box {
 		@include content-wrapper;
 		background: #fff;
+		::v-deep .u-popup {
+			flex: none !important
+		};
 		.top-area-box {
 			position: relative;
 			background: #fff;
@@ -237,6 +290,9 @@
 				border-radius: 8px;
 				font-size: 12px;
 				color: #E86F50
+			};
+			.quitLoginBtnStyle {
+				opacity: 0.5;
 			}
 		}
 	}

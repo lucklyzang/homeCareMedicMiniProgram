@@ -3,11 +3,8 @@ import store from '@/store'
 import Qs from 'qs'
 import { setCache, getCache, removeAllLocalStorage } from '@/common/js/utils'
 const instance = axios.create({
-	// 生产域名 https://blinktech.cn/nblink
-	// 开发域名 https://blink.blinktech.cn/nblink
-	// 准生产域名 https://ver.blinktech.cn/nblink
-	// 测试域名 https://show.blinktech.cn/nblink
-  baseURL: 'https://blink.blinktech.cn/radar',
+	// 开发域名 http://dev.nurse.blinktech.cn/nurse
+  baseURL: 'http://dev.nurse.blinktech.cn/nurse',
 	retry: 3, // 网络请求异常后，重试次数 
 	retryDelay: 1000, // 每次重试间隔时间
 	timeout: 30000,
@@ -69,7 +66,7 @@ instance.interceptors.request.use(function (config) {
 				headers: {
 					'tenant-id': 1
 				},
-				baseURL: 'https://blink.blinktech.cn/radar',
+				baseURL: 'http://dev.nurse.blinktech.cn/nurse',
 				method: 'post',
 				url: `app-api/member/auth/refresh-token?refreshToken=${store.getters.userInfo['refreshToken']}`
 			 }).then(res => {
