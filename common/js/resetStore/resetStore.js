@@ -1,11 +1,3 @@
-// 设备信息store的初始值
-export function getDefaultServiceState() {
-    return {
-			timeMessage: {},
-			ossMessage: {}
-		}	
-};
-
 // 登录信息store的初始值
 export function getDefaultLoginState() {
 	return {
@@ -13,6 +5,15 @@ export function getDefaultLoginState() {
 		token: null, //请求token,
 		isLogin: false,
 		overDueWay: false,
-		userBasicInfo: null
+		userBasicInfo: null,
+		nurseRankDictData: []
+	}	
+};
+
+// 服务store的初始值
+export function getDefaultServiceState() {
+	return {
+		serviceOrderFormSureChooseMessage: {},
+		editServiceOrderFormSureChooseMessage: {}
 	}	
 };

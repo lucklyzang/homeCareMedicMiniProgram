@@ -1,50 +1,114 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
-		<!-- 订单详情弹框 -->
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
+		<!-- 订单相关服务操作弹框 -->
 		<view class="order-form-details-dialog-box">
 			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
 				<view class="accept-order-date">
-					<view class="accept-order-date-title">
-						<text>接受服务订单时间</text>
+						<view class="accept-order-date-title">
+							<text>接受服务订单时间</text>
+						</view>
+						<view class="accept-order-date-content">
+							<text>{{ serviceMessage.acceptTime }}</text>
+						</view>
 					</view>
-					<view class="accept-order-date-content">
-						<text>2023-09-12 14:23:23</text>
+					<view class="accept-order-date" v-if="serviceMessage.status >= 40 && serviceMessage.status <= 60">
+						<view class="accept-order-date-title">
+							<text>出发时间</text>
+						</view>
+						<view class="accept-order-date-content">
+							<text>{{ serviceMessage.setOutTime }}</text>
+						</view>
+					</view>
+					<view class="accept-order-date" v-if="serviceMessage.status == 50 || serviceMessage.status == 60">
+						<view class="accept-order-date-title">
+							<text>开始服务时间</text>
+						</view>
+						<view class="accept-order-date-content">
+							<text>{{ serviceMessage.startTime }}</text>
+						</view>
+					</view>
+					<view class="accept-order-date" v-if="serviceMessage.status == 60">
+						<view class="accept-order-date-title">
+							<text>完成服务时间</text>
+						</view>
+						<view class="accept-order-date-content">
+							<text>{{ completeTime.startTime }}</text>
+						</view>
+					</view>
+					<view class="btn-area">
+						<text v-if="serviceMessage.status == 30" @click="departSureEvent">立即出发</text>
+						<text v-if="serviceMessage.status == 40" @click="startSureEvent">开始服务</text>
+						<text v-if="serviceMessage.status == 50" @click="completeSureEvent">完成服务</text>
+						<text>14:23:23</text>
+					</view>
+					<view class="bottom-info-area">
+						<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
+						<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
+						<text>已进入服务范围</text>
+						<text>重新定位</text>
+					</view>
+				</u-popup>
+			</u-popup>
+		</view>
+		<!-- 拒绝订单原因弹框 -->
+		<view class="refuse-order-form-dialog-box">
+			<u-popup :show="refuseOrderFormDialogShow" @close="refuseOrderFormDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="top-title">
+					<text>选择拒绝原因</text>
+				</view>
+				<view class="center-content">
+					 <u-checkbox-group
+							v-model="checkReasonValue"
+							placement="column"
+							@change="checkboxReasonChange"
+						>
+							<u-checkbox
+								:customStyle="{marginBottom: '8px'}"
+								v-for="(item, index) in checkboxReasonList"
+								:key="index"
+								:label="item.name"
+								:name="item.name"
+							>
+							</u-checkbox>
+					</u-checkbox-group>
+				</view>
+				<view class="bottom-btn">
+					<view class="sure-btn" @click="sureRefuseEvent">
+						<text>确定</text>
+					</view>
+					<view class="cancel-btn" @click="refuseOrderFormDialogShow = false">
+						<text>取消</text>
 					</view>
 				</view>
-				<view class="accept-order-date">
-					<view class="accept-order-date-title">
-						<text>出发时间</text>
-					</view>
-					<view class="accept-order-date-content">
-						<text>2023-09-12 14:23:23</text>
-					</view>
+			</u-popup>
+		</view>
+		<!-- 拒绝成功弹框 -->
+		<view class="refuse-order-form-success-dialog-box">
+			<u-popup :show="refuseOrderFormSuccessDialogShow" @close="refuseOrderFormSuccessDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<image src="@/static/img/refuse-order-form-success.png"></image>
+				<view class="operation-success-title">
+					<text>操作成功</text>
 				</view>
-				<view class="accept-order-date">
-					<view class="accept-order-date-title">
-						<text>开始服务时间</text>
-					</view>
-					<view class="accept-order-date-content">
-						<text>2023-09-12 14:23:23</text>
-					</view>
+				<view class="operation-success-content">
+					<text>已成功拒绝订单，请到详情中查看</text>
 				</view>
-				<view class="accept-order-date">
-					<view class="accept-order-date-title">
-						<text>完成服务时间</text>
-					</view>
-					<view class="accept-order-date-content">
-						<text>2023-09-12 14:23:23</text>
-					</view>
+				<view class="operation-success-btn" @click="refuseOrderFormSuccessDialogShow = false">
+					<text>确定</text>
 				</view>
-				<view class="btn-area">
-					<text>完成服务</text>
-					<text>14:23:23</text>
+			</u-popup>
+		</view>
+		<!-- 接单成功弹框 -->
+		<view class="accept-order-form-success-dialog-box">
+			<u-popup :show="acceptOrderFormSuccessDialogShow" @close="acceptOrderFormSuccessDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<image src="@/static/img/accept-order-form-success.png"></image>
+				<view class="accept-success-title">
+					<text>接单成功</text>
 				</view>
-				<view class="bottom-info-area">
-					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
-					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
-					<text>已进入服务范围</text>
-					<text>重新定位</text>
+				<view class="operation-success-btn" @click="acceptOrderFormSuccessDialogShow = false">
+					<text>确定</text>
 				</view>
 			</u-popup>
 		</view>
@@ -55,21 +119,26 @@
 		  </view>
 		</view>
 		<view class="top-view-details">
-			<view class="service-status">
-				<text>服务完成</text>
+			<view class="service-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
+				<text>{{ transitionOrderStatusText(serviceMessage.status, serviceMessage) }}</text>
 			</view>
-			<view class="btn-details" @click="orderFormDetailsDialogShow = true">
-				<text>点击详情</text>
+			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80">
+				<text class="refuse-btn" v-if="serviceMessage.status == 20" @click="refuseOrderFormEvent(serviceMessage)">拒绝订单</text>
+				<text v-if="serviceMessage.status == 20" @click="acceptOrderFormEvent(serviceMessage)">接受订单</text>
+				<text v-if="serviceMessage.status == 30" @click="departEvent(serviceMessage)">立即出发</text>
+				<text v-if="serviceMessage.status == 40" @click="startEvent(serviceMessage)">开始服务</text>
+				<text v-if="serviceMessage.status == 50" @click="completeEvent(serviceMessage)">完成服务</text>
+				<text v-if="serviceMessage.status == 60" @click="clickDetailsEvent">点击详情</text>
+			</view>
+			<view class="" v-else>
+				晚上有约会
 			</view>
 		</view>
 		<view class="order-form-list-wrapper">
 			<view class="order-form-list">
 				<view class="order-form-top">
 					<view class="order-form-title">
-						<text>婴儿全身按摩</text>
-					</view>
-					<view class="order-form-status">
-						<text>派单中</text>
+						<text>{{ serviceMessage.items[0]['spuName'] }}</text>
 					</view>
 				</view>
 				<view class="order-form-center">
@@ -83,15 +152,15 @@
 					<view class="order-form-center-right">
 						<view class="brotected-person">
 							<text>被护人</text>
-							<text>燕双鹰 26岁</text>
+							<text>{{ `${serviceMessage.serverPerson.name} ${serviceMessage.serverPerson.age}岁` }}</text>
 						</view>
 						<view class="service-address">
 							<text>服务地址</text>
-							<text>环球中心一号楼2单元403</text>
+							<text>{{ serviceMessage.receiverDetailAddress }}</text>
 						</view>
 						<view class="expectation-date">
 							<text>期望时间</text>
-							<text>06月14日 (星期二) 上午8：00-9：00</text>
+							<text>{{ `${getNowFormatDateText(serviceMessage.serviceDate)} (${judgeWeek(serviceMessage.serviceDate)}) ${serviceMessage.serviceTime}` }}</text>
 						</view>
 						<view class="evaluation-form">
 							<text>初步评估单</text>
@@ -109,7 +178,7 @@
 				<view class="price-list-content">
 					<view class="price-list-one">
 						<text>婴儿全身按摩</text>
-						<text>￥998</text>
+						<text>{{`￥${serviceMessage.payPrice}`}}</text>
 					</view>
 					<view class="price-list-one price-list-two">
 						<text>路程费用</text>
@@ -129,7 +198,7 @@
 					</view>
 					<view class="price-list-one price-list-last">
 						<text>实付款</text>
-						<text>￥998.00</text>
+						<text>{{`￥${serviceMessage.payPrice}`}}</text>
 					</view>
 				</view>
 			</view>
@@ -174,7 +243,7 @@
 					<text>订单流程</text>
 				</view>
 				<view class="order-flow-content">
-					<u-steps current="4" dot inactiveColor="rgba(255, 255, 255, 0.5)" activeColor="#fff">
+					<u-steps :current="currentFlow" dot inactiveColor="rgba(255, 255, 255, 0.5)" activeColor="#fff">
 						<u-steps-item title="已支付"></u-steps-item>
 						<u-steps-item title="派单中"></u-steps-item>
 						<u-steps-item title="待出发"></u-steps-item>
@@ -216,6 +285,44 @@
 					</view>
 				</view>
 			</view>
+			<view class="order-message">
+				<view class="order-message-top">
+					<view class="order-message-title">
+						<text>订单信息</text>
+					</view>
+				</view>
+				<view class="order-message-content">
+					<view class="order-message-one-special">
+						<view class="order-message-one-special-left">
+							<text>订单编号:</text>
+						</view>
+						<view class="order-message-one-special-right">
+							<text>{{ serviceMessage.no }}</text>
+							<text  @click="copyContent(copyValue)">复制</text>
+						</view>
+					</view>
+					<view class="order-message-one" v-if="serviceMessage.payNo">
+						<text>交易号:</text>
+						<text>{{ serviceMessage.payNo }}</text>
+					</view>
+					<view class="order-message-one">
+						<text>创建时间:</text>
+						<text>{{ serviceMessage.createTime }}</text>
+					</view>
+					<view class="order-message-one" v-if="serviceMessage.workerStatus != 0 && serviceMessage.payTime">
+						<text>付款时间:</text>
+						<text>{{ serviceMessage.payTime }}</text>
+					</view>
+					<view class="order-message-one" v-if="serviceMessage.status >= 30 && serviceMessage.status != 70">
+						<text>派单时间:</text>
+						<text>{{ serviceMessage.assignTime }}</text>
+					</view>
+					<view class="order-message-one" v-if="serviceMessage.status == 60">
+						<text>完成服务时间:</text>
+						<text>{{ serviceMessage.completeTime }}</text>
+					</view>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -227,8 +334,10 @@
 	} from 'vuex'
 	import {
 		setCache,
-		removeAllLocalStorage
+		removeAllLocalStorage,
+		fenToYuan
 	} from '@/common/js/utils'
+	import { getTradeOrderPage, nurseDepart, startServer, completeServer, acceptTradeOrder, refuseTradeOrder, getOrderDetail } from '@/api/orderForm.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -239,7 +348,114 @@
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				infoText: '',
 				showLoadingHint: false,
-				orderFormDetailsDialogShow: false
+				orderFormDetailsDialogShow: false,
+				currentFlow: null,
+				orderFormDetailsDialogShow: false,
+				refuseOrderFormDialogShow: false,
+				refuseOrderFormSuccessDialogShow: false,
+				acceptOrderFormSuccessDialogShow: false,
+				checkReasonValue: [],
+				currentSelectOrderMessage: {},
+				refundReason: '',
+				checkboxReasonList: [
+					{
+						name: '专业知识太强做不到',
+						disabled: false
+					},
+					{
+						name: '距离太远时间来不及了',
+						disabled: false
+					},
+					{
+						name: '晚上有约会',
+						disabled: false
+					}
+				],
+				serviceMessage: {
+					id: '',
+					no: '',
+					createTime: '',
+					userRemark: '',
+					status: null,
+					workerStatus: null,
+					refundStatus: '',
+					productCount: '',
+					finishTime: '',
+					cancelTime: '',
+					commentStatus: true,
+					payStatus: true,
+					payOrderId: '',
+					payTime: '',
+					payExpireTime: '',
+					payChannelCode: '',
+					payChannelName: '',
+					totalPrice: '',
+					discountPrice: '',
+					deliveryPrice: '',
+					adjustPrice: '',
+					payPrice: '',
+					payNo: '',
+					receiverAreaName: '',
+					receiverDetailAddress: '',
+					couponId: '',
+					couponPrice: '',
+					pointPrice: '',
+					items: [
+						{
+							id: '',
+							orderId: '',
+							spuId: '',
+							spuName: '',
+							skuId: '',
+							properties: [
+								{
+									propertyId: '',
+									propertyName: '',
+									valueId: '',
+									valueName: ''
+								}
+							],
+							picUrl: '',
+							count: '',
+							commentStatus: true,
+							price: '',
+							payPrice: '',
+							afterSaleId: '',
+							afterSaleStatus: ''
+						}
+					],
+					careId: 0,
+					serviceDate: '',
+					serviceTime: '',
+					serverPerson: {
+						id: 0,
+						memberId: 0,
+						name: '',
+						mobile: '',
+						critical: '',
+						birthday: '',
+						sex: '',
+						age: 0,
+						medicalRecord: [],
+						special: [],
+						status: ''
+					},
+					images: [],
+					assignType: '',
+					assignTime: '',
+					acceptTime: '',
+					setOutTime: '',
+					startTime: '',
+					completeTime: '',
+					aptitudes: [],
+					commentRespVO: {
+						scores: 0,
+						attitudeScores: 0,
+						speedScores: 0,
+						specialityScores: 0,
+						content: ''
+					}
+				}
 			}
 		},
 		computed: {
@@ -251,8 +467,15 @@
 			proId() {
 			}
 		},
-		onShow() {
+		
+		onLoad(options) {
+			if (options.transmitData == '{}') { return };
+			let temporaryAddress = JSON.parse(options.transmitData);
+			this.serviceMessage = temporaryAddress;
+			this.queryOrderDetail({id:this.serviceMessage.id})
 		},
+		
+		
 		methods: {
 			...mapMutations([
 			]),
@@ -270,7 +493,356 @@
 						})
 					}
 				})
-			},	
+			},
+			
+			// 格式化时间(带中文)
+			getNowFormatDateText(currentDate,type) {
+				// type: 2(只展示月)
+				let currentdate;
+				let strDate = new Date(currentDate).getDate();
+				let seperator1 = "月";
+				let seperator2 = "日";
+				let month = new Date(currentDate).getMonth() + 1;
+				let hour = new Date(currentDate).getHours();
+				if (type == 2) {
+					currentdate = month + seperator1
+				} else {
+					currentdate = month + seperator1 + strDate + seperator2
+				};
+				return currentdate
+			},
+			
+			// 判断周几
+			judgeWeek (currentDate) {
+				let date = new Date(currentDate);
+				let day = date.getDay();
+				switch (day) {
+					case 0:
+						return "周日"
+						break;
+					case 1:
+						return "周一"
+						break;
+					case 2:
+						return "周二"
+						break;
+					case 3:
+						return "周三"
+						break;
+					case 4:
+						return "周四"
+						break;
+					case 5:
+						return "周五"
+						break;
+					case 6:
+						return "周六"
+						break
+					}
+			},
+				
+				// 查询订单详情
+				queryOrderDetail(data) {
+					this.showLoadingHint = true;
+					this.infoText = '加载中···';
+					getOrderDetail(data).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.serviceMessage = res.data.data;
+							this.serviceMessage.payPrice = fenToYuan(this.serviceMessage.payPrice);
+							this.currentFlow = this.transitionOrderFlowStatusText(this.serviceMessage.workerStatus,this.serviceMessage);
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'bottom'
+							})
+						};
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'bottom'
+						})
+					})
+				},
+				
+				// 转换订单流程状态
+				transitionOrderFlowStatusText(status,item) {
+					let temporaryStatus = status.toString();
+					let temporaryWorkerStatus = item.status.toString();
+					// 服务中类型的订单下包含3个子状态(30-待出发 40-待服务 50-服务中)
+					if (temporaryStatus == 1 || temporaryStatus == 2) {
+						switch(temporaryWorkerStatus) {
+							case '10' :
+							return 0
+							break;
+							case '20' :
+							return 1
+							break;
+							case '30' :
+							return 2
+							break;
+							case '40' :
+							return 2
+							break;
+							case '50' :
+							return 3
+							break;
+						}	
+					} else {
+						switch(temporaryStatus) {
+							case '1' :
+							return 0
+							break;
+							case '2' :
+							if (temporaryWorkerStatus == '20') {
+								return 1
+							} else if (temporaryWorkerStatus == '30') {
+								return 2
+							} else if (temporaryWorkerStatus == '40') {
+								return 2
+							} else if (temporaryWorkerStatus == '50') {
+								return 3
+							}
+							break;
+							case '3' :
+							if (!item.commentStatus) {
+								return 4
+							} else {
+								return 5
+							}
+							break
+						}
+					}
+				},
+				
+				// 转换订单状态
+				transitionOrderStatusText(status,item) {
+					let temporaryStatus = status.toString();
+					let temporaryWorkerStatus = item.status.toString();
+					// 待处理类型的订单下包含2子状态(20-待接单 30-待出发)
+					if (this.current == 0) {
+						switch(temporaryWorkerStatus) {
+							case '20' :
+							return '待接单'
+							break;
+							case '30' :
+							return '待出发'
+							break
+						}	
+					};
+					// 服务中类型的订单下包含2个子状态(40-待服务 50-服务中)
+					if (this.current == 1) {
+						switch(temporaryWorkerStatus) {
+							case '40' :
+							return '待服务'
+							break;
+							case '50' :
+							return '服务中'
+							break;
+						}	
+					};
+					switch(temporaryWorkerStatus) {
+						case '20' :
+						return '待接单'
+						break;
+						case '30' :
+						return '待出发'
+						break;
+						case '40' :
+						return '待服务'
+						break;
+						case '50' :
+						return '服务中'
+						break;
+						case '60' :
+						return '已完成'
+						break;
+						case '70' :
+						return '已取消'
+						break;
+						case '80' :
+						return '已拒绝订单'
+						break;
+					}	
+				},
+				
+				// 点击详情事件
+				clickDetailsEvent () {
+					this.orderFormDetailsDialogShow = true
+				},
+				
+				// 接受订单事件
+				acceptOrderFormEvent(item) {
+					this.infoText = '订单接受中···';
+					this.showLoadingHint = true;
+					acceptTradeOrder(item.id).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.acceptOrderFormSuccessDialogShow = true;
+							this.queryOrderDetail({id:this.serviceMessage.id});
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'bottom'
+							})
+						};
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'bottom'
+						})
+					})
+				},
+				
+				// 拒绝订单事件
+				refuseTradeOrderEvent(id,reason) {
+					this.infoText = '订单拒绝中···';
+					this.showLoadingHint = true;
+					refuseTradeOrder(id,reason).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.refuseOrderFormSuccessDialogShow = true;
+							this.queryOrderDetail({id:this.serviceMessage.id});
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'bottom'
+							})
+						};
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'bottom'
+						})
+					})
+				},
+				
+				// 选择原因弹框值变化事件
+				checkboxReasonChange (n) {
+					console.log('change', n);
+				},
+				
+				// 拒绝订单事件
+				refuseOrderFormEvent (item) {
+					this.refuseOrderFormDialogShow = true
+				},
+				
+				// 确定拒绝事件
+				sureRefuseEvent () {
+					this.refuseOrderFormDialogShow = false;
+					this.refuseTradeOrderEvent(this.serviceMessage.id,'')
+				},
+				
+				// 立即出发事件
+				departEvent(item) {
+					this.orderFormDetailsDialogShow = true
+				},
+				
+				// 立即出发确定事件
+				departSureEvent () {
+					this.infoText = '出发中···';
+					this.showLoadingHint = true;
+					nurseDepart(this.serviceMessage.id).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.queryOrderDetail({id:this.serviceMessage.id});
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						};
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'center'
+						})
+					})
+				},
+				
+				// 开始服务事件
+				startEvent(item) {
+					this.orderFormDetailsDialogShow = true
+				},
+				
+				// 开始服务确定事件
+				startSureEvent () {
+					this.infoText = '开始服务中···';
+					this.showLoadingHint = true;
+					startServer(this.serviceMessage.id).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.queryOrderDetail({id:this.serviceMessage.id});
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						};
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'center'
+						})
+					})
+				},
+				
+				// 完成服务事件
+				completeEvent(item) {
+					this.orderFormDetailsDialogShow = true
+				},
+				
+				// 完成服务确定事件
+				completeSureEvent () {
+					this.infoText = '完成服务中···';
+					this.showLoadingHint = true;
+					completeServer(this.serviceMessage.id).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.queryOrderDetail({id:this.serviceMessage.id});
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						};
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false
+					})
+					.catch((err) => {
+						this.orderFormDetailsDialogShow = false;
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'center'
+						})
+					})
+				},
 			
 			// 顶部导航返回事件
 			backTo () {
@@ -288,6 +860,17 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.order-form-details-dialog-box {
 			::v-deep .u-popup {
 				flex: none !important;
@@ -364,6 +947,157 @@
 				}
 			}	
 		};
+		.refuse-order-form-success-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						image {
+							width: 78px;
+							height: 78px;
+							margin: 0 auto;
+							margin-top: 50px;
+							margin-bottom: 30px;
+						};
+						.operation-success-title {
+							text-align: center;
+							font-size: 18px;
+							color: #101010
+						};
+						.operation-success-content {
+							text-align: center;
+							font-size: 14px;
+							color: #A0A0A0;
+							margin: 20px 0
+						};
+						.operation-success-btn {
+							width: 90%;
+							margin: 0 auto;
+							margin-bottom: 30px;
+							height: 44px;
+							border-radius: 8px;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							background: #4263EB;
+							font-size: 16px;
+							color: #fff;
+							margin-bottom: 50px
+						}
+					}
+				}
+			}	
+		};
+		.accept-order-form-success-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						image {
+							width: 100px;
+							height: 100px;
+							margin: 0 auto;
+							margin-top: 50px;
+							margin-bottom: 30px;
+						};
+						.accept-success-title {
+							text-align: center;
+							font-size: 18px;
+							color: #101010;
+							margin-bottom: 30px;
+						};
+						.operation-success-btn {
+							width: 90%;
+							margin: 0 auto;
+							margin-bottom: 30px;
+							height: 44px;
+							border-radius: 8px;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							background: #4263EB;
+							font-size: 16px;
+							color: #fff;
+							margin-bottom: 50px
+						}
+					}
+				}
+			}	
+		};
+		.refuse-order-form-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 92%;
+						padding: 30px 10px 20px 10px;
+						box-sizing: border-box;
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						};
+						.top-title {
+							font-size: 18px;
+							color: #101010;
+							height: 40px;
+							display: flex;
+							justify-content: center;
+							align-items: center
+						};
+						.center-content {
+							margin: 20px 0
+						};
+						.bottom-btn {
+							.sure-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								border-radius: 8px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								background: #4263EB;
+								font-size: 16px;
+								color: #fff;
+								margin-bottom: 10px
+							};
+							.cancel-btn {
+								width: 90%;
+								margin: 0 auto;
+								height: 44px;
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								border-radius: 8px;
+								border: 1px solid #D0D5DD;
+								font-size: 16px;
+								color: #585B60
+							}
+						}
+					}
+				}
+			}	
+		};
 		.top-area-box {
 			position: relative;
 			width: 100%;
@@ -389,20 +1123,36 @@
 			justify-content: center;
 			align-items: center;
 			.service-status {
-				font-size: 18px;
-				color: #E86F50;
-				margin-bottom: 10px;
+				>text {
+					font-size: 18px;
+					color: #E86F50;
+					margin-bottom: 10px;
+				};	
+				.serviceStyle {
+					color: #289E8E !important
+				};
+				.completeStyle {
+					color: #020202 !important
+				}
 			};
 			.btn-details {
-				width: 172px;
-				height: 40px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: #1983FD;
-				border-radius: 18px;
-				font-size: 14px;
-				color: #fff;
+				>text {
+					display: inline-block;
+					width: 172px;
+					height: 40px;
+					text-align: center;
+					line-height: 40px;
+					background: #1983FD;
+					border-radius: 18px;
+					font-size: 14px;
+					color: #fff;
+				};
+				.refuse-btn {
+					margin-right: 20px;
+					background: #fff !important;
+					color: #898C8C !important;
+					border: 1px solid #BBBBBB !important
+				}	
 			}
 		};
 		.order-form-list-wrapper {
@@ -431,16 +1181,6 @@
 						@include no-wrap();
 						>text {
 							font-size: 16px;
-							color: #444444;
-							font-weight: bold
-						}
-					};
-					.order-form-status {
-						>text {
-							display: inline-block;
-							padding: 0 0 0 4px;
-							box-sizing: border-box;
-							font-size: 14px;
 							color: #444444;
 							font-weight: bold
 						}
@@ -737,6 +1477,81 @@
 					color: #222222;
 					word-break: break-all;
 					margin-bottom: 4px;
+				}
+			}
+		};
+		.order-message {
+			background: #fff;
+			margin-bottom: 10px;
+			.order-message-top {
+				display: flex;
+				align-items: center;
+				height: 50px;
+				@include bottom-border-1px(#BBBBBB);
+				justify-content: space-between;
+				padding: 0 12px;
+				box-sizing: border-box;
+				.order-message-title {
+					flex: 1;
+					@include no-wrap();
+					>text {
+						font-size: 16px;
+						color: #444444;
+						font-weight: bold
+					}
+				}
+			};
+			.order-message-content {
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.order-message-one-special {
+					display: flex;
+					justify-content: space-between;
+					margin-bottom: 10px;
+					.order-message-one-special-left {
+						font-size: 14px;
+						font-weight: bold;
+						color: #3E4248;
+					};
+					.order-message-one-special-right {
+						display: flex;
+						flex: 1;
+						justify-content: flex-end;
+						>text {
+							display: inline-block;
+							font-size: 14px;
+							color: #3E4248;
+							font-weight: bold;
+							&:first-child {
+								flex: 1;
+								color: #B7B6B6;
+								margin-right: 4px;
+								text-align: right;
+								word-break: break-all
+							};
+							&:last-child {
+								color: #3E4248
+							}
+						}
+					}
+				};
+				.order-message-one {
+					display: flex;
+					justify-content: space-between;
+					margin-bottom: 10px;
+					>text {
+						display: inline-block;
+						font-size: 14px;
+						color: #3E4248;
+						font-weight: bold;
+						&:first-child {
+							flex: 1;
+							word-break: break-all
+						};
+						&:last-child {
+							color: #B7B6B6
+						}
+					}
 				}
 			}
 		}

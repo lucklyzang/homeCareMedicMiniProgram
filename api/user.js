@@ -2,10 +2,11 @@ import request from '@/api/request';
 import Qs from 'qs'
 
 // 获的banner列表
-export function getUserBannerList() {
+export function getUserBannerList(data) {
   return request({
-    url: '/app-api/radar/banner/list',
-    method: 'get'
+    url: '/app-api/promotion/banner/list',
+    method: 'get',
+		params: data
   })
 };
 
@@ -32,101 +33,6 @@ export function updateUserAvatar(data) {
     url: '/app-api/member/user/update-avatar',
     method: 'post',
 		data
-  })
-};
-
-// 获取用户房间
-export function getUserRoom() {
-  return request({
-    url: '/app-api/member/room/get',
-    method: 'get'
-  })
-};
-
-// 获取用户房间列表
-export function getUserRoomList(data) {
-  return request({
-    url: '/app-api/member/room/list',
-    method: 'get',
-		params: data
-  })
-};
-
-// 获取预设房间
-export function getUserPresetsRoomList() {
-  return request({
-    url: '/app-api/member/room/presets-room',
-    method: 'get'
-  })
-};
-
-// 创建用户房间
-export function createUserRoom(data) {
-  return request({
-    url: '/app-api/member/room/create',
-    method: 'post',
-		data
-  })
-};
-
-// 更新用户房间
-export function updateUserRoom(data) {
-  return request({
-    url: '/app-api/member/room/update',
-    method: 'put',
-		data
-  })
-};
-
-// 删除用户房间
-export function deleteUserRoom(data) {
-  return request({
-    url: '/app-api/member/room/delete',
-    method: 'delete',
-		params: data
-  })
-};
-
-// 获取用户家庭
-export function getUserFamily() {
-  return request({
-    url: '/app-api/member/family/get',
-    method: 'get'
-  })
-};
-
-// 获取用户家庭列表
-export function getUserFamilyList() {
-  return request({
-    url: '/app-api/member/family/list',
-    method: 'get'
-  })
-};
-
-// 创建用户家庭
-export function createUserFamily(data) {
-  return request({
-    url: '/app-api/member/family/create',
-    method: 'post',
-		data
-  })
-};
-
-// 更新用户家庭
-export function updateUserFamily(data) {
-  return request({
-    url: '/app-api/member/family/update',
-    method: 'put',
-		data
-  })
-};
-
-// 删除用户家庭
-export function deleteUserFamily(data) {
-  return request({
-    url: '/app-api/member/family/delete',
-    method: 'delete',
-		params: data
   })
 };
 
@@ -157,88 +63,65 @@ export function deleteMobile(data) {
   })
 };
 
-// 获取用户设备数量
-export function getUserDeviceCount() {
+// 创建报警信息
+export function createCallPolice(data) {
   return request({
-    url: '/app-api/member/device-user/device-count',
-    method: 'get'
-  })
-};
-
-// 获取用户设备信息
-export function getUserDeviceMessage(data) {
-  return request({
-    url: '/app-api/member/device-user/devices',
-    method: 'get',
-		params: data
-  })
-};
-
-// 获取用户设备和房间列表
-export function getUserRoomDevices(data) {
-  return request({
-    url: '/app-api/member/device-user/room-devices',
-    method: 'get',
-		params: data
-  })
-};
-
-// 创建设备和用户绑定
-export function createUserDeviceBind(data) {
-  return request({
-    url: '/app-api/member/device-user/create',
+    url: '/app-api/hospital/call-police/create',
     method: 'post',
 		data
   })
 };
 
-// 更新设备和用户绑定
-export function updateUserDeviceBind(data) {
+// 医护实名认证
+export function medicalCareRealName(data) {
   return request({
-    url: '/app-api/member/device-user/update',
+    url: '/app-api/hospital/medical-care/real-name',
     method: 'put',
 		data
   })
 };
 
-// 删除设备和用户绑定
-export function deleteUserDeviceBind(data) {
+// 医护信息完善
+export function medicalCarePerfect(data) {
   return request({
-    url: '/app-api/member/device-user/delete',
-    method: 'delete',
-		params: data
+    url: '/app-api/hospital/medical-care/perfect',
+    method: 'put',
+		data
   })
 };
 
-// 获取设备和用户绑定
-export function getUserDeviceBind() {
+// 创建医护资质
+export function createMedicalCareAptitude(data) {
   return request({
-    url: '/app-api/member/device-user/get',
-    method: 'get'
-  })
-};
-
-// 创建用户启动数据
-export function createUserBootUpData() {
-  return request({
-    url: '/app-api/member/boot-up/create',
-    method: 'post'
-  })
-};
-
-// 创建页面访问数据
-export function createVisitPageData(data) {
-  return request({
-    url: '/app-api/member/visit-page/create',
+    url: '/app-api/hospital/care-aptitude/create',
     method: 'post',
 		data
   })
 };
 
-// 退出页面
-export function exitPageData(id) {
+// 更新医护资质
+export function uodateMedicalCareAptitude(data) {
   return request({
-    url: `/app-api/member/visit-page/exit?id=${id}`,
-    method: 'post'
+    url: '/app-api/hospital/care-aptitude/update',
+    method: 'put',
+		data
+  })
+};
+
+// 创建意见反馈
+export function createFeedback(data) {
+  return request({
+    url: '/app-api/hospital/feedback/create',
+    method: 'post',
+		data
+  })
+};
+
+// 更新意见反馈
+export function updateFeedback(data) {
+  return request({
+    url: '/app-api/hospital/feedback/update',
+    method: 'put',
+		data
   })
 };

@@ -111,12 +111,15 @@
 			</u-popup>
 		</view>
 		<!-- 报警按钮 -->
-		<view class="call-police-box" @click="callPoliceDialogShow = true">
+		<view class="call-police-box" @click="callPoliceDialogShowEvent">
 			<image src="@/static/img/call-police-btn.png"></image>
 		</view>
 		<view class="top-area">
 			<image src="@/static/img/home-site.png"></image>
 			<text>成都市武侯区三和街道</text>
+		</view>
+		<view class="loading-box" v-if="showLoadingHint">
+			<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
 		</view>
 		<view class="banner-area-box">
 			<u-swiper @click="swiperClickEvent" keyName="image"  indicator :list="bannerList"></u-swiper>
@@ -289,7 +292,7 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
-	import { getUserBannerList } from '@/api/user.js'
+	import { getUserBannerList, createCallPolice } from '@/api/user.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -312,6 +315,8 @@
 				minPriceValue: '',
 				maxPriceValue: '',
 				smartSortValue: "",
+				longitude: '',
+				latitude: '',
 				smartSortList: [
 					{
 						id: 1,
@@ -363,7 +368,7 @@
 			}
 		},	
 		onShow() {
-			this.queryUserBannerList()
+			this.queryUserBannerList({position: 1})
 		},
 		onHide () {
 		},
@@ -371,7 +376,8 @@
 		},
 		computed: {
 			...mapGetters([
-				'userInfo'
+				'userInfo',
+				'userBasicInfo'
 			]),
 			userName() {
 			},
@@ -453,26 +459,65 @@
 				console.log(e)
 			},
 			
+			// 报警事件
+			callPoliceEvent () {
+				this.infoText = '报警中...';
+				createCallPolice({
+				  userId: this.userInfo.userId,
+					name: !this.userBasicInfo.nickname ? '' : this.userBasicInfo.nickname,
+					description: '',
+					mobile: !this.userBasicInfo.mobile ? '' : this.userBasicInfo.mobile,
+					coordinate: `${this.longitude},${this.latitude}`,
+					status: 0,
+					processor: 0,
+					handleTime: '',
+					handleResult: ''
+				}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.callPoliceDialogShow = false;
+				})
+				.catch((err) => {
+					this.callPoliceDialogShow = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
 			// 获取首页banner列表
-			queryUserBannerList () {
+			queryUserBannerList (data) {
 				this.showLoadingHint = true;
 				this.infoText = '加载中...';
 				this.bannerList = [];
-				getUserBannerList().then((res) => {
+				getUserBannerList(data).then((res) => {
 					if ( res && res.data.code == 0) {
 						if (res.data.data.length > 0) {
 							for (let item of res.data.data) {
 								this.bannerList.push({
 									image: item.picUrl,
-									title: item.title
+									title: ''
 								})
 							}
 						}
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
-							position: 'bottom'
+							position: 'center'
 						})
 					};
 					this.showLoadingHint = false;
@@ -480,10 +525,53 @@
 				.catch((err) => {
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					})
+				})
+			},
+			
+			// 报警弹框弹出事件
+			callPoliceDialogShowEvent () {
+				this.isGetLocation();
+				this.callPoliceDialogShow = true
+			},
+			
+			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+				var _this = this;
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
+							_this.getAuthorizeInfo()
+						} else {
+							_this.getLocation()
+						}
+					}
+				})
+			},
+			
+			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+				var _this = this;
+				uni.authorize({
+					scope: a,
+					success() { //允许授权
+						_this.getLocation()
+					}
+				})
+			},
+			
+			//获取当前所在位置的经纬度
+			getLocation() {
+				uni.getLocation({
+					type: 'gcj02',
+					success: (res) => {
+						this.longitude = res.longitude.toString();
+						this.latitude = res.latitude.toString()
+					},
+					fail: (err) => {
+						console.log('err',err)
+					}
 				})
 			}
 		}
@@ -697,6 +785,12 @@
 				font-size: 13px;
 				color: #fff
 			}
+		};
+		.loading-box {
+			height: 35px;
+			display: flex;
+			align-items: center;
+			justify-content: center
 		};
 		.banner-area-box {
 			min-height: 135px;

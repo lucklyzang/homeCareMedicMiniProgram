@@ -70,3 +70,11 @@ export function weixinMiniAppLogin(data) {
 	})
 }
 
+// 根据字典类型查询字典数据信息
+export function getUserDictData(data) {
+  return request({
+    url: '/app-api/system/dict-data/type',
+    method: 'get',
+		params: data
+  })
+}

@@ -19,6 +19,10 @@ export default {
 			state.userInfo = getCache('userBasicInfo') ? getCache('userBasicInfo') : {};
 			return state.userBasicInfo
 		},
+		nurseRankDictData:(state) => {
+			state.nurseRankDictData = getCache('nurseRankDictData') ? getCache('nurseRankDictData') : [];
+			return state.nurseRankDictData
+		},
 		overDueWay: state => state.overDueWay
 	},
 	mutations: {
@@ -47,6 +51,13 @@ export default {
 			if (playLoad && playLoad != 'null') {
 				setCache('isLogin', playLoad);
 				state.isLogin = playLoad
+			}
+		},
+		// 修改护师职称字典数据
+		changeNurseRankDictData(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('nurseRankDictData', playLoad);
+				state.nurseRankDictData = playLoad
 			}
 		},
 		// 修改过期方式

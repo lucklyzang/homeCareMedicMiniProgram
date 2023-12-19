@@ -182,6 +182,14 @@ export function noMultipleClicks(methods, info) {
 	}
 }
 
+/* 
+ * 金额分转换成元
+ */
+
+export const fenToYuan = (amount) => {
+  return (Number(amount) / 100).toFixed(2)
+}
+
 export const removeAllLocalStorage = () => {
   // removeStore('userName');
   // removeStore('userPassword');
@@ -191,5 +199,6 @@ export const removeAllLocalStorage = () => {
 	removeCache('familyId');
 	removeCache('familyMessage');
 	removeCache('userBasicInfo');
+	removeCache('nurseRankDictData');
   removeCache('storeOverDueWay');
 }

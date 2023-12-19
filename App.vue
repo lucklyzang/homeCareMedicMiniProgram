@@ -1,6 +1,5 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex'
-import { createUserBootUpData } from '@/api/user.js'
 export default {
 	computed: {
 		...mapGetters([
@@ -9,12 +8,6 @@ export default {
 	onLaunch: function() {
 	},
 	onShow: function() {
-		console.log('启动了');
-		// 创建用户启动数据
-		createUserBootUpData().then((res) => {
-		})
-		.catch((err) => {
-		});
 		if (uni.canIUse('getUpdateManager')) {
 			const updateManager = uni.getUpdateManager();
 			updateManager.onCheckForUpdate(function (res) {

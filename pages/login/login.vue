@@ -120,7 +120,7 @@
 				</view>
 			</view>
 			<view class="form-btn" v-if="!isForgetPassword && !isSetPassword">
-				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(sure)">{{  showLoadingHint ? isPasswordLogin ? '登录中···' : '登 录/注 册中···' : isPasswordLogin ? '登 录' : '登 录/注 册' }}</button>
+				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(sure)">{{  showLoadingHint && !isClickGetCode ? isPasswordLogin ? '登录中···' : '登 录/注 册中···' : isPasswordLogin ? '登 录' : '登 录/注 册' }}</button>
 				<view class="form-btn-info-text">
 					<u-checkbox-group v-model="isReadAgreeChecked">
 						<u-checkbox 
@@ -136,7 +136,7 @@
 				</view>
 			</view>
 			<view class="enter-home-btn" v-if="isForgetPassword || isSetPassword">
-				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(resetPasswordEvent)">{{ showLoadingHint ? isForgetPassword ? '密码重置中···' : '密码设置中···' : isForgetPassword ? '确认' : '进入首页' }}</button>
+				<button :class="{'uniButtonStyle' : showLoadingHint}" @click="$noMultipleClicks(resetPasswordEvent)">{{ showLoadingHint && !isClickGetCode ? isForgetPassword ? '密码重置中···' : '密码设置中···' : isForgetPassword ? '确认' : '进入首页' }}</button>
 			</view>
       <view class="weixin-login" v-if="!isForgetPassword && !isSetPassword">
         <u-divider border-color="#DBDBDB" color="#919191" text="其他登录方式"></u-divider>
@@ -152,7 +152,7 @@
 
 <script>
 	import { mapGetters, mapMutations } from 'vuex'
-	import {logIn, logInByCode, weixinMiniAppLogin, sendPhoneCode, resetPassword, setPassword } from '@/api/login.js'
+	import {logIn, getUserDictData, logInByCode, weixinMiniAppLogin, sendPhoneCode, resetPassword, setPassword } from '@/api/login.js'
 	import { setCache, getCache, removeCache } from '@/common/js/utils'
 	export default {
 	components: {
@@ -190,6 +190,7 @@
 				isReadAgreeChecked: [],
 				showLoadingHint: false,
 				modalShow: false,
+				isClickGetCode: false,
 				modalContent: ''
 			}
 		},
@@ -216,7 +217,8 @@
 				'storeUserInfo',
 				'changeOverDueWay',
 				'changeToken',
-				'changeIsLogin'
+				'changeIsLogin',
+				'changeNurseRankDictData'
 			]),
 			
 			// 返回事件
@@ -297,6 +299,7 @@
 							this.timer = null
 						}
 					}, 1000);
+					this.isClickGetCode = true;
 					this.sendCodeEvent()
 				}
 			},
@@ -371,7 +374,8 @@
 						this.changeIsLogin(true);
 						uni.switchTab({
 							url: '/pages/index/index'
-						})
+						});
+						this.getUserDictDataEvent()
 					} else {
 					 this.modalShow = true;
 					 this.modalContent = res.data.msg
@@ -401,7 +405,8 @@
 						this.changeIsLogin(true);
 						uni.switchTab({
 							url: '/pages/index/index'
-						})
+						});
+						this.getUserDictDataEvent()
 					} else {
 					 this.modalShow = true;
 					 this.modalContent = res.data.msg
@@ -468,7 +473,8 @@
 								this.changeIsLogin(true);
 								uni.switchTab({
 									url: '/pages/index/index'
-								})
+								});
+								this.getUserDictDataEvent()
 							}
 						}
 					} else {
@@ -517,9 +523,11 @@
 					 this.modalShow = true;
 					 this.modalContent = res.data.msg
 					};
+					this.isClickGetCode = false;
 					this.showLoadingHint = false;
 				})
 				.catch((err) => {
+					this.isClickGetCode = false;
 					this.showLoadingHint = false;
 					this.modalShow = true;
 					this.modalContent = `${err}`
@@ -530,7 +538,8 @@
 			skipEvent () {
 				uni.switchTab({
 					url: '/pages/index/index'
-				})
+				});
+				this.getUserDictDataEvent()
 			},
 			
 			// 密码重置和设置密码事件
@@ -623,7 +632,8 @@
 								this.changeIsLogin(true);
 								uni.switchTab({
 									url: '/pages/index/index'
-								})
+								});
+								this.getUserDictDataEvent()
 							} else {
 							 this.modalShow = true;
 							 this.modalContent = `${res.data.msg}`
@@ -663,6 +673,17 @@
 						loginType: 1
 					})
 				}
+			},
+			
+			// 获取护师职称数据
+			getUserDictDataEvent () {
+				getUserDictData({type: 'technical_title'}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.changeNurseRankDictData(res.data.data)
+					}
+				})
+				.catch((err) => {
+				})
 			},
 			
 			// 弹框确定事件

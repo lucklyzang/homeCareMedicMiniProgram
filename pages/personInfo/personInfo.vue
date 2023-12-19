@@ -10,13 +10,13 @@
 				<view class="help-center-content">
 					<text>如遇突发情况，请立即进行报警。</text>
 				</view>
-				<view class="help-bottom-btn">
+				<view class="help-bottom-btn" @click="callPoliceEvent">
 					<image src="@/static/img/call-police-dialog.png"></image>
 				</view>
 			</u-popup>
 		</view>
 		<!-- 报警按钮 -->
-		<view class="call-police-box" @click="callPoliceDialogShow = true">
+		<view class="call-police-box" @click="callPoliceDialogShowEvent">
 			<image src="@/static/img/call-police-btn.png"></image>
 		</view>
 		<!-- 选择提现方式弹框 -->
@@ -95,6 +95,9 @@
 				</view>
 			</view>
 		</view>
+		<view class="loading-box" v-if="showLoadingHint">
+			<u-loading-icon :show="showLoadingHint" :text="infoText" size="18" textSize="16"></u-loading-icon>
+		</view>
 		<view class="switch-box">
 			<text>派单开关</text>
 			<u-switch v-model="isSendOrdersValue" activeColor="#5A7BF4"></u-switch>
@@ -122,7 +125,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { getUserMessage } from '@/api/user.js'
+	import { getUserMessage, createCallPolice } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -134,7 +137,7 @@
 				authenticationIconPng: require("@/static/img/authentication-icon.png"),
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
-				infoText: '',
+				infoText: '加载中···',
 				showLoadingHint: false,
 				isSendOrdersValue: true,
 				withdrawalMethodDialogShow: false,
@@ -142,6 +145,8 @@
 				showSupportStaffBox: false,
 				personPhotoSource: '',
 				niceNameValue: '张三',
+				latitude: '',
+				longitude: '',
 				bottomFunctionList: [
 					{
 						name: '我的账单',
@@ -168,6 +173,7 @@
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -185,7 +191,7 @@
 		},
 		onShow() {
 			// 初次进入该页面时，查询用户基本信息
-			if (!this.userBasicInfo) {
+			if (!this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}') {
 				this.queryUserBasicMessage()
 			} else {
 				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
@@ -196,6 +202,49 @@
 			...mapMutations([
 				'changeUserBasicInfo'
 			]),
+			
+			// 报警弹框弹出事件
+			callPoliceDialogShowEvent () {
+				this.isGetLocation();
+				this.callPoliceDialogShow = true
+			},
+			
+			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+				var _this = this;
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
+							_this.getAuthorizeInfo()
+						} else {
+							_this.getLocation()
+						}
+					}
+				})
+			},
+			
+			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+				var _this = this;
+				uni.authorize({
+					scope: a,
+					success() { //允许授权
+						_this.getLocation()
+					}
+				})
+			},
+			
+			//获取当前所在位置的经纬度
+			getLocation() {
+				uni.getLocation({
+					type: 'gcj02',
+					success: (res) => {
+						this.longitude = res.longitude.toString();
+						this.latitude = res.latitude.toString()
+					},
+					fail: (err) => {
+						console.log('err',err)
+					}
+				})
+			},
 			
 			// 头像点击事件
 			enterPersonMessagePageEvent () {
@@ -215,19 +264,61 @@
 						this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
-					}	
-					this.showLoadingHint = false;
+					};
+					this.showLoadingHint = false
 				})
 				.catch((err) => {
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
 						position: 'bottom'
+					})
+				})
+			},
+			
+			// 报警事件
+			callPoliceEvent () {
+				this.showLoadingHint = true;
+				this.infoText = '报警中...';
+				createCallPolice({
+				  userId: this.userInfo.userId,
+					name: this.userBasicInfo.nickname,
+					description: '',
+					mobile: this.userBasicInfo.mobile,
+					coordinate: `${this.longitude},${this.latitude}`,
+					status: 0,
+					processor: 0,
+					handleTime: '',
+					handleResult: ''
+				}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
 					})
 				})
 			},
@@ -287,6 +378,10 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
 		.withdrawal-method-dialog-box {
 			::v-deep .u-popup {
 				flex: none !important;
@@ -631,6 +726,12 @@
 					}
 				}
 			}
+		};
+		.loading-box {
+			height: 35px;
+			display: flex;
+			align-items: center;
+			justify-content: center
 		};
 		.switch-box {
 			display: flex;
