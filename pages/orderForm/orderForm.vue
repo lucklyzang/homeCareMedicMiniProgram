@@ -458,6 +458,7 @@
 			// 查询交易订单
 			queryTradeOrderPage(data,flag) {
 				this.tradeList = [];
+				this.isShowNoData = false;
 				if (flag) {
 					this.showLoadingHint = true
 				} else {
@@ -1120,6 +1121,9 @@
 			padding: 10px 6px;
 			box-sizing: border-box;
 			position: relative;
+			.scroll-view {
+				height: 100%
+			};
 			::v-deep .u-empty {
 				position: absolute;
 				top: 50%;

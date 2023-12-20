@@ -1,6 +1,17 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
+		<view>
+			<u-datetime-picker
+				:show="workingSeniorityDialogShow"
+				v-model="workingSeniorityValue"
+				@confirm="workingSeniorityConfirm"
+				@cancel="workingSeniorityDialogShow = false"
+				mode="date"
+			></u-datetime-picker>
+		</view>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="完善个人信息" @backClick="backTo">
@@ -17,7 +28,7 @@
 						<text>账号</text>
 					</view>
 					<view class="account-number-right">
-						<text>15669106075</text>
+						<text>{{ !userBasicInfo || JSON.stringify(userBasicInfo) == '{}' ? '' : userBasicInfo.mobile  }}</text>
 					</view>
 				</view>
 				<view class="person-name">
@@ -45,6 +56,7 @@
 							color="#979797"
 							v-model="idCardValue"
 							border="none"
+							type="idcard"
 						></u--input>
 					</view>
 				</view>
@@ -87,6 +99,7 @@
 							color="#979797"
 							v-model="ageValue"
 							border="none"
+							type="number"
 						></u--input>
 					</view>
 				</view>
@@ -102,6 +115,7 @@
 							color="#979797"
 							v-model="emergencyContactNumberValue"
 							border="none"
+							type="number"
 						></u--input>
 					</view>
 				</view>
@@ -113,12 +127,11 @@
 					<view class="professional-title-right">
 						<w-select
 								style="margin-left:10px;" 
-								v-model='smartSortValue'
-								defaultValue="智能排序"
-								:list='smartSortList'
+								v-model='professionalTitleValue'
+								:list='professionalTitleList'
 								valueName='content' 
 								keyName="id"
-								@change='smartSortChange'
+								@change='professionalTitleChange'
 							>
 						</w-select>
 					</view>
@@ -131,14 +144,27 @@
 					<view class="professional-title-right">
 						<w-select
 								style="margin-left:10px;"
-								v-model='serviceCategoryValue'
-								defaultValue="服务类别"
-								:list='serviceCategoryList'
+								v-model='organizationValue'
+								:list='organizationList'
 								valueName='content' 
 								keyName="id"
-								@change='serviceCategoryChange'
+								@change='organizationChange'
 							>
 						</w-select>
+					</view>
+				</view>
+				<view class="professional-title organization-box">
+					<view class="professional-title-left">
+						<text>*</text>
+						<text>从业时间</text>
+					</view>
+					<view class="working-seniority" @click="workingSeniorityChooseEvent">
+						 <view class="working-seniority-left">
+							 {{ workingSeniorityDefaultValue }}
+						 </view>
+						 <view class="working-seniority-right">
+							 <u-icon name="calendar" size="20" color="#C1C1C1"></u-icon>
+						 </view>
 					</view>
 				</view>
 				<view class="emergency-contact-number service-quantity">
@@ -153,6 +179,7 @@
 							color="#979797"
 							v-model="serviceQuantityValue"
 							border="none"
+							type="number"
 						></u--input>
 					</view>
 				</view>
@@ -168,6 +195,7 @@
 							color="#979797"
 							v-model="serviceDurationValue"
 							border="none"
+							type="number"
 						></u--input>
 					</view>
 				</view>
@@ -182,7 +210,7 @@
 			</view>
 		</view>
 		<view class="save-btn-box">
-			<view class="save-btn">
+			<view class="save-btn" @click="saveEvent">
 				<text>保存</text>
 			</view>
 		</view>
@@ -198,6 +226,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { medicalCarePerfect } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -208,45 +237,39 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '保存中···',
+				workingSeniorityDefaultValue: '选择时间',
+				workingSeniorityDialogShow: false,
+				workingSeniorityValue: Number(new Date()),
 				personNameValue: '',
 				idCardValue: '',
 				genderValue: '',
 				birthdayValue: '',
 				ageValue: '',
-				professionalTitleValue: '',
 				emergencyContactNumberValue: '',
 				serviceQuantityValue: '',
 				serviceDurationValue: '',
 				introValue: '',
-				smartSortValue: "",
-				smartSortList: [
+				professionalTitleValue: "",
+				professionalTitleList: [
 					{
 						id: 1,
-						content: '距离优先'
+						content: '护士'
 					}, 
 					{
 						id: 2,
-						content: '价格优先'
+						content: '医生'
 					}
 				],
-				serviceCategoryValue: '',
-				serviceCategoryList: [
+				organizationValue: '',
+				organizationList: [
 					{
 						id: 1,
-						content: '目婴护理'
+						content: '成都中医院'
 					}, 
 					{
 						id: 2,
-						content: '宝宝护理'
-					},
-					{
-						id: 3,
-						content: '慢病护理'
-					}, 
-					{
-						id: 4,
-						content: '基本护理'
+						content: '成都妇幼儿童医院'
 					}
 				],
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png")
@@ -254,6 +277,7 @@
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -272,14 +296,161 @@
 				uni.navigateBack()
 			},
 			
-			// 智能排序下拉框值改变事件
-			smartSortChange(e) {
-				console.log(e)
+			// 格式化时间
+			getNowFormatDate(currentDate,type) {
+				// type:1(只显示小时分钟),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟)5(显示月日)
+				let currentdate;
+				let strDate = currentDate.getDate();
+				let seperator1 = "-";
+				let seperator2 = ":";
+				let seperator3 = " ";
+				let month = currentDate.getMonth() + 1;
+				let hour = currentDate.getHours();
+				let minutes = currentDate.getMinutes();
+				if (month >= 1 && month <= 9) {
+					month = "0" + month;
+				};
+				if (hour >= 0 && hour <= 9) {
+					hour = "0" + hour;
+				};
+				if (minutes >= 0 && minutes <= 9) {
+					minutes = "0" + minutes;
+				};
+				if (strDate >= 0 && strDate <= 9) {
+					strDate = "0" + strDate;
+				};
+				if (type == 1) {
+					currentdate = hour + seperator2 + minutes
+				};
+				if (type == 2) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+				};
+				if (type == 3) {
+					currentdate = currentDate.getFullYear() + seperator1 + month
+				};
+				if (type == 4) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes
+				};
+				if (type == 5) {
+					currentdate = month + seperator1 + strDate
+				};
+				return currentdate
 			},
 			
-			// 服务类别下拉框值改变事件
-			serviceCategoryChange(e) {
-				console.log(e)
+			// 从业时间弹框隐藏显示事件
+			workingSeniorityChooseEvent () {
+				this.workingSeniorityDialogShow = true
+			},
+			
+			// 从业时间选择变化事件
+			workingSeniorityConfirm (value) {
+				this.workingSeniorityDialogShow = false;
+				this.workingSeniorityDefaultValue = this.getNowFormatDate(new Date(value.value),2)
+			},
+			
+			// 职称下拉框值改变事件
+			professionalTitleChange(e) {
+				console.log('职称',e)
+			},
+			
+			// 机构下拉框值改变事件
+			organizationChange(e) {
+				console.log('机构',e, this.organizationValue)
+			},
+			
+			// 保存事件
+			saveEvent () {
+				if (!this.emergencyContactNumberValue) {
+					this.$refs.uToast.show({
+						message: '请输入紧急联系人方式',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.professionalTitleValue && this.professionalTitleValue != 0) {
+					this.$refs.uToast.show({
+						message: '请选择职称',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.organizationValue && this.organizationValue != 0) {
+					this.$refs.uToast.show({
+						message: '请选择机构',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (this.workingSeniorityDefaultValue == '选择时间') {
+					this.$refs.uToast.show({
+						message: '请选择从业时间',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.serviceQuantityValue) {
+					this.$refs.uToast.show({
+						message: '请输入服务量',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.serviceDurationValue) {
+					this.$refs.uToast.show({
+						message: '请输入从业时长',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				this.medicalCarePerfectEvent({
+					id: this.userInfo.careId,
+					name: this.personNameValue,
+					idCard: this.idCardValue,
+					birthday: this.birthdayValue,
+					sex: this.genderValue == '男' ? '1' : '2',
+					critical: this.emergencyContactNumberValue,
+					title: this.professionalTitleValue,
+					organization: this.organizationValue,
+					quantity: this.serviceQuantityValue,
+					timeLength: this.serviceDurationValue,
+					practiceTime: this.workingSeniorityDefaultValue == '选择时间' ? '' : this.workingSeniorityDefaultValue,
+					genius: [],
+					introduction: this.introValue,
+					avatar: "",
+					email: ""
+				})
+			},
+			
+			// 完善个人信息事件
+			medicalCarePerfectEvent (data) {
+				this.infoText = '保存中···';
+				this.showLoadingHint = true;
+				medicalCarePerfect(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
 			}
 		}
 	}
@@ -294,6 +465,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #F9F9F9;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #F9F9F9;
@@ -442,6 +624,24 @@
 									color: #979797 !important
 								}
 							}	
+						}
+					};
+					.working-seniority {
+						flex: 1;
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						height: 30px;
+						padding: 4px;
+						box-sizing: border-box;
+						border: 1px solid #D9D9D9;
+						border-radius: 3px;
+						.working-seniority-left {
+							font-size: 14px;
+							color: #979797;
+							flex: 1;
+							padding-right: 10px;
+							box-sizing: border-box
 						}
 					}
 				};

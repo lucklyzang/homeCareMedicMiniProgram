@@ -39,7 +39,7 @@ export function updateUserAvatar(data) {
 // 新增手机号
 export function addMobile(data) {
   return request({
-    url: '/app-api/member/family/add-mobile',
+    url: '/app-api/member/user/add-mobile',
     method: 'post',
 		data
   })
@@ -48,7 +48,7 @@ export function addMobile(data) {
 // 修改手机号
 export function updateMobile(data) {
   return request({
-    url: '/app-api/member/family/update-mobile',
+    url: '/app-api/member/user/update-mobile',
     method: 'put',
 		data
   })
@@ -57,7 +57,7 @@ export function updateMobile(data) {
 // 删除手机号
 export function deleteMobile(data) {
   return request({
-    url: '/app-api/member/family/delete-mobile',
+    url: '/app-api/member/user/delete-mobile',
     method: 'delete',
 		data
   })
@@ -86,6 +86,15 @@ export function medicalCarePerfect(data) {
   return request({
     url: '/app-api/hospital/medical-care/perfect',
     method: 'put',
+		data
+  })
+};
+
+// 获得医护资质
+export function getMedicalCareAptitude(data) {
+  return request({
+    url: '/app-api/hospital/care-aptitude/get',
+    method: 'post',
 		data
   })
 };

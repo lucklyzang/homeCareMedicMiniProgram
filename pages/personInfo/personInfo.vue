@@ -290,7 +290,7 @@
 					name: this.userBasicInfo.nickname,
 					description: '',
 					mobile: this.userBasicInfo.mobile,
-					coordinate: `${this.longitude},${this.latitude}`,
+					coordinate: !this.longitude ? '' : `${this.longitude},${this.latitude}`,
 					status: 0,
 					processor: 0,
 					handleTime: '',

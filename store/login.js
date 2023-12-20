@@ -16,7 +16,7 @@ export default {
 			return state.token
 		},
 		userBasicInfo:(state) => {
-			state.userInfo = getCache('userBasicInfo') ? getCache('userBasicInfo') : {};
+			state.userBasicInfo = getCache('userBasicInfo') ? getCache('userBasicInfo') : {};
 			return state.userBasicInfo
 		},
 		nurseRankDictData:(state) => {

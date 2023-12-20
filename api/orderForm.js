@@ -19,6 +19,15 @@ export function getOrderDetail(data) {
   })
 };
 
+// 获取首页实时订单
+export function getRealtimeTradeOrderPage(data) {
+  return request({
+    url: '/app-api/trade/order/real-time',
+    method: 'get',
+		params: data
+  })
+};
+
 // 护士出发
 export function nurseDepart(id) {
   return request({

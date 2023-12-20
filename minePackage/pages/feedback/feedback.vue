@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<u-modal :show="sureCancelShow" title="确定删除此图片?" :showCancelButton="true" @confirm="sureCancel" @cancel="cancelSure"></u-modal>
 		<view class="top-area-box">
 			<view class="nav">
@@ -59,7 +61,7 @@
 			</view>
 		</view>
 		<view class="feedback-btn-box" v-if="!isFeedbackSuccess">
-			<view class="feedback-btn">
+			<view class="feedback-btn" @click="submitEvent">
 				<text>提交</text>
 			</view>
 		</view>
@@ -70,7 +72,7 @@
 			<view class="feedback-success-image">
 				<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
 			</view>
-			<view class="feedback-success-btn">
+			<view class="feedback-success-btn" @click="backTo">
 				<text>确定</text>
 			</view>
 		</view>
@@ -86,6 +88,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { createFeedback } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -94,7 +97,7 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '提交中···',
 				isFeedbackSuccess: false,
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				topCutList: ['常见问题','使用技巧'],
@@ -105,12 +108,13 @@
 				feedbackCategoryIndex: null,
 				sureCancelShow: false,
 				imgArr: [],
-				temporaryImgPathArr: [],
+				imgFileArr: [],
 				imgIndex: ''
 			}
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -132,8 +136,8 @@
 			// 弹框确定按钮
 			sureCancel() {
 				this.sureCancelShow = false;
-				this.imgArr.splice(this.imgIndex, 1);
-				this.temporaryImgPathArr.splice(this.imgIndex, 1)
+				this.imgFileArr.splice(this.imgIndex, 1);
+				this.imgArr.splice(this.imgIndex, 1)
 			},
 			
 			// 弹框取消按钮
@@ -147,22 +151,95 @@
 				this.imgIndex = index
 			},
 			
+			// 提交事件
+			submitEvent () {
+				if (this.feedbackCategoryIndex === null) {
+					this.$refs.uToast.show({
+						message: '请选择反馈类别',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.problemDescriptionValue) {
+					this.$refs.uToast.show({
+						message: '请输入问题描述',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.contactInformationValue) {
+					this.$refs.uToast.show({
+						message: '请输入联系方式',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				this.createFeedbackEvent({
+					userId: this.userInfo.userId,
+					type: 1,
+					description: this.problemDescriptionValue,
+					images: this.imgFileArr,
+					mobile: this.contactInformationValue,
+					status: 0,
+					processor: '',
+					handleTime: '',
+					handleResult: ''
+				})
+			},
+			
+			// 意见反馈事件
+			createFeedbackEvent(data) {
+				this.infoText = '提交中···';
+				this.showLoadingHint = true;
+				createFeedback(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.isFeedbackSuccess = true
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			
 			// 选择图片方法
 			getImg() {
-				var that = this
+				if (this.imgArr.length >= 3) {
+					this.$refs.uToast.show({
+						message: '最多只能上传3张图片',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				let that = this;
 				uni.chooseImage({
-					count: 4,
+					count: 3,
 					sizeType: ['original', 'compressed'],
 					sourceType: ['album', 'camera'],
 					success: function(res) {
 						uni.previewImage({
 							urls: res.tempFilePaths
 						});
-						that.temporaryImgPathArr = that.temporaryImgPathArr.concat(res.tempFilePaths);
 						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
-							that.srcImage = res.tempFilePaths[imgI];
+							that.imgFileArr.push(res.tempFiles[imgI]['path']);
 							uni.getFileSystemManager().readFile({
-								filePath: that.srcImage,
+								filePath: res.tempFilePaths[imgI],
 								encoding: 'base64',
 								success: res => {
 									let base64 = 'data:image/jpeg;base64,' + res.data;
@@ -191,8 +268,16 @@
 	.content-box {
 		@include content-wrapper;
 		background: #F2F2F2;
+		position: relative;
 		::v-deep .u-popup {
 			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
 		};
 		.top-area-box {
 			position: relative;

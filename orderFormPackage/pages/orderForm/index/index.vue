@@ -245,12 +245,11 @@
 				<view class="order-flow-content">
 					<u-steps :current="currentFlow" dot inactiveColor="rgba(255, 255, 255, 0.5)" activeColor="#fff">
 						<u-steps-item title="已支付"></u-steps-item>
-						<u-steps-item title="派单中"></u-steps-item>
-						<u-steps-item title="待出发"></u-steps-item>
+						<u-steps-item title="待接单"></u-steps-item>
 						<u-steps-item title="待服务"></u-steps-item>
 						<u-steps-item title="服务中"></u-steps-item>
 						<u-steps-item title="待评价"></u-steps-item>
-						<u-steps-item title="已完成"></u-steps-item>
+						<u-steps-item title="订单完成"></u-steps-item>
 					</u-steps>
 				</view>
 			</view>
@@ -573,7 +572,7 @@
 				transitionOrderFlowStatusText(status,item) {
 					let temporaryStatus = status.toString();
 					let temporaryWorkerStatus = item.status.toString();
-					// 服务中类型的订单下包含3个子状态(30-待出发 40-待服务 50-服务中)
+					// 服务完成前类型的订单下包含若干个子状态(10-待分配 20-待接单 30-待出发 40-待服务 50-服务中)
 					if (temporaryStatus == 1 || temporaryStatus == 2) {
 						switch(temporaryWorkerStatus) {
 							case '10' :

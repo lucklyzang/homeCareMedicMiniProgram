@@ -1,16 +1,18 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="更换手机号" @backClick="backTo">
 				</nav-bar> 
 		  </view>
 		</view>
-		<view class="update-phone-number-content">
+		<view class="update-phone-number-content" v-if="!isUpdatePhoneNumberSuccess">
 			<view class="old-phone-number">
 				<text>你当前手机号码为:</text>
-				<text>15669106064</text>
+				<text>{{ !userBasicInfo || JSON.stringify(userBasicInfo) == '{}' ? '' : userBasicInfo.mobile  }}</text>
 			</view>
 			<view class="form-box">
 				<view class="phone-number">
@@ -50,17 +52,17 @@
 				</view>
 			</view>
 		</view>
-		<view class="update-success" v-if="false">
+		<view class="update-success" v-if="isUpdatePhoneNumberSuccess">
 			<image src="@/static/img/uodate-phone-success.png"></image>
 			<text>更换成功!</text>
 		</view>
 		<view class="sure-btn-box">
-			<view class="sure-btn">
+			<view class="sure-btn" @click="sureEvent">
 				<text>确定</text>
 			</view>
 		</view>
-		<view class="back-btn-box" v-if="false">
-			<view class="back-btn">
+		<view class="back-btn-box" v-if="isUpdatePhoneNumberSuccess">
+			<view class="back-btn" @click="backTo">
 				<text>返回</text>
 			</view>
 		</view>
@@ -76,6 +78,8 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { updateMobile } from '@/api/user.js'
+	import { sendPhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -84,9 +88,10 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '更换中···',
 				phoneNumberValue: '',
 				noClick: true,
+				isUpdatePhoneNumberSuccess: false,
 				verificationCodeValue: '',
 				isShowcountryCodeBox: false,
 				showGetVerificationCode: true,
@@ -139,7 +144,7 @@
 				if (!this.phoneNumberValue) {
 					this.$refs.uToast.show({
 						message: '请输入手机号码!',
-						type: 'warning',
+						type: 'error',
 						position: 'bottom'
 					});
 					return
@@ -165,9 +170,111 @@
 							clearInterval(this.timer);
 							this.timer = null
 						}
-					}, 1000)
+					}, 1000);
+					this.sendCodeEvent()
 				}
 			},
+			
+			// 发送验证码事件
+			sendCodeEvent () {
+				let loginMessage = {
+				  mobile: this.phoneNumberValue,
+					scene: 2
+				};
+				this.showLoadingHint = true;
+				sendPhoneCode(loginMessage).then((res) => {
+					if ( res && res.data.code == 0) {
+						if (res.data.data == true) {
+							this.$refs.uToast.show({
+								message: '验证码发送成功',
+								type: 'success',
+								position: 'center'
+							})
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			// 更换手机号
+			updateMobileEvent (data) {
+				this.showLoadingHint = true;
+				updateMobile(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.isUpdatePhoneNumberSuccess = true
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			
+			// 确定事件
+			sureEvent () {
+				if (!this.phoneNumberValue) {
+					this.$refs.uToast.show({
+						message: '请输入手机号码!',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+				if (!myreg.test(this.phoneNumberValue)) {
+					this.$refs.uToast.show({
+						message: '手机号格式有误,请重新输入!',
+						type: 'error',
+						position: 'center'
+					})
+					return
+				};
+				if (!this.verificationCodeValue) {
+					this.$refs.uToast.show({
+						message: '验证码不能为空!',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				this.updateMobileEvent({
+					code: this.verificationCodeValue,
+					mobile: this.phoneNumberValue,
+					oldCode: this.verificationCodeValue
+				})
+			}
 		}
 	}
 </script>
@@ -181,6 +288,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #F5F5F5;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #fff;
@@ -260,7 +378,7 @@
 						};
 						.countryCodeListStyle {
 							background: #f5f7fa !important;
-							color: #11D183 !important
+							color: #5064EB !important
 						}
 					}
 				};

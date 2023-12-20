@@ -105,7 +105,7 @@
 				<view class="help-center-content">
 					<text>如遇突发情况，请立即进行报警。</text>
 				</view>
-				<view class="help-bottom-btn">
+				<view class="help-bottom-btn" @click="callPoliceEvent">
 					<image src="@/static/img/call-police-dialog.png"></image>
 				</view>
 			</u-popup>
@@ -182,106 +182,35 @@
 				<text>实时订单</text>
 			</view>
 			<view class="real-time-order-form-list-box">
-				<view class="real-time-order-form-list">
-					<view class="real-time-order-form-list-top">
-						<view class="real-time-order-form-list-top-left">
-							<text>婴儿全身按摩</text>
+				<u-empty text="暂无实时订单" mode="list" v-if="isShowNoData"></u-empty>
+				<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
+					<view class="real-time-order-form-list" v-for="(item,index) in fullTradeList" :key="index">
+						<view class="real-time-order-form-list-top">
+							<view class="real-time-order-form-list-top-left">
+								<text>{{ item.items[0]['spuName'] }}</text>
+							</view>
+							<view class="real-time-order-form-list-top-right">
+								<text>{{ item.realTime }}</text>
+							</view>
 						</view>
-						<view class="real-time-order-form-list-top-right">
-							<text>3分钟前</text>
-						</view>
-					</view>
-					<view class="real-time-order-form-list-bottom">
-						<view class="price-box">
-							<image src="@/static/img/order-rmb.png"></image>
-							<text>398.99</text>
-						</view>
-						<view class="site-box">
-							<image src="@/static/img/order-site.png"></image>
-							<text>环球中心1号门1栋1单元1楼101</text>
-							<text>抢单</text>
-						</view>
-						<view class="date-box">
-							<image src="@/static/img/order-date.png"></image>
-							<text>06月14日（周三）上午8:00—9:00</text>
-						</view>
-					</view>
-				</view>
-				<view class="real-time-order-form-list">
-					<view class="real-time-order-form-list-top">
-						<view class="real-time-order-form-list-top-left">
-							<text>婴儿全身按摩</text>
-						</view>
-						<view class="real-time-order-form-list-top-right">
-							<text>3分钟前</text>
+						<view class="real-time-order-form-list-bottom">
+							<view class="price-box">
+								<image src="@/static/img/order-rmb.png"></image>
+								<text>{{ `${item.payPrice}` }}</text>
+							</view>
+							<view class="site-box">
+								<image src="@/static/img/order-site.png"></image>
+								<text>{{ item.receiverDetailAddress }}</text>
+								<text>抢单</text>
+							</view>
+							<view class="date-box">
+								<image src="@/static/img/order-date.png"></image>
+								<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+							</view>
 						</view>
 					</view>
-					<view class="real-time-order-form-list-bottom">
-						<view class="price-box">
-							<image src="@/static/img/order-rmb.png"></image>
-							<text>398.99</text>
-						</view>
-						<view class="site-box">
-							<image src="@/static/img/order-site.png"></image>
-							<text>环球中心1号门1栋1单元1楼101</text>
-							<text>抢单</text>
-						</view>
-						<view class="date-box">
-							<image src="@/static/img/order-date.png"></image>
-							<text>06月14日（周三）上午8:00—9:00</text>
-						</view>
-					</view>
-				</view>
-				<view class="real-time-order-form-list">
-					<view class="real-time-order-form-list-top">
-						<view class="real-time-order-form-list-top-left">
-							<text>婴儿全身按摩</text>
-						</view>
-						<view class="real-time-order-form-list-top-right">
-							<text>3分钟前</text>
-						</view>
-					</view>
-					<view class="real-time-order-form-list-bottom">
-						<view class="price-box">
-							<image src="@/static/img/order-rmb.png"></image>
-							<text>398.99</text>
-						</view>
-						<view class="site-box">
-							<image src="@/static/img/order-site.png"></image>
-							<text>环球中心1号门1栋1单元1楼101</text>
-							<text>抢单</text>
-						</view>
-						<view class="date-box">
-							<image src="@/static/img/order-date.png"></image>
-							<text>06月14日（周三）上午8:00—9:00</text>
-						</view>
-					</view>
-				</view>
-				<view class="real-time-order-form-list">
-					<view class="real-time-order-form-list-top">
-						<view class="real-time-order-form-list-top-left">
-							<text>婴儿全身按摩</text>
-						</view>
-						<view class="real-time-order-form-list-top-right">
-							<text>3分钟前</text>
-						</view>
-					</view>
-					<view class="real-time-order-form-list-bottom">
-						<view class="price-box">
-							<image src="@/static/img/order-rmb.png"></image>
-							<text>398.99</text>
-						</view>
-						<view class="site-box">
-							<image src="@/static/img/order-site.png"></image>
-							<text>环球中心1号门1栋1单元1楼101</text>
-							<text>抢单</text>
-						</view>
-						<view class="date-box">
-							<image src="@/static/img/order-date.png"></image>
-							<text>06月14日（周三）上午8:00—9:00</text>
-						</view>
-					</view>
-				</view>
+					<u-loadmore :status="status" v-if="fullTradeList.length > 0" />
+				</scroll-view>	
 			</view>
 		</view>
 	</view>
@@ -292,7 +221,12 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
+	import {
+		fenToYuan,
+		formatMsgTime
+	} from '@/common/js/utils'
 	import { getUserBannerList, createCallPolice } from '@/api/user.js'
+	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -301,7 +235,14 @@
 		},
 		data() {
 			return {
-				infoText: '',
+				infoText: '加载中···',
+				currentPageNum: 1,
+				pageSize: 20,
+				totalCount: 0,
+				status: 'nomore',
+				isShowNoData: false,
+				tradeList: [],
+				fullTradeList: [],
 				bannerList: [],
 				callPoliceDialogShow: false,
 				isShowScreenIcon: false,
@@ -368,7 +309,15 @@
 			}
 		},	
 		onShow() {
-			this.queryUserBannerList({position: 1})
+			this.queryUserBannerList({position: 1});
+			this.queryTradeOrderPage({
+				pageNo: this.currentPageNum,
+				pageSize: this.pageSize,
+				categories: [],
+				spuIds: [],
+				minPrice: '',
+				maxPrice: ''
+			},true)
 		},
 		onHide () {
 		},
@@ -459,15 +408,143 @@
 				console.log(e)
 			},
 			
+			// 格式化时间(带中文)
+			getNowFormatDateText(currentDate,type) {
+				// type: 2(只展示月)
+				let currentdate;
+				let strDate = new Date(currentDate).getDate();
+				let seperator1 = "月";
+				let seperator2 = "日";
+				let month = new Date(currentDate).getMonth() + 1;
+				let hour = new Date(currentDate).getHours();
+				if (type == 2) {
+					currentdate = month + seperator1
+				} else {
+					currentdate = month + seperator1 + strDate + seperator2
+				};
+				return currentdate
+			},
+			
+			// 判断周几
+			judgeWeek (currentDate) {
+				let date = new Date(currentDate);
+				let day = date.getDay();
+				switch (day) {
+					case 0:
+						return "周日"
+						break;
+					case 1:
+						return "周一"
+						break;
+					case 2:
+						return "周二"
+						break;
+					case 3:
+						return "周三"
+						break;
+					case 4:
+						return "周四"
+						break;
+					case 5:
+						return "周五"
+						break;
+					case 6:
+						return "周六"
+						break
+					}
+			},
+			
+			scrolltolower () {
+				let totalPage = Math.ceil(this.totalCount/this.pageSize);
+				if (this.currentPageNum >= totalPage) {
+					this.status = 'nomore'
+				} else {
+					this.status = 'loadmore';
+					this.currentPageNum = this.currentPageNum + 1;
+					this.queryTradeOrderPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						categories: [],
+						spuIds: [],
+						minPrice: '',
+						maxPrice: ''
+					},false)
+				}
+			},
+			
+			// 查询实时交易订单
+			queryTradeOrderPage(data,flag) {
+				this.tradeList = [];
+				this.isShowNoData = false;
+				if (flag) {
+					this.showLoadingHint = true
+				} else {
+					this.showLoadingHint = false;
+					this.infoText = '';
+					this.status = 'loading';
+				};
+				getRealtimeTradeOrderPage(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.totalCount = res.data.data.total;
+						this.tradeList = res.data.data.list;
+						// 切换到待评价订单时只展示待评价的订单(已评价和已完成订单状态都是3)
+						if (res.data.data.list.length > 0) {
+							if (this.current == 4) {
+								this.tradeList = this.tradeList.filter((item) => { return item.commentStatus == false })
+							};
+							this.tradeList.forEach((item) => {
+								item.payPrice = fenToYuan(item.payPrice);
+								item.realTime = formatMsgTime(this.getNowFormatDate(new Date(item.createTime),4))
+							})
+						};
+						this.fullTradeList = this.fullTradeList.concat(this.tradeList);
+						if (this.fullTradeList.length == 0) {
+							this.isShowNoData = true
+						} else {
+							this.isShowNoData = false
+						};
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						let totalPage = Math.ceil(this.totalCount/this.pageSize);
+						if (this.currentPage >= totalPage) {
+							this.status = 'nomore'
+						} else {
+							this.status = 'loadmore';
+						}	
+					}
+				})
+				.catch((err) => {
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						this.status = 'loadmore'
+					};
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			// 报警事件
 			callPoliceEvent () {
+				this.showLoadingHint = true;
 				this.infoText = '报警中...';
 				createCallPolice({
 				  userId: this.userInfo.userId,
 					name: !this.userBasicInfo.nickname ? '' : this.userBasicInfo.nickname,
 					description: '',
 					mobile: !this.userBasicInfo.mobile ? '' : this.userBasicInfo.mobile,
-					coordinate: `${this.longitude},${this.latitude}`,
+					coordinate: !this.longitude ? '' : `${this.longitude},${this.latitude}`,
 					status: 0,
 					processor: 0,
 					handleTime: '',
@@ -486,9 +563,11 @@
 							position: 'center'
 						})
 					};
+					this.showLoadingHint = false;
 					this.callPoliceDialogShow = false;
 				})
 				.catch((err) => {
+					this.showLoadingHint = false;
 					this.callPoliceDialogShow = false;
 					this.$refs.uToast.show({
 						message: err.message,
@@ -566,6 +645,7 @@
 				uni.getLocation({
 					type: 'gcj02',
 					success: (res) => {
+						console.log('res',res);
 						this.longitude = res.longitude.toString();
 						this.latitude = res.latitude.toString()
 					},
@@ -573,6 +653,47 @@
 						console.log('err',err)
 					}
 				})
+			},
+			
+			// 格式化时间
+			getNowFormatDate(currentDate,type) {
+				// type:1(只显示小时分钟),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟)5(显示月日)
+				let currentdate;
+				let strDate = currentDate.getDate();
+				let seperator1 = "-";
+				let seperator2 = ":";
+				let seperator3 = " ";
+				let month = currentDate.getMonth() + 1;
+				let hour = currentDate.getHours();
+				let minutes = currentDate.getMinutes();
+				if (month >= 1 && month <= 9) {
+					month = "0" + month;
+				};
+				if (hour >= 0 && hour <= 9) {
+					hour = "0" + hour;
+				};
+				if (minutes >= 0 && minutes <= 9) {
+					minutes = "0" + minutes;
+				};
+				if (strDate >= 0 && strDate <= 9) {
+					strDate = "0" + strDate;
+				};
+				if (type == 1) {
+					currentdate = hour + seperator2 + minutes
+				};
+				if (type == 2) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+				};
+				if (type == 3) {
+					currentdate = currentDate.getFullYear() + seperator1 + month
+				};
+				if (type == 4) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes
+				};
+				if (type == 5) {
+					currentdate = month + seperator1 + strDate
+				};
+				return currentdate
 			}
 		}
 	}
@@ -588,7 +709,10 @@
 		@include content-wrapper;
 		padding-bottom: 0;
 		::v-deep .u-popup {
-			flex: none !important;
+			flex: none !important
+		};
+		::v-deep .u-transition {
+			z-index: 100000 !important;
 		};
 		.screen-dialog-box {
 			::v-deep .u-popup {
@@ -797,7 +921,9 @@
 		};
 		.center-area {
 			flex: 1;
-			overflow: auto;
+			display: flex;
+			flex-direction: column;
+			height: 0;
 			position: relative;
 			::v-deep .u-empty {
 				position: absolute;
@@ -904,8 +1030,20 @@
 				}
 			};
 			.real-time-order-form-list-box {
+				flex: 1;
+				overflow: auto;
 				padding: 0 10px;
 				box-sizing: border-box;
+				position: relative;
+				.scroll-view {
+					height: 100%
+				};
+				::v-deep .u-empty {
+					position: absolute;
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%,-50%)
+				};
 				.real-time-order-form-list {
 					padding: 10px;
 					box-sizing: border-box;

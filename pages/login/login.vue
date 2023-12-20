@@ -504,6 +504,7 @@
 				  mobile: this.form.username,
 					scene: this.isForgetPassword ? 3 : 1
 				};
+				this.showLoadingHint = true;
 				sendPhoneCode(loginMessage).then((res) => {
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {

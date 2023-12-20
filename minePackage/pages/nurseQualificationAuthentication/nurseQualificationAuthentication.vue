@@ -1,6 +1,11 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
+		<u-modal :show="sureCancelShow" :content="content" title="确定删除此图片?" :show-cancel-button="true" @confirm="sureCancel"
+		 @cancel="cancelSure">
+		</u-modal>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="护士资格认证" @backClick="backTo">
@@ -10,13 +15,13 @@
 		<view class="real-name-authentication-box">
 			<view class="real-name-authentication-step">
 				<view class="real-name-authentication-step-top">
-					<view class="circle-one"></view>
-					<view class="line-one"></view>
-					<view class="circle-two"></view>
+					<view class="circle-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1}"></view>
+					<view class="line-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1}"></view>
+					<view class="circle-two" :class="{'stepStyle' : stepActive === 1}"></view>
 				</view>
 				<view class="real-name-authentication-step-bottom">
-					<view class="step-left">完成护士资格认证</view>
-					<view class="step-right">完成</view>
+					<view class="step-left" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 }">完成护士资格认证</view>
+					<view class="step-right" :class="{'stepStyle' : stepActive === 1 }">完成</view>
 				</view>
 			</view>
 			<view class="step-one" v-if="false">
@@ -25,7 +30,7 @@
 						<text>上传资格证照片</text>
 					</view>
 					<view class="real-name-authentication-upload-one">
-						<view class="upload-before">
+						<view class="upload-before" v-if="frontImageBase64Arr.length == 0" @click="getImg('front')">
 							<view class="upload-image">
 								<image src="@/static/img/camera-white-icon.png"></image>
 							</view>
@@ -33,12 +38,13 @@
 								<text>上传资格证正面</text>
 							</view>
 						</view>
-						<!-- <view class="upload-after" v-show="false">
-							<image src="@/static/img/app-logo.png"></image>
-						</view> -->
+						<view class="upload-after" v-else v-for="(item, index) in frontImageBase64Arr" :key='index'>
+							<image :src="item" mode="aspectFit"></image>
+							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'front')"></u-icon>
+						</view>
 					</view>
 					<view class="real-name-authentication-upload-one real-name-authentication-upload-two">
-						<view class="upload-before">
+						<view class="upload-before" v-if="backImageBase64Arr.length == 0" @click="getImg('back')">
 							<view class="upload-image">
 								<image src="@/static/img/camera-white-icon.png"></image>
 							</view>
@@ -46,9 +52,10 @@
 								<text>上传资格证反面</text>
 							</view>
 						</view>
-						<!-- <view class="upload-after" v-show="false">
-							<image src="@/static/img/app-logo.png"></image>
-						</view> -->
+						<view class="upload-after" v-else v-for="(item, index) in backImageBase64Arr" :key='index'>
+							<image :src="item" mode="aspectFit"></image>
+							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'back')"></u-icon>
+						</view>
 					</view>
 				</view>
 				<view class="real-name-authentication-standard">
@@ -106,7 +113,7 @@
 				</view>	
 			</view>
 			<view class="step-btn-box">
-				<view class="step-btn">
+				<view class="step-btn" @click="stepEvent">
 					<text>下一步</text>
 				</view>
 			</view>
@@ -123,6 +130,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { createMedicalCareAptitude } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -131,13 +139,21 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
-				stepActive: ''
+				infoText: '加载中···',
+				stepActive: '',
+				text: '',
+				content: '',
+				frontImageFileArr: [],
+				frontImageBase64Arr: [],
+				backImageFileArr: [],
+				backImageBase64Arr: [],
+				sureCancelShow: false,
+				imgIndex: null
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userInfo'
 			]),
 			userName() {
 			},
@@ -149,6 +165,120 @@
 		methods: {
 			...mapMutations([
 			]),
+			
+			// 图片删除事件
+			photoDelete(item, index, text) {
+				this.text = text;
+				this.sureCancelShow = true;
+				this.imgIndex = index
+			},
+			
+			// 删除图片弹框取消按钮
+			cancelSure() {
+				this.sureCancelShow = false
+			},
+			
+			// 删除图片弹框确定按钮
+			sureCancel() {
+				if (this.text == 'front') {
+					this.frontImageFileArr.splice(this.imgIndex, 1);
+					this.frontImageBase64Arr.splice(this.imgIndex, 1)
+				} else if (this.text == 'back') {
+					this.backImageFileArr.splice(this.imgIndex, 1);
+					this.backImageBase64Arr.splice(this.imgIndex, 1)
+				};
+				this.sureCancelShow = false
+			},
+			
+			// 上传图片方法
+			getImg(text) {
+				let that = this;
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['original', 'compressed'],
+					sourceType: ['album', 'camera'],
+					success: function(res) {
+						uni.previewImage({
+							urls: res.tempFilePaths
+						});
+						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
+							if (text == 'front') {
+								that.frontImageFileArr.push(res.tempFiles[imgI]['path']);
+							} else if (text == 'back') {
+								this.backImageFileArr.push(res.tempFiles[imgI]['path']);
+							};
+							uni.getFileSystemManager().readFile({
+								filePath: res.tempFilePaths[imgI],
+								encoding: 'base64',
+								success: res => {
+									let base64 = 'data:image/jpeg;base64,' + res.data;
+									if (text == 'front') {
+										that.frontImageBase64Arr.push(base64);
+									} else if (text == 'back') {
+										that.backImageBase64Arr.push(base64);
+									}
+								}
+							})
+						}
+					}
+				})
+			},
+			
+			// 护士资格认证事件
+			createMedicalCareAptitudeEvent (data) {
+				this.infoText = '实名认证中···';
+				this.showLoadingHint = true;
+				createMedicalCareAptitude(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.stepActive = 0
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			// 下一步事件
+			stepEvent () {
+				if (this.stepActive === '') {
+					if (this.frontImageFileArr.length == 0) {
+						this.$refs.uToast.show({
+							message: '请上传护士资格证正面图片',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					};
+					if (this.backImageFileArr.length == 0) {
+						this.$refs.uToast.show({
+							message: '请上传护士资格证反面图片',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					};
+					// 护士资格认证
+					this.createMedicalCareAptitudeEvent({
+						aptitudeId: '',
+						aptitudeName: '',
+						careId: this.userInfo.careId,
+						imageFront: this.frontImageFileArr[0],
+						imageBack: this.backImageFileArr[0]
+					})
+				}
+			},
 			
 			// 顶部导航返回事件
 			backTo () {
@@ -174,6 +304,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #F2F2F2;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #F8F8F8;
@@ -298,7 +439,22 @@
 								color: #B7B6B6
 							}
 						};
-						.upload-after {}
+						.upload-after {
+							width: 80%;
+							height: 100px;
+							margin: 0 auto;
+							display: inline-block;
+							position: relative;
+							::v-deep .u-icon__icon {
+								position: absolute;
+								top: -12px;
+								right: 0
+							};
+							image {
+								width: 100%;
+								height: 100%
+							}
+						}
 					};
 					.real-name-authentication-upload-two {
 						margin: 10px 0
