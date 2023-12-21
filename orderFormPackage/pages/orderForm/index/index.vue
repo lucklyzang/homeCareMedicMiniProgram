@@ -232,7 +232,7 @@
 			<view class="service-site">
 				<view class="service-site-title">
 					<text>服务地点</text>
-					<text>环球中心1号门1栋1单元1楼1011</text>
+					<text>{{ serviceMessage.receiverDetailAddress }}</text>
 					<text>11.2km</text>
 				</view>
 				<view class="service-site-map-area">
@@ -1386,7 +1386,8 @@
 					}
 				}
 			};
-			.service-site-map-area {}
+			.service-site-map-area {
+			}
 		};
 		.order-flow {
 			height: 113px;

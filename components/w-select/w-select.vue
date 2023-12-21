@@ -278,16 +278,19 @@
 		// }
 	  },
 	  changeShow () {
-		this.isShow = !this.isShow
-		if (this.isShow === false) {
-		  this.filterList = this.list
-		  setTimeout(() => {
-			this.optionsShow = false
-		  }, 200)
-		} else {
-		  this.showPositon()
-		  this.optionsShow = this.isShow
-		}
+			this.isShow = !this.isShow;
+			if (this.isShow === false) {
+				this.filterList = this.list
+				setTimeout(() => {
+				this.optionsShow = false
+				}, 200)
+			} else {
+				this.showPositon()
+				this.optionsShow = this.isShow
+			};
+			if (this.isShow == false) {
+				this.$emit('dropDownCutHide');
+			}
 	  },
 	  closeContentSelect () {
 		this.isShow = false

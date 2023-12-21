@@ -24,7 +24,10 @@ export function getRealtimeTradeOrderPage(data) {
   return request({
     url: '/app-api/trade/order/real-time',
     method: 'get',
-		params: data
+		params: data,
+		paramsSerializer: function (params) {
+			return Qs.stringify(params, { arrayFormat: "repeat" });  
+		}
   })
 };
 

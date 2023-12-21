@@ -27,7 +27,7 @@
 					<view class="step-right" :class="{'stepStyle' : stepActive === 2 }">完成</view>
 				</view>
 			</view>
-			<view class="step-one" v-if="true">
+			<view class="step-one" v-if="stepActive === 0 ">
 				<view class="real-name-authentication-upload">
 					<view class="real-name-authentication-upload-title">
 						<text>上传身份证照片</text>
@@ -107,7 +107,7 @@
 					</view>
 				</view>
 			</view>
-			<view class="step-two" v-if="false">
+			<view class="step-two" v-if="stepActive === 1">
 				<view class="image-authentication">
 					<view class="step-two-content">
 						<view class="image-area">
@@ -132,7 +132,7 @@
 					</view>
 				</view>	
 			</view>
-			<view class="step-three" v-if="false">
+			<view class="step-three" v-if="stepActive === 2">
 				<view class="authentication-success">
 					<view class="step-two-content">
 						<view class="image-area">
@@ -154,7 +154,7 @@
 					</view>
 				</view>	
 			</view>
-			<view class="step-btn-box">
+			<view class="step-btn-box" v-if="stepActive != 2">
 				<view class="step-btn" @click="stepEvent">
 					<text>下一步</text>
 				</view>
@@ -182,7 +182,7 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中···',
-				stepActive: '',
+				stepActive: 0,
 				frontImageFileArr: [],
 				backImageFileArr: [],
 				handImageFileArr: [],
@@ -252,9 +252,9 @@
 							if (text == 'front') {
 								that.frontImageFileArr.push(res.tempFiles[imgI]['path']);
 							} else if (text == 'back') {
-								this.backImageFileArr.push(res.tempFiles[imgI]['path']);
+								that.backImageFileArr.push(res.tempFiles[imgI]['path']);
 							} else if (text == 'hand') {
-								this.handImageFileArr.push(res.tempFiles[imgI]['path']);
+								that.handImageFileArr.push(res.tempFiles[imgI]['path']);
 							};
 							uni.getFileSystemManager().readFile({
 								filePath: res.tempFilePaths[imgI],
@@ -281,7 +281,7 @@
 				this.showLoadingHint = true;
 				medicalCareRealName(data).then((res) => {
 					if ( res && res.data.code == 0) {
-						this.stepActive = 0
+						this.stepActive = 1
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -303,7 +303,7 @@
 			
 			// 下一步事件
 			stepEvent () {
-				if (this.stepActive === '') {
+				if (this.stepActive === 0) {
 					if (this.frontImageFileArr.length == 0) {
 						this.$refs.uToast.show({
 							message: '请上传身份证正面图片',
@@ -335,6 +335,8 @@
 						back: this.backImageFileArr[0],
 						hand: this.handImageFileArr[0]
 					})
+				} else if (this.stepActive === 1) {
+					
 				}
 			},
 			

@@ -237,8 +237,8 @@
 				uni.getLocation({
 					type: 'gcj02',
 					success: (res) => {
-						this.longitude = res.longitude.toString();
-						this.latitude = res.latitude.toString()
+						this.longitude = res.longitude;
+						this.latitude = res.latitude
 					},
 					fail: (err) => {
 						console.log('err',err)
@@ -290,7 +290,7 @@
 					name: this.userBasicInfo.nickname,
 					description: '',
 					mobile: this.userBasicInfo.mobile,
-					coordinate: !this.longitude ? '' : `${this.longitude},${this.latitude}`,
+					coordinate: this.longitude ? `${this.longitude},${this.latitude}` : '',
 					status: 0,
 					processor: 0,
 					handleTime: '',

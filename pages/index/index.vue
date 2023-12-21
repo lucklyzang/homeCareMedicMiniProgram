@@ -10,7 +10,7 @@
 							<text>服务类别</text>
 						</view>
 						<view class="service-category-content">
-							<view class="service-category-list" :class="{'serviceCategoryListStyle': serviceCategoryIndex === index }" @click="serviceCategoryItemClickEvent(item,index)" v-for="(item,index) in serviceCategoryList" :key="index">
+							<view class="service-category-list" :class="{'serviceCategoryListStyle': item.selected == true }" @click="serviceCategoryItemClickEvent(item,index)" v-for="(item,index) in serviceCategoryList" :key="index">
 								<text>{{ item.content }}</text>
 							</view>
 						</view>
@@ -20,7 +20,7 @@
 							<text>服务项目</text>
 						</view>
 						<view class="service-category-content">
-							<view class="service-category-list" :class="{'serviceProjectListStyle': serviceProjectIndex === index }" @click="serviceProjectItemClickEvent(item,index)" v-for="(item,index) in serviceProjectList" :key="index">
+							<view class="service-category-list" :class="{'serviceProjectListStyle': item.selected == true }" @click="serviceProjectItemClickEvent(item,index)" v-for="(item,index) in serviceProjectList" :key="index">
 								<text>{{ item.content }}</text>
 							</view>
 						</view>
@@ -146,7 +146,7 @@
 						>
 					</w-select>
 				</view>
-				<view class="service-category">
+				<view class="service-category" v-if="isShowServiceCategory">
 					<w-select
 							style="margin-left:10px;"
 							:multiple="true"
@@ -155,11 +155,12 @@
 							:list='serviceCategoryList'
 							valueName='content' 
 							keyName="id"
+							@dropDownCutHide="serviceCategoryHide"
 							@change='serviceCategoryChange'
 						>
 					</w-select>
 				</view>
-				<view class="service-project">
+				<view class="service-project" v-if="isShowServiceProject">
 					<w-select
 							style="margin-left:10px;" 
 							:multiple="true"
@@ -168,14 +169,14 @@
 							:list='serviceProjectList'
 							valueName='content' 
 							keyName="id"
+							@dropDownCutHide="serviceServiceHide"
 							@change='serviceProjectChange'
 						>
 					</w-select>
 				</view>
 				<view class="screen-box" @click="screenEvent">
 					<text>筛选</text>
-					<text  :class="isShowScreenIcon ? 'w-select-arrow-up' : ''" class="w-select-arrow">
-					</text>
+					<image src="@/static/img/screen-icon.png"></image>
 				</view>
 			</view>
 			<view class="real-time-order-form-title-box">
@@ -268,44 +269,56 @@
 						content: '价格优先'
 					}
 				],
+				isShowServiceCategory: true,
 				serviceCategoryValue: [],
 				serviceCategoryList: [
 					{
 						id: 1,
-						content: '目婴护理'
+						content: '母婴护理',
+						selected: false
 					}, 
 					{
 						id: 2,
-						content: '宝宝护理'
+						content: '宝宝护理',
+						selected: false
 					},
 					{
 						id: 3,
-						content: '慢病护理'
+						content: '慢病护理',
+						selected: false
 					}, 
 					{
 						id: 4,
-						content: '基本护理'
+						content: '基本护理',
+						selected: false
 					}
 				],
+				isShowServiceProject: true,
 				serviceProjectValue: [],
 				serviceProjectList: [
 					{
 						id: 1,
-						content: '打针'
+						content: '打针',
+						selected: false
 					}, 
 					{
 						id: 2,
-						content: '喂奶'
+						content: '喂奶',
+						selected: false
 					},
 					{
 						id: 3,
-						content: '通乳'
+						content: '通乳',
+						selected: false
 					}, 
 					{
 						id: 4,
-						content: '洗澡'
+						content: '洗澡',
+						selected: false
 					}
-				]
+				],
+				temporaryCategoriesArr: [],
+				temporarySpuIdsArr: []
 			}
 		},	
 		onShow() {
@@ -313,15 +326,11 @@
 			this.queryTradeOrderPage({
 				pageNo: this.currentPageNum,
 				pageSize: this.pageSize,
-				categories: [],
-				spuIds: [],
-				minPrice: '',
-				maxPrice: ''
+				categories: this.temporaryCategoriesArr,
+				spuIds: this.temporarySpuIdsArr,
+				minPrice: this.minPriceValue,
+				maxPrice: this.maxPriceValue
 			},true)
-		},
-		onHide () {
-		},
-		destroyed () {
 		},
 		computed: {
 			...mapGetters([
@@ -357,40 +366,215 @@
 			
 			// 服务类别点击事件
 			serviceCategoryItemClickEvent (item,index) {
-				this.serviceCategoryIndex = index
+				this.serviceCategoryList[index]['selected'] = !this.serviceCategoryList[index]['selected']
 			},
 			
 			// 服务项目点击事件
 			serviceProjectItemClickEvent (item,index) {
-				this.serviceProjectIndex = index
+				this.serviceProjectList[index]['selected'] = !this.serviceProjectList[index]['selected']
+			},
+			
+			// 服务项目下拉框隐藏事件
+			serviceServiceHide () {
+				this.temporaryCategoriesArr = [];
+				this.temporarySpuIdsArr = [];
+				if (this.serviceProjectValue.length > 0) {
+					for (let item of this.serviceProjectValue) {
+						this.temporarySpuIdsArr.push(item.id)
+					};
+					if (this.serviceCategoryValue.length > 0) {
+						for (let item of this.serviceCategoryValue) {
+							this.temporaryCategoriesArr.push(item.id)
+						}
+					}
+				};
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				this.status = 'nomore';
+				this.isShowNoData = false;
+				this.fullTradeList = [];
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					categories: this.temporaryCategoriesArr,
+					spuIds: this.temporarySpuIdsArr,
+					minPrice: this.minPriceValue,
+					maxPrice: this.maxPriceValue
+				},true)
+			},
+			
+			// 服务类别下拉框隐藏事件
+			serviceCategoryHide () {
+				this.temporaryCategoriesArr = [];
+				this.temporarySpuIdsArr = [];
+				if (this.serviceCategoryValue.length > 0) {
+					for (let item of this.serviceCategoryValue) {
+						this.temporaryCategoriesArr.push(item.id)
+					};
+					if (this.serviceProjectValue.length > 0) {
+						for (let item of this.serviceProjectValue) {
+							this.temporarySpuIdsArr.push(item.id)
+						}
+					}
+				};
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				this.status = 'nomore';
+				this.isShowNoData = false;
+				this.fullTradeList = [];
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					categories: this.temporaryCategoriesArr,
+					spuIds: this.temporarySpuIdsArr,
+					minPrice: this.minPriceValue,
+					maxPrice: this.maxPriceValue
+				},true)
 			},
 			
 			// 筛选弹框显示事件
 			screenEvent () {
 				this.screenDialogShow = !this.screenDialogShow;
-				if (this.screenDialogShow) {
-					this.isShowScreenIcon = true
-				} else {
-					this.isShowScreenIcon = false
-				}
+				
 			},
 			
 			// 筛选弹框关闭事件
 			screenDialogCloseEvent () {
-				this.screenDialogShow = false;
-				this.isShowScreenIcon = false
+				this.screenDialogShow = false
 			},
 			
 			// 筛选重置事件
 			screenResetEvent () {
-				this.screenDialogShow = false;
-				this.isShowScreenIcon = false
+				this.minDistanceValue = '';
+				this.maxDistanceValue = '';
+				this.minPriceValue = '';
+				this.maxPriceValue = '';
+				this.isShowServiceCategory = false;
+				this.isShowServiceProject = false;
+				setTimeout(() => {
+					this.isShowServiceCategory = true;
+					this.isShowServiceProject = true;
+				},200);
+				this.serviceProjectValue = [];
+				this.serviceCategoryValue = [];
+				this.serviceCategoryList.forEach((item) => {
+					if (item.selected) {
+						item.selected = false
+					}
+				});
+				this.serviceProjectList.forEach((item) => {
+					if (item.selected) {
+						item.selected = false
+					}
+				})
 			},
 			
 			// 筛选确定事件
 			screenSureEvent () {
+				if (this.minDistanceValue) {
+					if (this.maxDistanceValue == '') {
+						this.$refs.uToast.show({
+							message: '最远距离不能为空',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}
+				};
+				if (this.maxDistanceValue) {
+					if (this.minDistanceValue == '') {
+						this.$refs.uToast.show({
+							message: '最近距离不能为空',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}
+				};
+				if (this.minPriceValue) {
+					if (this.maxPriceValue == '') {
+						this.$refs.uToast.show({
+							message: '最高价格不能为空',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}
+				};
+				if (this.maxPriceValue) {
+					if (this.minPriceValue == '') {
+						this.$refs.uToast.show({
+							message: '最低价格不能为空',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}
+				};
+				if (this.minDistanceValue > this.maxDistanceValue) {
+					this.$refs.uToast.show({
+						message: '最近距离不能大于最远距离',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				if (this.minPriceValue > this.maxPriceValue) {
+					this.$refs.uToast.show({
+						message: '最低价格不能大于最高价格',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
 				this.screenDialogShow = false;
-				this.isShowScreenIcon = false
+				this.temporaryCategoriesArr = [];
+				this.temporarySpuIdsArr = [];
+				let selectServiceCategoryList = this.serviceCategoryList.filter((item) => { return item.selected == true });
+				let selectServiceProjectList = this.serviceProjectList.filter((item) => { return item.selected == true });
+				this.serviceProjectValue = [];
+				this.serviceCategoryValue = [];
+				if (selectServiceCategoryList.length > 0) {
+					for (let item of selectServiceCategoryList) {
+						this.temporaryCategoriesArr.push(item.id);
+						this.serviceCategoryValue.push({
+							id: item.id,
+							content: item.content,
+							selected: item.selected
+						})
+					};
+					this.isShowServiceCategory = false;
+					setTimeout(() => {
+						this.isShowServiceCategory = true;
+					},200)
+				};
+				if (selectServiceProjectList.length > 0) {	
+					for (let item of selectServiceProjectList) {
+						this.temporarySpuIdsArr.push(item.id);
+						this.serviceProjectValue.push({
+							id: item.id,
+							content: item.content,
+							selected: item.selected
+						})
+					};
+					this.isShowServiceProject = false;
+					setTimeout(() => {
+						this.isShowServiceProject = true;
+					},200)
+				};	
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				this.status = 'nomore';
+				this.isShowNoData = false;
+				this.fullTradeList = [];
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					categories: this.temporaryCategoriesArr,
+					spuIds: this.temporarySpuIdsArr,
+					minPrice: this.minPriceValue,
+					maxPrice: this.maxPriceValue
+				},true)
 			},
 			
 			// 智能排序下拉框值改变事件
@@ -400,7 +584,7 @@
 			
 			// 服务类别下拉框值改变事件
 			serviceCategoryChange(e) {
-				console.log(e)
+				console.log('服务类别', e, this.serviceCategoryValue)
 			},
 			
 			// 服务项目下拉框值改变事件
@@ -464,10 +648,10 @@
 					this.queryTradeOrderPage({
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
-						categories: [],
-						spuIds: [],
-						minPrice: '',
-						maxPrice: ''
+						categories: this.temporaryCategoriesArr,
+						spuIds: this.temporarySpuIdsArr,
+						minPrice: this.minPriceValue,
+						maxPrice: this.maxPriceValue
 					},false)
 				}
 			},
@@ -544,7 +728,7 @@
 					name: !this.userBasicInfo.nickname ? '' : this.userBasicInfo.nickname,
 					description: '',
 					mobile: !this.userBasicInfo.mobile ? '' : this.userBasicInfo.mobile,
-					coordinate: !this.longitude ? '' : `${this.longitude},${this.latitude}`,
+					coordinate: this.longitude ? `${this.longitude},${this.latitude}` : '',
 					status: 0,
 					processor: 0,
 					handleTime: '',
@@ -579,8 +763,6 @@
 			
 			// 获取首页banner列表
 			queryUserBannerList (data) {
-				this.showLoadingHint = true;
-				this.infoText = '加载中...';
 				this.bannerList = [];
 				getUserBannerList(data).then((res) => {
 					if ( res && res.data.code == 0) {
@@ -598,11 +780,9 @@
 							type: 'error',
 							position: 'center'
 						})
-					};
-					this.showLoadingHint = false;
+					}
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',
@@ -645,9 +825,9 @@
 				uni.getLocation({
 					type: 'gcj02',
 					success: (res) => {
-						console.log('res',res);
-						this.longitude = res.longitude.toString();
-						this.latitude = res.latitude.toString()
+						console.log('经纬度地址',res);
+						this.longitude = res.longitude;
+						this.latitude = res.latitude
 					},
 					fail: (err) => {
 						console.log('err',err)
@@ -962,6 +1142,18 @@
 			};
 			.select-box {
 				display: flex;
+				.smart-sort {
+					::v-deep .w-select {
+						.select-wrap {
+							justify-content: flex-start !important;
+							input {
+								width: 52px;
+								box-sizing: border-box;
+								flex: none !important
+							}
+						}
+					}
+				};
 				>view {
 					flex: 1;
 					width: 25%;
@@ -987,36 +1179,21 @@
 					}
 				};
 				.screen-box {
+					flex: none !important;
+					width: 60px;
 					margin-left: 10px;
 					display: flex;
 					align-items: center;
 					>text {
 						display: inline-block;
-						&:first-child {
-							font-size: 12px;
-							color: #454A58;
-							flex: 1
-						}
+						font-size: 12px;
+						color: #454A58;
+						margin-right: 6px;
 					};
-					.w-select-arrow {
-						display: inline-block;
-						margin: 3px 10px 0;
-						width: 0;
-						height: 0;
-						border: 5px solid transparent;
-						border-top-color: #60646F;
-						transition: all 0.3s;
-						transform: translateY(20%);
-					}
-					.w-select-arrow-up {
-						 display: inline-block;
-						 margin: 3px 10px 0;
-						 width: 0;
-						 height: 0;
-						 border: 5px solid transparent;
-						 border-bottom-color: #60646F;
-						 transition: all 0.3s;
-						 transform: translateY(20%);
+					image {
+						width: 12px;
+						height: 12px;
+						margin-top: -1px;
 					}
 				}
 			};
