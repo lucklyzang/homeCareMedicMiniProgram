@@ -376,7 +376,8 @@
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userBasicInfo',
+				'editServiceOrderFormSureChooseMessage'
 			]),
 			userName() {
 			},
@@ -384,14 +385,24 @@
 			}
 		},
 		onShow() {
-			this.queryTradeOrderPage({
-				pageNo: this.currentPageNum,
-				pageSize: this.pageSize,
-				status: 0
-			},true)
+			if (this.editServiceOrderFormSureChooseMessage.hasOwnProperty('current')) {
+				this.current = this.editServiceOrderFormSureChooseMessage.current;
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					status: this.transitionOrderStatus(this.editServiceOrderFormSureChooseMessage.current)
+				},true)
+			}	else {
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					status: 0
+				},true)
+			}
 		},
 		methods: {
 			...mapMutations([
+				'storeEditServiceOrderFormSureChooseMessage'
 			]),
 			
 			// 格式化时间(带中文)
@@ -460,6 +471,7 @@
 				this.tradeList = [];
 				this.isShowNoData = false;
 				if (flag) {
+					this.fullTradeList = [];
 					this.showLoadingHint = true
 				} else {
 					this.showLoadingHint = false;
@@ -468,6 +480,10 @@
 				};
 				getTradeOrderPage(data).then((res) => {
 					if ( res && res.data.code == 0) {
+						// 将当前存储的订单切换类型重置为0
+						let temporaryEditServiceOrderFormSureChooseMessage = this.editServiceOrderFormSureChooseMessage;
+						temporaryEditServiceOrderFormSureChooseMessage['current'] = 0;
+						this.storeEditServiceOrderFormSureChooseMessage(temporaryEditServiceOrderFormSureChooseMessage);
 						this.totalCount = res.data.data.total;
 						this.tradeList = res.data.data.list;
 						// 切换到待评价订单时只展示待评价的订单(已评价和已完成订单状态都是3)
@@ -818,7 +834,11 @@
 			
 			// 订单详情点击事件
 			enterOrderDetailsEvent (item) {
-				// 传递服务订单信息
+				// 传递该订单详情及当前切换的订单类型的信息
+				let temporaryEditServiceOrderFormSureChooseMessage = this.editServiceOrderFormSureChooseMessage;
+				temporaryEditServiceOrderFormSureChooseMessage['orderMessage'] = item;
+				temporaryEditServiceOrderFormSureChooseMessage['current'] = this.current;
+				this.storeEditServiceOrderFormSureChooseMessage(temporaryEditServiceOrderFormSureChooseMessage);
 				let mynavData = JSON.stringify(item);
 				uni.navigateTo({
 					url: '/orderFormPackage/pages/orderForm/index/index?transmitData='+mynavData

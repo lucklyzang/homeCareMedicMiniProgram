@@ -4,7 +4,11 @@ export default {
   state: getDefaultServiceState(),
   getters:{
 		timeMessage: state => state.timeMessage,
-		ossMessage: state => state.ossMessage
+		ossMessage: state => state.ossMessage,
+		editServiceOrderFormSureChooseMessage: (state) => {
+			state.editServiceOrderFormSureChooseMessage = getCache('editServiceOrderFormSureChooseMessage') ? getCache('editServiceOrderFormSureChooseMessage') : {};
+			return state.editServiceOrderFormSureChooseMessage
+		}
   },
   mutations:{
 		changeTimeMessage (state, playLoad) {
@@ -12,6 +16,13 @@ export default {
 		},
 		changeOssMessage (state, playLoad) {
 			state.ossMessage = playLoad
+		},
+		// 保存订单修改页面选择的信息
+		storeEditServiceOrderFormSureChooseMessage(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('editServiceOrderFormSureChooseMessage', playLoad);
+				state.editServiceOrderFormSureChooseMessage = playLoad
+			}
 		},
 		//重置设备的状态
 		resetServiceInfoState(state) {
