@@ -8,7 +8,7 @@
 		</u-modal>
 		<view class="top-area-box">
 			<view class="nav">
-				<nav-bar :home="false" backState='3000' bgColor="none" title="护士资格认证" @backClick="backTo">
+				<nav-bar :home="false" backState='3000' bgColor="none" title="护士资格证认证" @backClick="backTo">
 				</nav-bar> 
 		  </view>
 		</view>
@@ -126,6 +126,7 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
+	import store from '@/store'
 	import {
 		setCache,
 		removeAllLocalStorage
@@ -147,8 +148,11 @@
 				frontImageBase64Arr: [],
 				backImageFileArr: [],
 				backImageBase64Arr: [],
+				frontImageOnlineArr: [],
+				backImageOnlineArr: [],
 				sureCancelShow: false,
-				imgIndex: null
+				imgIndex: null,
+				medicalCareAptitudeMessage: {}
 			}
 		},
 		computed: {
@@ -160,7 +164,8 @@
 			proId() {
 			}
 		},
-		onShow() {
+		onLoad(options) {
+			this.medicalCareAptitudeMessage = JSON.parse(options.transmitData)
 		},
 		methods: {
 			...mapMutations([
@@ -224,11 +229,58 @@
 				})
 			},
 			
+			// 上传图片到服务器
+			uploadFileEvent (imgI,text) {
+				this.infoText = '上传中···';
+				this.showLoadingHint = true;
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+					 url: 'https://dev.nurse.blinktech.cn/nurse/app-api/infra/file/upload',
+					 filePath: imgI,
+					 name: 'file',
+					 header: {
+						'content-type': 'multipart/form-data',
+						'Authorization': `Bearer ${store.getters.token}`
+					 },
+					 success: (res) => {
+						if (res.statusCode == 200) {
+							let temporaryData = JSON.parse(res.data);
+							if (text == 'front') {
+								this.frontImageOnlineArr.push(temporaryData.data);
+							} else if (text == 'back') {
+								this.backImageOnlineArr.push(temporaryData.data);
+							};
+							resolve()
+						} else {
+							this.showLoadingHint = false;
+							this.$refs.uToast.show({
+								message: '上传图片失败',
+								type: 'error',
+								position: 'center'
+							});
+							reject()
+						}
+					 },
+					 fail: (err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err,
+							type: 'error',
+							position: 'center'
+						});
+						reject()
+					 }
+					})
+				})
+			},
+			
 			// 护士资格认证事件
 			createMedicalCareAptitudeEvent (data) {
 				this.infoText = '护士资格认证中···';
 				this.showLoadingHint = true;
 				createMedicalCareAptitude(data).then((res) => {
+					this.frontImageOnlineArr = [];
+					this.backImageOnlineArr = [];
 					if ( res && res.data.code == 0) {
 						this.stepActive = 1
 					} else {
@@ -241,6 +293,8 @@
 					this.showLoadingHint = false
 				})
 				.catch((err) => {
+					this.frontImageOnlineArr = [];
+					this.backImageOnlineArr = [];
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: err.message,
@@ -251,7 +305,7 @@
 			},
 			
 			// 下一步事件
-			stepEvent () {
+			async stepEvent () {
 				if (this.stepActive === 0) {
 					if (this.frontImageFileArr.length == 0) {
 						this.$refs.uToast.show({
@@ -269,13 +323,25 @@
 						});
 						return
 					};
+					// 上传图片文件流到服务端(资格证正面)
+					if (this.frontImageFileArr.length > 0) {
+						for (let imgI of this.frontImageFileArr) {
+							await this.uploadFileEvent(imgI,'front')
+						}
+					};
+					// 上传图片文件流到服务端(资格证反面)
+					if (this.backImageFileArr.length > 0) {
+						for (let imgI of this.backImageFileArr) {
+							await this.uploadFileEvent(imgI,'back')
+						}
+					};
 					// 护士资格认证
 					this.createMedicalCareAptitudeEvent({
-						aptitudeId: '',
-						aptitudeName: '',
+						aptitudeId: this.medicalCareAptitudeMessage['id'],
+						aptitudeName: this.medicalCareAptitudeMessage['name'],
 						careId: this.userInfo.careId,
-						imageFront: this.frontImageFileArr[0],
-						imageBack: this.backImageFileArr[0]
+						imageFront: this.frontImageOnlineArr[0],
+						imageBack: this.backImageOnlineArr[0]
 					})
 				}
 			},

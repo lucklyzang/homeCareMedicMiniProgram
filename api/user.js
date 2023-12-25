@@ -99,6 +99,14 @@ export function getMedicalCareAptitude(data) {
   })
 };
 
+// 获得医护资质列表
+export function getMedicalCareAptitudeList(data) {
+  return request({
+    url: '/app-api/hospital/aptitude/list',
+    method: 'get'
+  })
+};
+
 // 创建医护资质
 export function createMedicalCareAptitude(data) {
   return request({

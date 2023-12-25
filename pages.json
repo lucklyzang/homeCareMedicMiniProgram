@@ -226,6 +226,15 @@
 					}
 				},
 				{
+					"path": "pages/careQualificationAuthentication/careQualificationAuthentication",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/identityAuthenticationHome/identityAuthenticationHome",
 					"style": {
 						"navigationBarTitleText": "",

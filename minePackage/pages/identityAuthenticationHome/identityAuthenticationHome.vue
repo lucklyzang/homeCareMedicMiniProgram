@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="身份认证" @backClick="backTo">
@@ -24,33 +26,37 @@
 			<view class="certificate-authentication-title">
 				<text>证书认证</text>
 			</view>
-			<view class="certificate-authentication" @click="nurseQualificationAuthenticationEvent">
-				<view class="certificate-authentication-left">
-					<view class="image-box">
-						<image src="@/static/img/nurse-certification-icon.png"></image>
-					</view>
-					<view class="authentication-text">
-						<text>护士资格证</text>
-					</view>
-				</view>
-				<view class="certificate-authentication-right">
-					<text>未认证</text>
-				</view>
-			</view>
-			<view class="certificate-have-authentication">
-				<view class="certificate-have-authentication-left">
-					<view class="image-box">
-						<image src="@/static/img/nurse-certification-icon.png"></image>
-					</view>
-					<view class="authentication-text">
-						<text>护士资格证</text>
-					</view>
-				</view>
-				<view class="certificate-have-authentication-right">
-					<image src="@/static/img/have-authentication-icon.png"></image>
-					<text>已认证</text>
-				</view>
-			</view>
+				<view class="certificate-authentication-list-box">
+					<view class="certificate-authentication-list" v-for="(item,index) in medicalCareAptitudeList" :key="index">
+						<view class="certificate-authentication" v-if="item.passed == 'NO'" @click="nurseQualificationAuthenticationEvent(item,index)">
+							<view class="certificate-authentication-left">
+								<view class="image-box">
+									<image :src="item.picUrl"></image>
+								</view>
+								<view class="authentication-text">
+									<text>{{ item.name }}</text>
+								</view>
+							</view>
+							<view class="certificate-authentication-right">
+								<text>未认证</text>
+							</view>
+						</view>
+						<view class="certificate-have-authentication" v-if="item.passed == 'OPEN' || item.passed == 'APPLYING'">
+							<view class="certificate-have-authentication-left">
+								<view class="image-box">
+									<image :src="item.picUrl"></image>
+								</view>
+								<view class="authentication-text">
+									<text>{{ item.name }}</text>
+								</view>
+							</view>
+							<view class="certificate-have-authentication-right">
+								<image src="@/static/img/have-authentication-icon.png" v-if="item.passed == 'OPEN'"></image>
+								<text>{{ item.passed == 'OPEN' ? '已认证' : '审核中'}}</text>
+							</view>
+						</view>
+					</view>	
+				</view>		
 			<view class="complete-personal-information-title">
 				<text>完善个人信息</text>
 			</view>
@@ -80,6 +86,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { getMedicalCareAptitudeList } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -88,7 +95,8 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中'
+				infoText: '加载中···',
+				medicalCareAptitudeList: []
 			}
 		},
 		computed: {
@@ -101,10 +109,36 @@
 			}
 		},
 		onShow() {
+			this.getMedicalCareAptitudeListEvent()
 		},
 		methods: {
 			...mapMutations([
 			]),
+			
+			// 获得医护资质列表
+			getMedicalCareAptitudeListEvent () {
+				this.showLoadingHint = true;
+				getMedicalCareAptitudeList().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.medicalCareAptitudeList = res.data.data
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
 			
 			// 实名认证事件
 			realNameAuthenticationEvent () {
@@ -114,10 +148,17 @@
 			},
 			
 			// 护士资格认证事件
-			nurseQualificationAuthenticationEvent () {
-				uni.navigateTo({
-					url: '/minePackage/pages/nurseQualificationAuthentication/nurseQualificationAuthentication'
-				})
+			nurseQualificationAuthenticationEvent (item,index) {
+				let mynavData = JSON.stringify(item);
+				if (item.name == '护士资格证') {
+					uni.navigateTo({
+						url: '/minePackage/pages/nurseQualificationAuthentication/nurseQualificationAuthentication?transmitData='+mynavData
+					})
+				}	else if (item.name == '护理资格证') {
+					uni.navigateTo({
+						url: '/minePackage/pages/careQualificationAuthentication/careQualificationAuthentication?transmitData='+mynavData
+					})
+				}
 			},
 			
 			// 完善个人信息事件
@@ -144,6 +185,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #fff;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #fff;
@@ -219,99 +271,104 @@
 				font-size: 14px;
 				color: #101010;
 			};
-			.certificate-authentication {
-				width: 100%;
-				padding: 0 20px;
-				box-sizing: border-box;
-				height: 116px;
-				border-radius: 9px;
-				background: linear-gradient(to right, #509EFD, #6C72FF);
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				.certificate-authentication-left {
-					display: flex;
-					align-items: center;
-					flex: 1;
-					.image-box {
+			.certificate-authentication-list-box {
+				.certificate-authentication-list {
+					.certificate-authentication {
+						width: 100%;
+						padding: 0 20px;
+						box-sizing: border-box;
+						margin-top: 14px;
+						height: 116px;
+						border-radius: 9px;
+						background: linear-gradient(to right, #509EFD, #6C72FF);
 						display: flex;
 						align-items: center;
-						justify-content: center;
-						margin-right: 20px;
-						width: 57px;
-						height: 57px;
-						border-radius: 50%;
-						background: #fff;
-						image {
-							width: 24px;
-							height: 24px;
+						justify-content: space-between;
+						.certificate-authentication-left {
+							display: flex;
+							align-items: center;
+							flex: 1;
+							.image-box {
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								margin-right: 20px;
+								width: 57px;
+								height: 57px;
+								border-radius: 50%;
+								background: #fff;
+								image {
+									width: 24px;
+									height: 24px;
+								}
+							};
+							.authentication-text {
+								font-size: 18px;
+								color: #fff;
+							}
+						};
+						.certificate-authentication-right {
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							font-size: 14px;
+							color: #fff;
+							width: 57px;
+							height: 57px;
+							border-radius: 50%;
+							background: rgba(80, 100, 235, 0.75);
 						}
 					};
-					.authentication-text {
-						font-size: 18px;
-						color: #fff;
-					}
-				};
-				.certificate-authentication-right {
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					font-size: 14px;
-					color: #fff;
-					width: 57px;
-					height: 57px;
-					border-radius: 50%;
-					background: rgba(80, 100, 235, 0.75);
-				}
-			};
-			.certificate-have-authentication {
-				width: 100%;
-				padding: 0 20px;
-				margin-top: 14px;
-				box-sizing: border-box;
-				height: 116px;
-				border-radius: 9px;
-				background: linear-gradient(to right, #509EFD, #6C72FF);
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				.certificate-have-authentication-left {
-					display: flex;
-					align-items: center;
-					flex: 1;
-					.image-box {
+					.certificate-have-authentication {
+						width: 100%;
+						padding: 0 20px;
+						margin-top: 14px;
+						box-sizing: border-box;
+						height: 116px;
+						border-radius: 9px;
+						background: linear-gradient(to right, #509EFD, #6C72FF);
 						display: flex;
 						align-items: center;
-						justify-content: center;
-						margin-right: 20px;
-						width: 57px;
-						height: 57px;
-						border-radius: 50%;
-						background: #fff;
-						image {
-							width: 24px;
-							height: 24px;
+						justify-content: space-between;
+						.certificate-have-authentication-left {
+							display: flex;
+							align-items: center;
+							flex: 1;
+							.image-box {
+								display: flex;
+								align-items: center;
+								justify-content: center;
+								margin-right: 20px;
+								width: 57px;
+								height: 57px;
+								border-radius: 50%;
+								background: #fff;
+								image {
+									width: 24px;
+									height: 24px;
+								}
+							};
+							.authentication-text {
+								font-size: 18px;
+								color: #fff;
+							}
+						};
+						.certificate-have-authentication-right {
+							image {
+								width: 38px;
+								height: 38px;
+								margin-right: 4px;
+								vertical-align: middle
+							};
+							text {
+								font-size: 14px;
+								color: #E8CB51;
+								vertical-align: middle
+							}
 						}
-					};
-					.authentication-text {
-						font-size: 18px;
-						color: #fff;
 					}
-				};
-				.certificate-have-authentication-right {
-					image {
-						width: 38px;
-						height: 38px;
-						margin-right: 4px;
-						vertical-align: middle
-					};
-					text {
-						font-size: 14px;
-						color: #E8CB51;
-						vertical-align: middle
-					}
-				}
-			};
+				}	
+			};		
 			.complete-personal-information-title {
 				height: 80px;
 				line-height: 80px;

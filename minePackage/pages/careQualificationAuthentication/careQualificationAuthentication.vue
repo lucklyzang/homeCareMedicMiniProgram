@@ -8,29 +8,26 @@
 		</u-modal>
 		<view class="top-area-box">
 			<view class="nav">
-				<nav-bar :home="false" backState='3000' bgColor="none" title="实名认证" @backClick="backTo">
+				<nav-bar :home="false" backState='3000' bgColor="none" title="护理资格证认证" @backClick="backTo">
 				</nav-bar> 
 		  </view>
 		</view>
 		<view class="real-name-authentication-box">
 			<view class="real-name-authentication-step">
 				<view class="real-name-authentication-step-top">
-					<view class="circle-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 || stepActive === 2 }"></view>
-					<view class="line-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 || stepActive === 2 }"></view>
-					<view class="circle-two" :class="{'stepStyle' : stepActive === 1 || stepActive === 2 }"></view>
-					<view class="line-two" :class="{'stepStyle' : stepActive === 1 || stepActive === 2 }"></view>
-					<view class="circle-three" :class="{'stepStyle' : stepActive === 2 }"></view>
+					<view class="circle-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1}"></view>
+					<view class="line-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1}"></view>
+					<view class="circle-two" :class="{'stepStyle' : stepActive === 1}"></view>
 				</view>
 				<view class="real-name-authentication-step-bottom">
-					<view class="step-left" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 || stepActive === 2 }">完成实名认证</view>
-					<view class="step-center" :class="{'stepStyle' : stepActive === 1 || stepActive === 2 }">完成影像认证</view>
-					<view class="step-right" :class="{'stepStyle' : stepActive === 2 }">完成</view>
+					<view class="step-left" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 }">完成护理资格认证</view>
+					<view class="step-right" :class="{'stepStyle' : stepActive === 1 }">完成</view>
 				</view>
 			</view>
-			<view class="step-one" v-if="stepActive === 0 ">
+			<view class="step-one" v-if="stepActive === 0">
 				<view class="real-name-authentication-upload">
 					<view class="real-name-authentication-upload-title">
-						<text>上传身份证照片</text>
+						<text>上传资格证照片</text>
 					</view>
 					<view class="real-name-authentication-upload-one">
 						<view class="upload-before" v-if="frontImageBase64Arr.length == 0" @click="getImg('front')">
@@ -38,7 +35,7 @@
 								<image src="@/static/img/camera-white-icon.png"></image>
 							</view>
 							<view class="upload-text">
-								<text>上传身份证正面</text>
+								<text>上传资格证正面</text>
 							</view>
 						</view>
 						<view class="upload-after" v-else v-for="(item, index) in frontImageBase64Arr" :key='index'>
@@ -52,26 +49,12 @@
 								<image src="@/static/img/camera-white-icon.png"></image>
 							</view>
 							<view class="upload-text">
-								<text>上传身份证反面</text>
+								<text>上传资格证反面</text>
 							</view>
 						</view>
 						<view class="upload-after" v-else v-for="(item, index) in backImageBase64Arr" :key='index'>
 							<image :src="item" mode="aspectFit"></image>
 							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'back')"></u-icon>
-						</view>
-					</view>
-					<view class="real-name-authentication-upload-one real-name-authentication-upload-three">
-						<view class="upload-before" v-if="handImageBase64Arr.length == 0" @click="getImg('hand')">
-							<view class="upload-image">
-								<image src="@/static/img/camera-white-icon.png"></image>
-							</view>
-							<view class="upload-text">
-								<text>上传手持身份证</text>
-							</view>
-						</view>
-						<view class="upload-after" v-else v-for="(item, index) in handImageBase64Arr" :key='index'>
-							<image :src="item" mode="aspectFit"></image>
-							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'hand')"></u-icon>
 						</view>
 					</view>
 				</view>
@@ -107,39 +90,14 @@
 					</view>
 				</view>
 			</view>
-			<view class="step-two" v-if="stepActive === 1">
-				<view class="image-authentication">
-					<view class="step-two-content">
-						<view class="image-area">
-							<view class="bk-black">
-								<view class="bk-white">
-									<image src="@/static/img/image-authentication-person-icon.png"></image>
-								</view>
-							</view>
-						</view>
-						<view class="step-two-explain-one">
-							<text>只有实名认证用户才能接单</text>
-						</view>
-						<view class="step-two-explain-two">
-							<text>本过程需要您本人亲自完成，仅需要1分钟</text>
-						</view>
-						<view class="step-two-explain-three">
-							<text>您提交的资料将仅用于实名认证审核</text>
-						</view>
-					</view>
-					<view class="step-two-btn">
-						<text>立即认证</text>
-					</view>
-				</view>	
-			</view>
-			<view class="step-three" v-if="stepActive === 2">
+			<view class="step-three" v-if="stepActive === 1">
 				<view class="authentication-success">
 					<view class="step-two-content">
 						<view class="image-area">
 							<image src="@/static/img/real-name-authentication-success.png"></image>
 						</view>
 						<view class="step-two-explain-one">
-							<text>恭喜你，个人实名认证成功</text>
+							<text>恭喜你，护士资格证上传成功</text>
 						</view>
 						<view class="step-two-explain-two">
 							<text>你提交的认证资料已通过审核</text>
@@ -149,12 +107,12 @@
 							<text>身份证：3**********0</text>
 						</view>
 					</view>
-					<view class="step-two-btn" @click="backTo">
-						<text>返回认证页</text>
+					<view class="step-two-btn" @click="perfectPersonalMessageEvent">
+						<text>完善个人信息</text>
 					</view>
 				</view>	
 			</view>
-			<view class="step-btn-box" v-if="stepActive != 2">
+			<view class="step-btn-box" v-if="stepActive != 1">
 				<view class="step-btn" @click="stepEvent">
 					<text>下一步</text>
 				</view>
@@ -173,7 +131,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { medicalCareRealName } from '@/api/user.js'
+	import { createMedicalCareAptitude } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -184,19 +142,17 @@
 				showLoadingHint: false,
 				infoText: '加载中···',
 				stepActive: 0,
-				frontImageFileArr: [],
-				backImageFileArr: [],
-				handImageFileArr: [],
-				frontImageOnlineArr: [],
-				backImageOnlineArr: [],
-				handImageOnlineArr: [],
-				frontImageBase64Arr: [],
-				backImageBase64Arr: [],
-				handImageBase64Arr: [],
 				text: '',
 				content: '',
+				frontImageFileArr: [],
+				frontImageBase64Arr: [],
+				backImageFileArr: [],
+				backImageBase64Arr: [],
+				frontImageOnlineArr: [],
+				backImageOnlineArr: [],
 				sureCancelShow: false,
-				imgIndex: null
+				imgIndex: null,
+				medicalCareAptitudeMessage: {}
 			}
 		},
 		computed: {
@@ -208,7 +164,8 @@
 			proId() {
 			}
 		},
-		onShow() {
+		onLoad(options) {
+			this.medicalCareAptitudeMessage = JSON.parse(options.transmitData)
 		},
 		methods: {
 			...mapMutations([
@@ -234,9 +191,6 @@
 				} else if (this.text == 'back') {
 					this.backImageFileArr.splice(this.imgIndex, 1);
 					this.backImageBase64Arr.splice(this.imgIndex, 1)
-				} else if (this.text == 'hand') {
-					this.handImageFileArr.splice(this.imgIndex, 1);
-					this.handImageBase64Arr.splice(this.imgIndex, 1)
 				};
 				this.sureCancelShow = false
 			},
@@ -257,8 +211,6 @@
 								that.frontImageFileArr.push(res.tempFiles[imgI]['path']);
 							} else if (text == 'back') {
 								that.backImageFileArr.push(res.tempFiles[imgI]['path']);
-							} else if (text == 'hand') {
-								that.handImageFileArr.push(res.tempFiles[imgI]['path']);
 							};
 							uni.getFileSystemManager().readFile({
 								filePath: res.tempFilePaths[imgI],
@@ -269,8 +221,6 @@
 										that.frontImageBase64Arr.push(base64);
 									} else if (text == 'back') {
 										that.backImageBase64Arr.push(base64);
-									} else if (text == 'hand') {
-										that.handImageBase64Arr.push(base64);
 									}
 								}
 							})
@@ -299,8 +249,6 @@
 								this.frontImageOnlineArr.push(temporaryData.data);
 							} else if (text == 'back') {
 								this.backImageOnlineArr.push(temporaryData.data);
-							} else if (text == 'hand') {
-								this.handImageOnlineArr.push(temporaryData.data);
 							};
 							resolve()
 						} else {
@@ -326,14 +274,13 @@
 				})
 			},
 			
-			// 实名认证事件
-			medicalCareRealNameEvent (data) {
-				this.infoText = '实名认证中···';
+			// 护理资格认证事件
+			createMedicalCareAptitudeEvent (data) {
+				this.infoText = '护理资格认证中···';
 				this.showLoadingHint = true;
-				medicalCareRealName(data).then((res) => {
+				createMedicalCareAptitude(data).then((res) => {
 					this.frontImageOnlineArr = [];
 					this.backImageOnlineArr = [];
-					this.handImageOnlineArr = [];
 					if ( res && res.data.code == 0) {
 						this.stepActive = 1
 					} else {
@@ -348,7 +295,6 @@
 				.catch((err) => {
 					this.frontImageOnlineArr = [];
 					this.backImageOnlineArr = [];
-					this.handImageOnlineArr = [];
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: err.message,
@@ -363,7 +309,7 @@
 				if (this.stepActive === 0) {
 					if (this.frontImageFileArr.length == 0) {
 						this.$refs.uToast.show({
-							message: '请上传身份证正面图片',
+							message: '请上传护理资格证正面图片',
 							type: 'error',
 							position: 'center'
 						});
@@ -371,53 +317,45 @@
 					};
 					if (this.backImageFileArr.length == 0) {
 						this.$refs.uToast.show({
-							message: '请上传身份证反面图片',
+							message: '请上传护理资格证反面图片',
 							type: 'error',
 							position: 'center'
 						});
 						return
 					};
-					if (this.handImageFileArr.length == 0) {
-						this.$refs.uToast.show({
-							message: '请上传手持身份证图片',
-							type: 'error',
-							position: 'center'
-						});
-						return
-					};
-					// 上传图片文件流到服务端(身份证正面)
+					// 上传图片文件流到服务端(资格证正面)
 					if (this.frontImageFileArr.length > 0) {
 						for (let imgI of this.frontImageFileArr) {
 							await this.uploadFileEvent(imgI,'front')
 						}
 					};
-					// 上传图片文件流到服务端(身份证反面)
+					// 上传图片文件流到服务端(资格证反面)
 					if (this.backImageFileArr.length > 0) {
 						for (let imgI of this.backImageFileArr) {
 							await this.uploadFileEvent(imgI,'back')
 						}
 					};
-					// 上传图片文件流到服务端(手持身份证)
-					if (this.handImageFileArr.length > 0) {
-						for (let imgI of this.handImageFileArr) {
-							await this.uploadFileEvent(imgI,'hand')
-						}
-					};
-					// 实名认证
-					this.medicalCareRealNameEvent({
-						id: this.userInfo.careId,
-						front: this.frontImageOnlineArr[0],
-						back: this.backImageOnlineArr[0],
-						hand: this.handImageOnlineArr[0]
+					// 护士资格认证
+					this.createMedicalCareAptitudeEvent({
+						aptitudeId: this.medicalCareAptitudeMessage['id'],
+						aptitudeName: this.medicalCareAptitudeMessage['name'],
+						careId: this.userInfo.careId,
+						imageFront: this.frontImageOnlineArr[0],
+						imageBack: this.backImageOnlineArr[0]
 					})
-				} else if (this.stepActive === 1) {
-					
 				}
 			},
 			
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 完善个人信息事件
+			perfectPersonalMessageEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/perfectPersonalMessage/perfectPersonalMessage'
+				})
 			}
 		}
 	}
@@ -478,7 +416,7 @@
 					margin-bottom: 10px;
 					display: flex;
 					align-items: center;
-					padding: 0 50px;
+					padding: 0 100px;
 					box-sizing: border-box;
 					.circle-one {
 						width: 24px;
@@ -498,26 +436,16 @@
 						border-radius: 50%;
 						background: #E8E8E8
 					};
-					.line-two {
-						flex: 1;
-						height: 1px;
-						background: #B7B6B6;
-						margin: 0 6px
-					};
-					.circle-three {
-						width: 24px;
-						height: 24px;
-						border-radius: 50%;
-						background: #E8E8E8
-					};
 					.stepStyle {
-						background: #5064EB !important;
+						background: #F96958 !important;
 					}
 				};
 				.real-name-authentication-step-bottom {
 					display: flex;
 					align-items: center;
 					justify-content: center;
+					padding: 0 50px;
+					box-sizing: border-box;
 					>view {
 						flex: 1;
 						text-align: center;
@@ -648,79 +576,6 @@
 						color: #B7B6B6
 					}
 				}
-			};
-			.step-two {
-				padding: 10px;
-				box-sizing: border-box;
-				flex: 1;
-				.image-authentication {
-					height: 100%;
-					background: #fff;
-					padding: 40px 0;
-					box-sizing: border-box;
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: space-between;
-					.step-two-content {
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						justify-content: space-between;
-						.image-area {
-							width: 130px;
-							height: 160px;
-							border: 1px solid #BBBBBB;
-							display: flex;
-							align-items: center;
-							justify-content: center;
-							.bk-black {
-								width: 100px;
-								height: 130px;
-								background: #BBBBBB;
-								display: flex;
-								align-items: center;
-								justify-content: center;
-								.bk-white {
-									width: 75px;
-									height: 95px;
-									background: #fff;
-									display: flex;
-									align-items: center;
-									justify-content: center;
-									image {
-										width: 50px;
-										height: 75px;
-									}
-								}
-							}
-						};
-						.step-two-explain-one {
-							font-size: 12px;
-							color: #101010;
-							margin-top: 20px;
-						};
-						.step-two-explain-two {
-							font-size: 12px;
-							color: #101010;
-							margin: 20px 0;
-						};
-						.step-two-explain-three {
-							font-size: 12px;
-							color: #BBBBBB;
-						}
-					};
-					.step-two-btn {
-						width: 80%;
-						height: 40px;
-						font-size: 14px;
-						color: #fff;
-						background: #5064EB;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-					}
-				}	
 			};
 			.step-three {
 				padding: 10px;
