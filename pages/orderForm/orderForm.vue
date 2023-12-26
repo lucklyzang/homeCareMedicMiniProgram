@@ -8,7 +8,7 @@
 						<text>接受服务订单时间</text>
 					</view>
 					<view class="accept-order-date-content">
-						<text>{{ currentSelectOrderMessage.acceptTime }}</text>
+						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.acceptTime),4) }}</text>
 					</view>
 				</view>
 				<view class="accept-order-date" v-if="currentSelectOrderMessage.status >= 40 && currentSelectOrderMessage.status <= 60">
@@ -16,7 +16,7 @@
 						<text>出发时间</text>
 					</view>
 					<view class="accept-order-date-content">
-						<text>{{ currentSelectOrderMessage.setOutTime }}</text>
+						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.setOutTime),4) }}</text>
 					</view>
 				</view>
 				<view class="accept-order-date" v-if="currentSelectOrderMessage.status == 50 || currentSelectOrderMessage.status == 60">
@@ -24,7 +24,7 @@
 						<text>开始服务时间</text>
 					</view>
 					<view class="accept-order-date-content">
-						<text>{{ currentSelectOrderMessage.startTime }}</text>
+						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.startTime),4) }}</text>
 					</view>
 				</view>
 				<view class="accept-order-date" v-if="currentSelectOrderMessage.status == 60">
@@ -32,16 +32,16 @@
 						<text>完成服务时间</text>
 					</view>
 					<view class="accept-order-date-content">
-						<text>{{ completeTime.startTime }}</text>
+						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.completeTime),4) }}</text>
 					</view>
 				</view>
-				<view class="btn-area">
+				<view class="btn-area" v-if="currentSelectOrderMessage.status <= 50">
 					<text v-if="currentSelectOrderMessage.status == 30" @click="departSureEvent">立即出发</text>
 					<text v-if="currentSelectOrderMessage.status == 40" @click="startSureEvent">开始服务</text>
 					<text v-if="currentSelectOrderMessage.status == 50" @click="completeSureEvent">完成服务</text>
-					<text>14:23:23</text>
+					<text>{{ getNowFormatDate(new Date(),1) }}</text>
 				</view>
-				<view class="bottom-info-area">
+				<view class="bottom-info-area" v-if="currentSelectOrderMessage.status <= 50">
 					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
 					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
 					<text>已进入服务范围</text>
@@ -56,20 +56,21 @@
 					<text>选择拒绝原因</text>
 				</view>
 				<view class="center-content">
-					 <u-checkbox-group
+					<u-radio-group
 							v-model="checkReasonValue"
 							placement="column"
+							shape="square"
 							@change="checkboxReasonChange"
 						>
-							<u-checkbox
+							<u-radio
 								:customStyle="{marginBottom: '8px'}"
 								v-for="(item, index) in checkboxReasonList"
 								:key="index"
 								:label="item.name"
 								:name="item.name"
 							>
-							</u-checkbox>
-					</u-checkbox-group>
+							</u-radio>
+					</u-radio-group>
 				</view>
 				<view class="bottom-btn">
 					<view class="sure-btn" @click="sureRefuseEvent">
@@ -138,7 +139,7 @@
 							<text>{{ item.items[0]['spuName'] }}</text>
 						</view>
 						<view class="order-form-status">
-							<text>{{ transitionOrderStatusText(item.workerStatus,item) }}</text>
+							<text>{{ transitionOrderStatusText(item) }}</text>
 						</view>
 					</view>
 					<view class="order-form-center">
@@ -167,7 +168,7 @@
 					<view class="consumption-rental">
 						<view class="consumption-rental-left">
 							<text>申请时间:</text>
-							<text>{{ item.createTime }}</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
 						<view class="consumption-rental-right">
 							<text>￥:</text>
@@ -181,7 +182,6 @@
 						<view class="btn-area-right">
 							<text v-if="item.status == 20" @click.stop="refuseOrderFormEvent(item)">拒绝订单</text>
 							<text class="accept-payment" v-if="item.status == 20" @click.stop="acceptOrderFormEvent(item)">接受订单</text>
-							<text class="accept-payment" v-if="item.status == 30" @click.stop="departEvent(item)">立即出发</text>
 						</view>
 					</view>
 				</view>
@@ -197,7 +197,7 @@
 							<text>{{ item.items[0]['spuName'] }}</text>
 						</view>
 						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50}">
-							<text>{{ transitionOrderStatusText(item.workerStatus,item) }}</text>
+							<text>{{ transitionOrderStatusText(item) }}</text>
 						</view>
 					</view>
 					<view class="order-form-center">
@@ -226,7 +226,7 @@
 					<view class="consumption-rental">
 						<view class="consumption-rental-left">
 							<text>申请时间:</text>
-							<text>{{ item.createTime }}</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
 						<view class="consumption-rental-right">
 							<text>￥:</text>
@@ -238,6 +238,7 @@
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
+							<text class="accept-payment" v-if="item.status == 30" @click.stop="departEvent(item)">立即出发</text>
 							<text class="accept-payment" v-if="item.status == 40" @click.stop="startEvent(item)">开始服务</text>
 							<text class="accept-payment" v-if="item.status == 50" @click.stop="completeEvent(item)">完成服务</text>
 						</view>
@@ -249,13 +250,13 @@
 		<view class="order-form-list-wrapper" v-show="current == 2">
 			<u-empty text="您还没有相关订单" mode="list" v-if="isShowNoData"></u-empty>
 			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
-				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">>
+				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">
 					<view class="order-form-top">
 						<view class="order-form-title">
 							<text>{{ item.items[0]['spuName'] }}</text>
 						</view>
 						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50,'completeStyle' : item.status == 60}">
-							<text>{{ transitionOrderStatusText(item.workerStatus,item) }}</text>
+							<text>{{ transitionOrderStatusText(item) }}</text>
 						</view>
 					</view>
 					<view class="order-form-center">
@@ -284,7 +285,7 @@
 					<view class="consumption-rental">
 						<view class="consumption-rental-left">
 							<text>申请时间:</text>
-							<text>{{ item.createTime }}</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
 						<view class="consumption-rental-right">
 							<text>￥:</text>
@@ -342,7 +343,7 @@
 				refuseOrderFormDialogShow: false,
 				refuseOrderFormSuccessDialogShow: false,
 				acceptOrderFormSuccessDialogShow: false,
-				checkReasonValue: [],
+				checkReasonValue: '',
 				currentSelectOrderMessage: {},
 				refundReason: '',
 				isShowNoData: false,
@@ -449,6 +450,51 @@
 						return "周六"
 						break
 					}
+			},
+			
+			// 格式化时间
+			getNowFormatDate(currentDate,type) {
+				// type:1(只显示小时分钟秒),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟秒)5(显示月日)
+				let currentdate;
+				let strDate = currentDate.getDate();
+				let seperator1 = "-";
+				let seperator2 = ":";
+				let seperator3 = " ";
+				let month = currentDate.getMonth() + 1;
+				let hour = currentDate.getHours();
+				let minutes = currentDate.getMinutes();
+				let seconds = currentDate.getSeconds();
+				if (month >= 1 && month <= 9) {
+					month = "0" + month;
+				};
+				if (hour >= 0 && hour <= 9) {
+					hour = "0" + hour;
+				};
+				if (minutes >= 0 && minutes <= 9) {
+					minutes = "0" + minutes;
+				};
+				if (seconds >= 0 && seconds <= 9) {
+					seconds = "0" + seconds;
+				};
+				if (strDate >= 0 && strDate <= 9) {
+					strDate = "0" + strDate;
+				};
+				if (type == 1) {
+					currentdate = hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 2) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+				};
+				if (type == 3) {
+					currentdate = currentDate.getFullYear() + seperator1 + month
+				};
+				if (type == 4) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 5) {
+					currentdate = month + seperator1 + strDate
+				};
+				return currentdate
 			},
 			
 			scrolltolower () {
@@ -564,8 +610,7 @@
 			},
 			
 			// 转换订单状态
-			transitionOrderStatusText(status,item) {
-				let temporaryStatus = status.toString();
+			transitionOrderStatusText(item) {
 				let temporaryWorkerStatus = item.status.toString();
 				// 待处理类型的订单下包含2子状态(20-待接单 30-待出发)
 				if (this.current == 0) {
@@ -688,7 +733,7 @@
 			
 			// 选择原因弹框值变化事件
 			checkboxReasonChange (n) {
-				console.log('change', n);
+				console.log('change');
 			},
 			
 			// 拒绝订单事件
@@ -700,7 +745,7 @@
 			// 确定拒绝事件
 			sureRefuseEvent () {
 				this.refuseOrderFormDialogShow = false;
-				this.refuseTradeOrderEvent(this.currentSelectOrderMessage.id,'')
+				this.refuseTradeOrderEvent(this.currentSelectOrderMessage.id,this.checkReasonValue)
 			},
 			
 			// 立即出发事件

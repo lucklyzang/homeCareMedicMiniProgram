@@ -433,7 +433,7 @@
 				this.showLoadingHint = true;
 				medicalCarePerfect(data).then((res) => {
 					if ( res && res.data.code == 0) {
-						
+						uni.navigateBack()
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,

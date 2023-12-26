@@ -11,7 +11,7 @@
 							<text>接受服务订单时间</text>
 						</view>
 						<view class="accept-order-date-content">
-							<text>{{ serviceMessage.acceptTime }}</text>
+							<text>{{ getNowFormatDate(new Date(serviceMessage.acceptTime),4) }}</text>
 						</view>
 					</view>
 					<view class="accept-order-date" v-if="serviceMessage.status >= 40 && serviceMessage.status <= 60">
@@ -19,7 +19,7 @@
 							<text>出发时间</text>
 						</view>
 						<view class="accept-order-date-content">
-							<text>{{ serviceMessage.setOutTime }}</text>
+							<text>{{ getNowFormatDate(new Date(serviceMessage.setOutTime),4) }}</text>
 						</view>
 					</view>
 					<view class="accept-order-date" v-if="serviceMessage.status == 50 || serviceMessage.status == 60">
@@ -27,7 +27,7 @@
 							<text>开始服务时间</text>
 						</view>
 						<view class="accept-order-date-content">
-							<text>{{ serviceMessage.startTime }}</text>
+							<text>{{ getNowFormatDate(new Date(serviceMessage.startTime),4) }}</text>
 						</view>
 					</view>
 					<view class="accept-order-date" v-if="serviceMessage.status == 60">
@@ -35,16 +35,16 @@
 							<text>完成服务时间</text>
 						</view>
 						<view class="accept-order-date-content">
-							<text>{{ completeTime.startTime }}</text>
+							<text>{{ getNowFormatDate(new Date(serviceMessage.completeTime),4) }}</text>
 						</view>
 					</view>
-					<view class="btn-area">
+					<view class="btn-area" v-if="serviceMessage.status <= 50">
 						<text v-if="serviceMessage.status == 30" @click="departSureEvent">立即出发</text>
 						<text v-if="serviceMessage.status == 40" @click="startSureEvent">开始服务</text>
 						<text v-if="serviceMessage.status == 50" @click="completeSureEvent">完成服务</text>
-						<text>14:23:23</text>
+						<text>{{ getNowFormatDate(new Date(),1) }}</text>
 					</view>
-					<view class="bottom-info-area">
+					<view class="bottom-info-area" v-if="serviceMessage.status <= 50">
 						<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
 						<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
 						<text>已进入服务范围</text>
@@ -60,20 +60,21 @@
 					<text>选择拒绝原因</text>
 				</view>
 				<view class="center-content">
-					 <u-checkbox-group
+					 <u-radio-group
 							v-model="checkReasonValue"
 							placement="column"
+							shape="square"
 							@change="checkboxReasonChange"
 						>
-							<u-checkbox
+							<u-radio
 								:customStyle="{marginBottom: '8px'}"
 								v-for="(item, index) in checkboxReasonList"
 								:key="index"
 								:label="item.name"
 								:name="item.name"
 							>
-							</u-checkbox>
-					</u-checkbox-group>
+							</u-radio>
+					</u-radio-group>
 				</view>
 				<view class="bottom-btn">
 					<view class="sure-btn" @click="sureRefuseEvent">
@@ -122,7 +123,7 @@
 			<view class="service-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
 				<text>{{ transitionOrderStatusText(serviceMessage.status, serviceMessage) }}</text>
 			</view>
-			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80">
+			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80 && serviceMessage.status != 90">
 				<text class="refuse-btn" v-if="serviceMessage.status == 20" @click="refuseOrderFormEvent(serviceMessage)">拒绝订单</text>
 				<text v-if="serviceMessage.status == 20" @click="acceptOrderFormEvent(serviceMessage)">接受订单</text>
 				<text v-if="serviceMessage.status == 30" @click="departEvent(serviceMessage)">立即出发</text>
@@ -130,8 +131,8 @@
 				<text v-if="serviceMessage.status == 50" @click="completeEvent(serviceMessage)">完成服务</text>
 				<text v-if="serviceMessage.status == 60" @click="clickDetailsEvent">点击详情</text>
 			</view>
-			<view class="" v-else>
-				晚上有约会
+			<view class="" v-if="serviceMessage.status == 90">
+				{{ serviceMessage.reason }}
 			</view>
 		</view>
 		<view class="order-form-list-wrapper">
@@ -207,26 +208,13 @@
 					<text>患者资料</text>
 				</view>
 				<view class="patient-data-image">
-					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
-						 <template v-slot:loading>
-						    <u-loading-icon color="red"></u-loading-icon>
-						  </template>
-					</u-image>
-					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
-						 <template v-slot:loading>
-						    <u-loading-icon color="red"></u-loading-icon>
-						  </template>
-					</u-image>
-					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
-						 <template v-slot:loading>
-						    <u-loading-icon color="red"></u-loading-icon>
-						  </template>
-					</u-image>
-					<u-image src="@/static/img/health-nurse.png" width="63" height="63">
-						 <template v-slot:loading>
-						    <u-loading-icon color="red"></u-loading-icon>
-						  </template>
-					</u-image>
+					<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images">
+						<u-image :src="item" width="100" mode="widthFix">
+							 <template v-slot:loading>
+									<u-loading-icon color="red"></u-loading-icon>
+								</template>
+						</u-image>
+					</view>
 				</view>
 			</view>
 			<view class="service-site">
@@ -297,7 +285,7 @@
 						</view>
 						<view class="order-message-one-special-right">
 							<text>{{ serviceMessage.no }}</text>
-							<text  @click="copyContent(copyValue)">复制</text>
+							<text  @click="copyContent(serviceMessage.no)">复制</text>
 						</view>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.payNo">
@@ -306,19 +294,19 @@
 					</view>
 					<view class="order-message-one">
 						<text>创建时间:</text>
-						<text>{{ serviceMessage.createTime }}</text>
+						<text>{{ getNowFormatDate(new Date(serviceMessage.createTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.workerStatus != 0 && serviceMessage.payTime">
 						<text>付款时间:</text>
-						<text>{{ serviceMessage.payTime }}</text>
+						<text>{{ getNowFormatDate(new Date(serviceMessage.payTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.status >= 30 && serviceMessage.status != 70">
 						<text>派单时间:</text>
-						<text>{{ serviceMessage.assignTime }}</text>
+						<text>{{ getNowFormatDate(new Date(serviceMessage.assignTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.status == 60">
 						<text>完成服务时间:</text>
-						<text>{{ serviceMessage.completeTime }}</text>
+						<text>{{ getNowFormatDate(new Date(serviceMessage.completeTime),4) }}</text>
 					</view>
 				</view>
 			</view>
@@ -353,7 +341,7 @@
 				refuseOrderFormDialogShow: false,
 				refuseOrderFormSuccessDialogShow: false,
 				acceptOrderFormSuccessDialogShow: false,
-				checkReasonValue: [],
+				checkReasonValue: '',
 				currentSelectOrderMessage: {},
 				refundReason: '',
 				checkboxReasonList: [
@@ -471,7 +459,7 @@
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(options.transmitData);
 			this.serviceMessage = temporaryAddress;
-			this.queryOrderDetail({id:this.serviceMessage.id})
+			this.queryOrderDetail({id:this.serviceMessage.id, type: 2})
 		},
 		
 		
@@ -507,6 +495,51 @@
 					currentdate = month + seperator1
 				} else {
 					currentdate = month + seperator1 + strDate + seperator2
+				};
+				return currentdate
+			},
+			
+			// 格式化时间
+			getNowFormatDate(currentDate,type) {
+				// type:1(只显示小时分钟),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟秒)5(显示月日)
+				let currentdate;
+				let strDate = currentDate.getDate();
+				let seperator1 = "-";
+				let seperator2 = ":";
+				let seperator3 = " ";
+				let month = currentDate.getMonth() + 1;
+				let hour = currentDate.getHours();
+				let minutes = currentDate.getMinutes();
+				let seconds = currentDate.getSeconds();
+				if (month >= 1 && month <= 9) {
+					month = "0" + month;
+				};
+				if (hour >= 0 && hour <= 9) {
+					hour = "0" + hour;
+				};
+				if (minutes >= 0 && minutes <= 9) {
+					minutes = "0" + minutes;
+				};
+				if (seconds >= 0 && seconds <= 9) {
+					seconds = "0" + seconds;
+				};
+				if (strDate >= 0 && strDate <= 9) {
+					strDate = "0" + strDate;
+				};
+				if (type == 1) {
+					currentdate = hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 2) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+				};
+				if (type == 3) {
+					currentdate = currentDate.getFullYear() + seperator1 + month
+				};
+				if (type == 4) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 5) {
+					currentdate = month + seperator1 + strDate
 				};
 				return currentdate
 			},
@@ -658,7 +691,7 @@
 						return '服务中'
 						break;
 						case '60' :
-						return '已完成'
+						return '服务完成'
 						break;
 						case '70' :
 						return '已取消'
@@ -741,7 +774,7 @@
 				// 确定拒绝事件
 				sureRefuseEvent () {
 					this.refuseOrderFormDialogShow = false;
-					this.refuseTradeOrderEvent(this.serviceMessage.id,'')
+					this.refuseTradeOrderEvent(this.serviceMessage.id,this.checkReasonValue)
 				},
 				
 				// 立即出发事件
@@ -1122,6 +1155,7 @@
 			justify-content: center;
 			align-items: center;
 			.service-status {
+				margin-bottom: 16px;
 				>text {
 					font-size: 18px;
 					color: #E86F50;
@@ -1137,10 +1171,10 @@
 			.btn-details {
 				>text {
 					display: inline-block;
-					width: 172px;
-					height: 40px;
+					width: 130px;
+					height: 36px;
 					text-align: center;
-					line-height: 40px;
+					line-height: 36px;
 					background: #1983FD;
 					border-radius: 18px;
 					font-size: 14px;
@@ -1340,13 +1374,14 @@
 			box-sizing: border-box;
 			.patient-data-title {
 				font-size: 14px;
+				font-weight: bold;
 				color: #3E4248;
 				margin-bottom: 10px
 			};
 			.patient-data-image {
 				display: flex;
 				flex-wrap: wrap;
-				.u-transition {
+				.patient-data-image-list {
 					width: 32%;
 					margin-right: 2%;
 					margin-bottom: 10px;
@@ -1354,9 +1389,9 @@
 						margin-right: 0 !important
 					};
 					::v-deep .u-image {
-						width: 100% !important
+						height: auto !important
 					}
-				}	
+				}
 			}
 		};
 		.service-site {
@@ -1368,6 +1403,7 @@
 				display: flex;
 				font-size: 14px;
 				color: #3E4248;
+				font-weight: bold;
 				margin-bottom: 10px;
 				>text {
 					display: inline-block;

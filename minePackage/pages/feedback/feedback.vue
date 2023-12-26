@@ -88,6 +88,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import store from '@/store'
 	import { createFeedback } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
@@ -109,6 +110,7 @@
 				sureCancelShow: false,
 				imgArr: [],
 				imgFileArr: [],
+				imgOnlinePathArr: [],
 				imgIndex: ''
 			}
 		},
@@ -152,7 +154,7 @@
 			},
 			
 			// 提交事件
-			submitEvent () {
+			async submitEvent () {
 				if (this.feedbackCategoryIndex === null) {
 					this.$refs.uToast.show({
 						message: '请选择反馈类别',
@@ -177,16 +179,63 @@
 					});
 					return
 				};
+				// 上传图片文件流到服务端
+				if (this.imgFileArr.length > 0) {
+					for (let imgI of this.imgFileArr) {
+						await this.uploadFileEvent(imgI)
+					}
+				};
 				this.createFeedbackEvent({
 					userId: this.userInfo.userId,
 					type: 1,
 					description: this.problemDescriptionValue,
-					images: this.imgFileArr,
+					images: this.imgOnlinePathArr,
 					mobile: this.contactInformationValue,
 					status: 0,
 					processor: '',
 					handleTime: '',
 					handleResult: ''
+				})
+			},
+			
+			// 上传图片到服务器
+			uploadFileEvent (imgI) {
+				this.infoText = '上传中···';
+				this.showLoadingHint = true;
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+					 url: 'https://dev.nurse.blinktech.cn/nurse/app-api/infra/file/upload',
+					 filePath: imgI,
+					 name: 'file',
+					 header: {
+						'content-type': 'multipart/form-data',
+						'Authorization': `Bearer ${store.getters.token}`
+					 },
+					 success: (res) => {
+						if (res.statusCode == 200) {
+							let temporaryData = JSON.parse(res.data);
+							this.imgOnlinePathArr.push(temporaryData.data);
+							resolve()
+						} else {
+							this.showLoadingHint = false;
+							this.$refs.uToast.show({
+								message: '上传图片失败',
+								type: 'error',
+								position: 'center'
+							});
+							reject()
+						}
+					 },
+					 fail: (err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err,
+							type: 'error',
+							position: 'center'
+						});
+						reject()
+					 }
+					})
 				})
 			},
 			

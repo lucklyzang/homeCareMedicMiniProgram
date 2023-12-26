@@ -661,6 +661,7 @@
 				this.tradeList = [];
 				this.isShowNoData = false;
 				if (flag) {
+					this.fullTradeList = [];
 					this.showLoadingHint = true
 				} else {
 					this.showLoadingHint = false;
