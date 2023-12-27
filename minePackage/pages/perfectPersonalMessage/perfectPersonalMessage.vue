@@ -599,7 +599,36 @@
 						flex: 1;
 						font-size: 14px;
 						color: #979797;
+						display: flex;
 						::v-deep .w-select {
+							width: 100%;
+							--select-border: none;
+							margin-left: 0 !important;
+							.select-wrap-active {
+								border: none
+							};
+							.select-wrap {
+								width: 100%;
+								// .select-options {
+								// 	top: 46px;
+								// 	bottom: none !important
+								// };
+								.uni-input-placeholder {
+									font-size: 14px !important;
+									color: #979797 !important
+								};
+								input {
+									font-size: 14px !important;
+									color: #979797 !important
+								};
+								.select-content-item {
+									font-size: 14px !important;
+									color: #979797 !important
+								}
+							}	
+						};
+						::v-deep w-select {
+							width: 100%;
 							--select-border: none;
 							margin-left: 0 !important;
 							.select-wrap-active {

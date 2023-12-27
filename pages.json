@@ -127,6 +127,15 @@
 					}
 				},
 				{
+					"path": "pages/faceDetection/faceDetection",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/setCenter/setCenter",
 					"style": {
 						"navigationBarTitleText": "",

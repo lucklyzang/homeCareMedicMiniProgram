@@ -123,7 +123,7 @@
 			<view class="service-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
 				<text>{{ transitionOrderStatusText(serviceMessage.status, serviceMessage) }}</text>
 			</view>
-			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80 && serviceMessage.status != 90">
+			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80">
 				<text class="refuse-btn" v-if="serviceMessage.status == 20" @click="refuseOrderFormEvent(serviceMessage)">拒绝订单</text>
 				<text v-if="serviceMessage.status == 20" @click="acceptOrderFormEvent(serviceMessage)">接受订单</text>
 				<text v-if="serviceMessage.status == 30" @click="departEvent(serviceMessage)">立即出发</text>
@@ -131,7 +131,7 @@
 				<text v-if="serviceMessage.status == 50" @click="completeEvent(serviceMessage)">完成服务</text>
 				<text v-if="serviceMessage.status == 60" @click="clickDetailsEvent">点击详情</text>
 			</view>
-			<view class="" v-if="serviceMessage.status == 90">
+			<view class="refuse-reason" v-if="serviceMessage.status == 80">
 				{{ serviceMessage.reason }}
 			</view>
 		</view>
@@ -300,7 +300,7 @@
 						<text>付款时间:</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.payTime),4) }}</text>
 					</view>
-					<view class="order-message-one" v-if="serviceMessage.status >= 30 && serviceMessage.status != 70">
+					<view class="order-message-one" v-if="serviceMessage.status >= 30 && serviceMessage.status != 70 && serviceMessage.status != 80">
 						<text>派单时间:</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.assignTime),4) }}</text>
 					</view>
@@ -373,6 +373,7 @@
 					payStatus: true,
 					payOrderId: '',
 					payTime: '',
+					reason: '',
 					payExpireTime: '',
 					payChannelCode: '',
 					payChannelName: '',
@@ -458,8 +459,7 @@
 		onLoad(options) {
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(options.transmitData);
-			this.serviceMessage = temporaryAddress;
-			this.queryOrderDetail({id:this.serviceMessage.id, type: 2})
+			this.queryOrderDetail({id:temporaryAddress.id, type: 2})
 		},
 		
 		
@@ -579,9 +579,11 @@
 					this.infoText = '加载中···';
 					getOrderDetail(data).then((res) => {
 						if ( res && res.data.code == 0) {
-							this.serviceMessage = res.data.data;
-							this.serviceMessage.payPrice = fenToYuan(this.serviceMessage.payPrice);
-							this.currentFlow = this.transitionOrderFlowStatusText(this.serviceMessage.workerStatus,this.serviceMessage);
+							if (res.data.data) {
+								this.serviceMessage = res.data.data;
+								this.serviceMessage.payPrice = fenToYuan(this.serviceMessage.payPrice);
+								this.currentFlow = this.transitionOrderFlowStatusText(this.serviceMessage.workerStatus,this.serviceMessage);
+							}
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -653,6 +655,9 @@
 				
 				// 转换订单状态
 				transitionOrderStatusText(status,item) {
+					if (status === null || item.status === null) {
+						return
+					};
 					let temporaryStatus = status.toString();
 					let temporaryWorkerStatus = item.status.toString();
 					// 待处理类型的订单下包含2子状态(20-待接单 30-待出发)
@@ -1186,7 +1191,11 @@
 					color: #898C8C !important;
 					border: 1px solid #BBBBBB !important
 				}	
-			}
+			};
+			.refuse-reason {
+				font-size: 12px;
+				color: #020202
+			};
 		};
 		.order-form-list-wrapper {
 			flex: 1;
@@ -1463,8 +1472,9 @@
 			.contact-patient-title {
 				display: flex;
 				font-size: 14px;
+				font-weight: bold;
 				color: #3E4248;
-				margin-bottom: 10px;
+				margin-bottom: 20px;
 			};
 			.contact-patient-content {
 				display: flex;
@@ -1504,8 +1514,12 @@
 			box-sizing: border-box;
 			.notice-title {
 				font-size: 14px;
+				font-weight: bold;
 				color: #3E4248;
 				margin-bottom: 10px;
+				padding: 10px 0;
+				box-sizing: border-box;
+				@include bottom-border-1px(#BBBBBB);
 			};
 			.notice-content {
 				.notice-list {
@@ -1518,7 +1532,7 @@
 		};
 		.order-message {
 			background: #fff;
-			margin-bottom: 10px;
+			margin-top: 10px;
 			.order-message-top {
 				display: flex;
 				align-items: center;

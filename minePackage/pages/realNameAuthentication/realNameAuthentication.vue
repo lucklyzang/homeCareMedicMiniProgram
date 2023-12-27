@@ -127,8 +127,8 @@
 							<text>您提交的资料将仅用于实名认证审核</text>
 						</view>
 					</view>
-					<view class="step-two-btn">
-						<text>立即认证</text>
+					<view class="step-two-btn" @click="immediatelyAuthenticationEvent">
+						<text>立即验证</text>
 					</view>
 				</view>	
 			</view>
@@ -154,7 +154,7 @@
 					</view>
 				</view>	
 			</view>
-			<view class="step-btn-box" v-if="stepActive != 2">
+			<view class="step-btn-box" v-if="stepActive == 0">
 				<view class="step-btn" @click="stepEvent">
 					<text>下一步</text>
 				</view>
@@ -183,7 +183,7 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中···',
-				stepActive: 0,
+				stepActive: 1,
 				frontImageFileArr: [],
 				backImageFileArr: [],
 				handImageFileArr: [],
@@ -213,6 +213,10 @@
 		methods: {
 			...mapMutations([
 			]),
+			
+			prevDateFun() {
+				this.stepActive = 2
+			},
 			
 			// 图片删除事件
 			photoDelete(item, index, text) {
@@ -281,6 +285,7 @@
 			
 			// 上传图片到服务器
 			uploadFileEvent (imgI,text) {
+				console.log('1',imgI);
 				this.infoText = '上传中···';
 				this.showLoadingHint = true;
 				return new Promise((resolve, reject) => {
@@ -413,6 +418,13 @@
 				} else if (this.stepActive === 1) {
 					
 				}
+			},
+			
+			// 立即人脸影像认证事件
+			immediatelyAuthenticationEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/faceDetection/faceDetection'
+				})
 			},
 			
 			// 顶部导航返回事件
