@@ -46,12 +46,15 @@
 					<image :src="personPhotoSource"></image>
 				</view>
 				<view class="user-nickname">
-					<view>
+					<view class="nick-name">
 						<text>{{ niceNameValue }}</text>
 					</view>
-					<view>
+					<view class="has-auth" v-if="isAuth">
 						<image :src="authenticationIconPng"></image>
 						<text>已认证</text>
+					</view>
+					<view class="no-auth" v-if="!isAuth" @click="toAuthEvent">
+						<text>去认证</text>
 					</view>
 				</view>
 				<view class="qr-code" @click="qrCodeClickEvent">
@@ -61,7 +64,7 @@
 			<view class="data-area-box" @click="enterDataStatisticsEvent">
 				<view class="today-earnings">
 					<text>今日收益</text>
-					<text>568.00</text>
+					<text>{{ tradeStatistics.todayAmount }}</text>
 				</view>
 				<view class="classified-statistic">
 					<view>
@@ -69,7 +72,7 @@
 							<text>接单总数</text>
 						</view>
 						<view>
-							<text>50</text>
+							<text>{{ tradeStatistics.orderCount }}</text>
 							<text>单</text>
 						</view>
 					</view>
@@ -78,7 +81,7 @@
 							<text>累计收益</text>
 						</view>
 						<view>
-							<text>50</text>
+							<text>{{ tradeStatistics.totalAmount }}</text>
 							<text>元</text>
 						</view>
 					</view>
@@ -87,7 +90,7 @@
 							<text>可提现额度</text>
 						</view>
 						<view>
-							<text>50</text>
+							<text>{{ tradeStatistics.canCash }}</text>
 							<text>元</text>
 							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
@@ -100,7 +103,7 @@
 		</view>
 		<view class="switch-box">
 			<text>派单开关</text>
-			<u-switch v-model="isSendOrdersValue" activeColor="#5A7BF4"></u-switch>
+			<u-switch v-model="isSendOrdersValue" @change="switchChange" activeColor="#5A7BF4"></u-switch>
 		</view>
 		<view class="bottom-area-box">
 			<view v-for="(item,index) in bottomFunctionList" :key="index" @click="bottomFunctionClickEvent(item.name)">
@@ -121,11 +124,13 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
+	import _ from 'lodash'
 	import {
 		setCache,
-		removeAllLocalStorage
+		removeAllLocalStorage,
+		fenToYuan
 	} from '@/common/js/utils'
-	import { getUserMessage, createCallPolice } from '@/api/user.js'
+	import { getUserMessage, createCallPolice, medicalCareReceive, tradeStatistics } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -137,14 +142,22 @@
 				authenticationIconPng: require("@/static/img/authentication-icon.png"),
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
-				infoText: '加载中···',
+				infoText: '开启中···',
 				showLoadingHint: false,
-				isSendOrdersValue: true,
+				isSendOrdersValue: false,
 				withdrawalMethodDialogShow: false,
 				callPoliceDialogShow: false,
 				showSupportStaffBox: false,
 				personPhotoSource: '',
 				niceNameValue: '张三',
+				tradeStatistics: {
+					todayAmount: 0,
+					todayCount: 0,
+					orderCount: 0,
+					totalAmount: 0,
+					canCash: 0
+				},
+				isAuth: false,
 				latitude: '',
 				longitude: '',
 				bottomFunctionList: [
@@ -174,7 +187,8 @@
 		computed: {
 			...mapGetters([
 				'userInfo',
-				'userBasicInfo'
+				'userBasicInfo',
+				'tradeStatisticsMessage'
 			]),
 			userName() {
 			},
@@ -195,12 +209,21 @@
 				this.queryUserBasicMessage()
 			} else {
 				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
-				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname
-			}
+				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
+				this.isSendOrdersValue = this.userBasicInfo.receive;
+				this.isAuth = this.userBasicInfo.auth
+			};
+			// 回显交易数据
+			if (JSON.stringify(this.tradeStatisticsMessage) != "{}") {
+				this.tradeStatistics = this.tradeStatisticsMessage
+			};
+			// 查询交易数据
+			this.queryTradeStatistics()
 		},
 		methods: {
 			...mapMutations([
-				'changeUserBasicInfo'
+				'changeUserBasicInfo',
+				'storeTradeStatisticsMessage'
 			]),
 			
 			// 报警弹框弹出事件
@@ -246,10 +269,73 @@
 				})
 			},
 			
+			// 查询交易统计
+			queryTradeStatistics () {
+				tradeStatistics().then((res) => {
+					if ( res && res.data.code == 0) {
+						let temporaryData = _.cloneDeep(res.data.data);
+						temporaryData.todayAmount = fenToYuan(temporaryData.todayAmount);
+						temporaryData.totalAmount = fenToYuan(temporaryData.totalAmount);
+						this.storeTradeStatisticsMessage(temporaryData);
+						this.tradeStatistics = this.tradeStatisticsMessage;
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 派单开关切换事件
+			switchChange () {
+				if (this.isSendOrdersValue) {
+					this.infoText = '开启中···'
+				} else {
+					this.infoText = '关闭中···'
+				};
+				medicalCareReceive(!this.isSendOrdersValue ? 0 : 1).then((res) => {
+					if ( res && res.data.code == 0) {
+						// 修改存储的是否派单值
+						let temporaryUserBasicInfo = this.userBasicInfo;
+						temporaryUserBasicInfo['receive'] = this.isSendOrdersValue;
+						this.changeUserBasicInfo(temporaryUserBasicInfo)
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			// 头像点击事件
 			enterPersonMessagePageEvent () {
 				uni.navigateTo({
 					url: '/generalSetPackage/pages/privateInfo/privateInfo'
+				})
+			},
+			
+			// 去认证事件
+			toAuthEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/identityAuthenticationHome/identityAuthenticationHome'
 				})
 			},
 			
@@ -261,7 +347,9 @@
 					if ( res && res.data.code == 0) {
 						this.changeUserBasicInfo(res.data.data);
 						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
-						this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname
+						this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
+						this.isSendOrdersValue = this.userBasicInfo.receive;
+						this.isAuth = this.userBasicInfo.auth
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -298,8 +386,8 @@
 				}).then((res) => {
 					if ( res && res.data.code == 0) {
 						this.$refs.uToast.show({
-							message: res.data.msg,
-							type: 'error',
+							message: '报警成功',
+							type: 'success',
 							position: 'center'
 						})
 					} else {
@@ -378,9 +466,15 @@
 	};
 	.content-box {
 		@include content-wrapper;
-		position: relative;
 		::v-deep .u-popup {
 			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
 		};
 		.withdrawal-method-dialog-box {
 			::v-deep .u-popup {
@@ -605,35 +699,47 @@
 				box-sizing: border-box;
 				z-index: 1;
 				@include no-wrap;
-				>view {
-					&:first-child {
+				.nick-name {
+					width: 100%;
+					text {
 						width: 100%;
-						text {
-							width: 100%;
-							display: inline-block;
-							@include no-wrap;
-							font-size: 12px;
-							color: #fff
-						}
+						display: inline-block;
+						@include no-wrap;
+						font-size: 12px;
+						color: #fff
+					}
+				};
+				.has-auth {
+					width: 75px;
+					height: 22px;
+					background: #E8CB51;
+					border-radius: 20px;
+					margin-top: 10px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					text {
+						font-size: 10px;
+						color: #fff
 					};
-					&:nth-child(2) {
-						width: 75px;
-						height: 22px;
-						background: #E8CB51;
-						border-radius: 20px;
-						margin-top: 10px;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						text {
-							font-size: 10px;
-							color: #fff
-						};
-						image {
-							width: 15px;
-							height: 15px;
-							margin-right: 10px;
-						}
+					image {
+						width: 15px;
+						height: 15px;
+						margin-right: 10px;
+					}
+				};
+				.no-auth {
+					width: 70px;
+					height: 22px;
+					background: #6486ff;
+					border-radius: 20px;
+					margin-top: 10px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					text {
+						font-size: 10px;
+						color: #fff
 					}
 				}
 			};

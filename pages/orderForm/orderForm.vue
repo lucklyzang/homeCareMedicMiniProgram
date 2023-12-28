@@ -176,7 +176,7 @@
 						</view>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -234,7 +234,7 @@
 						</view>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -293,7 +293,7 @@
 						</view>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -729,6 +729,11 @@
 						position: 'bottom'
 					})
 				})
+			},
+			
+			// 联系被护人事件
+			relationProtectedPersonEvent () {
+				
 			},
 			
 			// 选择原因弹框值变化事件

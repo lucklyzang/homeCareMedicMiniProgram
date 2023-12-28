@@ -199,7 +199,7 @@
 							} else {
 								this.initData();
 								this.$refs.uToast.show({
-									message: temporaryData.data.messsage,
+									message: `${temporaryData.data.message}`,
 									type: 'error',
 									position: 'center'
 								})
@@ -207,7 +207,7 @@
 						}	else {
 							this.initData();
 							this.$refs.uToast.show({
-								message: temporaryData.msg,
+								message: `${temporaryData.msg}`,
 								type: 'error',
 								position: 'center'
 							})
@@ -225,7 +225,7 @@
 					this.initData();
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
-						message: err,
+						message: `${err}`,
 						type: 'error',
 						position: 'center'
 					})
@@ -295,6 +295,7 @@
 			background: #fff;
 			width: 100%;
 			height: 100px;
+			z-index: 1000000;
 			::v-deep .nav {
 				width: 100%;
 				background: #fff;
@@ -325,8 +326,8 @@
 					top: 50%;
 					transform: translateX(-50%) translateY(-50%);
 					border-radius: 100%;
-					width: 600rpx;
-					height: 600rpx;
+					width: 650rpx;
+					height: 650rpx;
 					// border: 1000rpx solid white;
 					border: 1000rpx solid rgba(0, 0, 0, 0.5);
 				};

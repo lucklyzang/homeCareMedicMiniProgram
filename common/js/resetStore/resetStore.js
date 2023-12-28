@@ -14,6 +14,7 @@ export function getDefaultLoginState() {
 export function getDefaultServiceState() {
 	return {
 		serviceOrderFormSureChooseMessage: {},
-		editServiceOrderFormSureChooseMessage: {}
+		editServiceOrderFormSureChooseMessage: {},
+		tradeStatisticsMessage: {}
 	}	
 };

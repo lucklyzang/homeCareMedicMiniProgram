@@ -226,7 +226,7 @@
 		fenToYuan,
 		formatMsgTime
 	} from '@/common/js/utils'
-	import { getUserBannerList, createCallPolice } from '@/api/user.js'
+	import { getUserBannerList, createCallPolice, medicalCareHasAuth } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
@@ -250,6 +250,7 @@
 				screenDialogShow: false,
 				showLoadingHint: false,
 				isShowHomeNoData: false,
+				canAcceptOrder: false,
 				serviceCategoryIndex: null,
 				serviceProjectIndex: null,
 				minDistanceValue: '',
@@ -323,6 +324,7 @@
 		},	
 		onShow() {
 			this.queryUserBannerList({position: 1});
+			this.queryMedicalCareHasAuth();
 			this.queryTradeOrderPage({
 				pageNo: this.currentPageNum,
 				pageSize: this.pageSize,
@@ -737,8 +739,8 @@
 				}).then((res) => {
 					if ( res && res.data.code == 0) {
 						this.$refs.uToast.show({
-							message: res.data.msg,
-							type: 'error',
+							message: '报警成功',
+							type: 'success',
 							position: 'center'
 						})
 					} else {
@@ -754,6 +756,29 @@
 				.catch((err) => {
 					this.showLoadingHint = false;
 					this.callPoliceDialogShow = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			// 查询医护是否可以接单
+			queryMedicalCareHasAuth () {
+				this.showLoadingHint = true;
+				medicalCareHasAuth().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.canAcceptOrder = res.data.data.can
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+				.catch((err) => {
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',

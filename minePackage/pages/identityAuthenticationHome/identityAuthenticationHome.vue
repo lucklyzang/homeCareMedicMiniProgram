@@ -19,8 +19,11 @@
 						<text>实名认证</text>
 					</view>
 				</view>
-				<view class="real-name-authentication-right">
+				<view class="real-name-authentication-right" v-if="!realname">
 					<text>未实名</text>
+				</view>
+				<view class="real-name-authentication-right-real-name" v-else>
+					<text>已实名</text>
 				</view>
 			</view>
 			<view class="certificate-authentication-title">
@@ -63,14 +66,17 @@
 			<view class="complete-personal-information" @click="perfectPersonalMessageEvent">
 				<view class="complete-personal-information-left">
 					<view class="image-box">
-						<image src="@/static/img/personal-information-icon.png"></image>
+						<image :src="personPhotoSource"></image>
 					</view>
 					<view class="personal-information-text">
 						<text>个人信息</text>
 					</view>
 				</view>
-				<view class="complete-personal-information-right">
+				<view class="complete-personal-information-right" v-if="!perfect">
 					<text>未完善</text>
+				</view>
+				<view class="complete-personal-information-right-perfect" v-else>
+					<text>已完善</text>
 				</view>
 			</view>
 		</view>
@@ -86,7 +92,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { getMedicalCareAptitudeList } from '@/api/user.js'
+	import { getMedicalCareAptitudeList, getUserMessage } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -96,6 +102,11 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中···',
+				personPhotoSource: '',
+				realname: false,
+				perfect: false,
+				aptitude: false,
+				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				medicalCareAptitudeList: []
 			}
 		},
@@ -109,10 +120,18 @@
 			}
 		},
 		onShow() {
-			this.getMedicalCareAptitudeListEvent()
+			this.getMedicalCareAptitudeListEvent();
+			this.queryUserBasicMessage();
+			if (this.userBasicInfo && JSON.stringify(this.userBasicInfo) != '{}') {
+				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+				this.realname = this.userBasicInfo.realname == 'YES' ? true : false;
+				this.perfect = this.userBasicInfo.perfect == 'YES' ? true : false;
+				this.aptitude = this.userBasicInfo.aptitude == 'YES' ? true : false
+			}
 		},
 		methods: {
 			...mapMutations([
+				'changeUserBasicInfo'
 			]),
 			
 			// 获得医护资质列表
@@ -140,8 +159,38 @@
 				})
 			},
 			
+			// 获取用户基本信息
+			queryUserBasicMessage () {
+				this.showLoadingHint = true;
+				getUserMessage().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.changeUserBasicInfo(res.data.data);
+						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+						this.realname = this.userBasicInfo.realname == 'YES' ? true : false;
+						this.perfect = this.userBasicInfo.perfect == 'YES' ? true : false;
+						this.aptitude = this.userBasicInfo.aptitude == 'YES' ? true : false
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			// 实名认证事件
 			realNameAuthenticationEvent () {
+				if (this.realname) { return };
 				uni.navigateTo({
 					url: '/minePackage/pages/realNameAuthentication/realNameAuthentication'
 				})
@@ -163,6 +212,7 @@
 			
 			// 完善个人信息事件
 			perfectPersonalMessageEvent () {
+				if (this.perfect) { return };
 				uni.navigateTo({
 					url: '/minePackage/pages/perfectPersonalMessage/perfectPersonalMessage'
 				})
@@ -170,6 +220,7 @@
 			
 			// 顶部导航返回事件
 			backTo () {
+				this.changeUserBasicInfo({});
 				uni.navigateBack()
 			}
 		}
@@ -263,6 +314,10 @@
 					height: 57px;
 					border-radius: 50%;
 					background: rgba(80, 100, 235, 0.75);
+				};
+				.real-name-authentication-right-real-name {
+					font-size: 14px;
+					color: #E8CB51;
 				}
 			};
 			.certificate-authentication-title {
@@ -418,6 +473,10 @@
 					height: 57px;
 					border-radius: 50%;
 					background: rgba(80, 100, 235, 0.75);
+				};
+				.complete-personal-information-right-perfect {
+					font-size: 14px;
+					color: #E8CB51;
 				}
 			}
 		}

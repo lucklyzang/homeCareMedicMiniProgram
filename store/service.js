@@ -8,7 +8,11 @@ export default {
 		editServiceOrderFormSureChooseMessage: (state) => {
 			state.editServiceOrderFormSureChooseMessage = getCache('editServiceOrderFormSureChooseMessage') ? getCache('editServiceOrderFormSureChooseMessage') : {};
 			return state.editServiceOrderFormSureChooseMessage
-		}
+		},
+		tradeStatisticsMessage: (state) => {
+			state.tradeStatisticsMessage = getCache('tradeStatisticsMessage') ? getCache('tradeStatisticsMessage') : {};
+			return state.tradeStatisticsMessage
+		},
   },
   mutations:{
 		changeTimeMessage (state, playLoad) {
@@ -22,6 +26,13 @@ export default {
 			if (playLoad && playLoad != 'null') {
 				setCache('editServiceOrderFormSureChooseMessage', playLoad);
 				state.editServiceOrderFormSureChooseMessage = playLoad
+			}
+		},
+		// 保存我的页面交易数据统计信息
+		storeTradeStatisticsMessage(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('tradeStatisticsMessage', playLoad);
+				state.tradeStatisticsMessage = playLoad
 			}
 		},
 		//重置设备的状态

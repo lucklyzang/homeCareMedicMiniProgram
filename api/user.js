@@ -10,10 +10,10 @@ export function getUserBannerList(data) {
   })
 };
 
-// 获取用户基本信息
+// 获取医护信息(当前登录医护)
 export function getUserMessage() {
   return request({
-    url: '/app-api/member/user/get',
+    url: '/app-api/hospital/medical-care/info',
     method: 'get'
   })
 };
@@ -117,13 +117,30 @@ export function createMedicalCareAptitude(data) {
 };
 
 // 更新医护资质
-export function uodateMedicalCareAptitude(data) {
+export function updateMedicalCareAptitude(data) {
   return request({
     url: '/app-api/hospital/care-aptitude/update',
     method: 'put',
 		data
   })
 };
+
+// 是否接收派单
+export function medicalCareReceive(receive) {
+  return request({
+    url: `/app-api/hospital/medical-care/receive?receive=${receive}`,
+    method: 'put'
+  })
+};
+
+// 查询医护是否可以接单
+export function medicalCareHasAuth(receive) {
+  return request({
+    url: '/app-api/hospital/medical-care/has-auth',
+    method: 'get'
+  })
+};
+
 
 // 创建意见反馈
 export function createFeedback(data) {
@@ -140,5 +157,13 @@ export function updateFeedback(data) {
     url: '/app-api/hospital/feedback/update',
     method: 'put',
 		data
+  })
+};
+
+// 查询交易统计数据
+export function tradeStatistics(receive) {
+  return request({
+    url: '/app-api/statistics/trade/trend/summary',
+    method: 'get'
   })
 };
