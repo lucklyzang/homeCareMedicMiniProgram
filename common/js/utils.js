@@ -231,6 +231,39 @@ export const formatMsgTime = (dateTimeStamp) => {
   return result;
 }
 
+/*
+* 当type=1时获取出生日期,type=2时获取性别,type=3时获取年龄
+* */
+export const IdCard = (IdCard, type) => {
+		if (type === 1) {
+				//获取出生日期
+				let birthday = IdCard.substring(6, 10) + "-" + IdCard.substring(10, 12) + "-" + IdCard.substring(12, 14)
+				return birthday
+		}
+		if (type === 2) {
+				//获取性别
+				if (parseInt(IdCard.substr(16, 1)) % 2 === 1) {
+						return "男"
+				} else {
+						return "女"
+				}
+		}
+		if (type === 3) {
+				//获取年龄
+				let ageDate = new Date()
+				let month = ageDate.getMonth() + 1
+				let day = ageDate.getDate()
+				let age = ageDate.getFullYear() - IdCard.substring(6, 10) - 1
+				if (IdCard.substring(10, 12) < month || IdCard.substring(10, 12) === month && IdCard.substring(12, 14) <= day) {
+						age++
+				}
+				if (age <= 0) {
+						age = 1
+				}
+				return age
+		}
+}
+
 export const removeAllLocalStorage = () => {
   // removeStore('userName');
   // removeStore('userPassword');

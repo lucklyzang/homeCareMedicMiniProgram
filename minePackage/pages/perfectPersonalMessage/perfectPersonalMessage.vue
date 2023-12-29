@@ -52,6 +52,7 @@
 					<view class="person-name-right">
 						<u--input
 							placeholder="请输入身份证号"
+							@blur="idcardBlurEvent"
 							fontSize="14px"
 							color="#979797"
 							v-model="idCardValue"
@@ -67,6 +68,7 @@
 					<view class="person-name-right">
 						<u--input
 							placeholder="请输入性别"
+							disabled
 							fontSize="14px"
 							color="#979797"
 							v-model="genderValue"
@@ -81,6 +83,7 @@
 					<view class="person-name-right">
 						<u--input
 							placeholder="请输入生日"
+							disabled
 							fontSize="14px"
 							color="#979797"
 							v-model="birthdayValue"
@@ -95,6 +98,7 @@
 					<view class="person-name-right">
 						<u--input
 							placeholder="请输入年龄"
+							disabled
 							fontSize="14px"
 							color="#979797"
 							v-model="ageValue"
@@ -224,7 +228,8 @@
 	} from 'vuex'
 	import {
 		setCache,
-		removeAllLocalStorage
+		removeAllLocalStorage,
+		IdCard
 	} from '@/common/js/utils'
 	import { medicalCarePerfect } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
@@ -294,6 +299,27 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 身份证号输入框失去焦点事件
+			idcardBlurEvent () {
+				let regIdCard = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+				if (!regIdCard.test(this.idCardValue)) {
+					if (this.idCardValue) {
+						this.$refs.uToast.show({
+							message: '身份证格式格式有误,请重新输入!',
+							type: 'error',
+							position: 'center'
+						});
+						this.birthdayValue = '';
+						this.genderValue = '';
+						this.ageValue = ''
+					}  
+				} else {
+					this.birthdayValue = IdCard(this.idCardValue,1);
+					this.genderValue = IdCard(this.idCardValue,2);
+					this.ageValue = IdCard(this.idCardValue,3)
+				}
 			},
 			
 			// 格式化时间
@@ -407,6 +433,17 @@
 						position: 'center'
 					});
 					return
+				};
+				let regIdCard = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+				if (!regIdCard.test(this.idCardValue)) {
+					if (this.idCardValue) {
+						this.$refs.uToast.show({
+							message: '身份证格式格式有误,请重新输入!',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}  
 				};
 				this.medicalCarePerfectEvent({
 					id: this.userInfo.careId,

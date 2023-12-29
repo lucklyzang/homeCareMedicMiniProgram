@@ -118,14 +118,16 @@
 			<image src="@/static/img/home-site.png"></image>
 			<text>成都市武侯区三和街道</text>
 		</view>
-		<view class="loading-box" v-if="showLoadingHint">
-			<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
-		</view>
+		<u-transition :show="showLoadingHint" mode="fade-down">
+			<view class="loading-box" v-if="showLoadingHint">
+				<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
+			</view>
+		</u-transition>
 		<view class="banner-area-box">
 			<u-swiper @click="swiperClickEvent" keyName="image"  indicator :list="bannerList"></u-swiper>
 		</view>
 		<view class="center-area">
-			<view class="authentication-info-box">
+			<view class="authentication-info-box" v-if="!canAcceptOrder">
 				<view class="authentication-info-left">
 					请先完成实名认证、证书认证、完善个人信息审核通过后才可接单
 				</view>

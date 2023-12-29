@@ -884,6 +884,8 @@
 			
 			// 订单详情点击事件
 			enterOrderDetailsEvent (item) {
+				this.currentPageNum = 1;
+				this.totalCount = 0;
 				// 传递该订单详情及当前切换的订单类型的信息
 				let temporaryEditServiceOrderFormSureChooseMessage = this.editServiceOrderFormSureChooseMessage;
 				temporaryEditServiceOrderFormSureChooseMessage['orderMessage'] = item;

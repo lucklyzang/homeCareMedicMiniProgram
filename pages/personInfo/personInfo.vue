@@ -98,9 +98,11 @@
 				</view>
 			</view>
 		</view>
-		<view class="loading-box" v-if="showLoadingHint">
-			<u-loading-icon :show="showLoadingHint" :text="infoText" size="18" textSize="16"></u-loading-icon>
-		</view>
+		<u-transition :show="showLoadingHint" mode="fade-down">
+			<view class="loading-box" v-if="showLoadingHint">
+				<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
+			</view>
+		</u-transition>
 		<view class="switch-box">
 			<text>派单开关</text>
 			<u-switch v-model="isSendOrdersValue" @change="switchChange" activeColor="#5A7BF4"></u-switch>

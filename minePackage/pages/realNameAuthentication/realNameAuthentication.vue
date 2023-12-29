@@ -183,7 +183,7 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中···',
-				stepActive: 1,
+				stepActive: 0,
 				frontImageFileArr: [],
 				backImageFileArr: [],
 				handImageFileArr: [],

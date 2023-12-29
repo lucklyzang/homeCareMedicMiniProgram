@@ -30,8 +30,8 @@ export function sendPhoneCode(data) {
 // 重置密码
 export function resetPassword(data) {
 	return request({
-	    url: '/app-api/member/auth/reset-password',
-	    method: 'post',
+	    url: '/app-api/member/user/reset-password',
+	    method: 'put',
 	    data
 	  })
 }
@@ -39,7 +39,7 @@ export function resetPassword(data) {
 // 设置密码
 export function setPassword(data) {
 	return request({
-	    url: '/app-api/member/auth/set-password',
+	    url: '/app-api/member/user/set-password',
 	    method: 'post',
 	    data
 	  })
