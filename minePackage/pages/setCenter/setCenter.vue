@@ -16,7 +16,7 @@
 					<text>更换手机号</text>
 				</view>
 				<view class="update-phone-number-right">
-					<text>15669106075</text>
+					<text>{{ phoneNumberValue }}</text>
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
 			</view>
@@ -93,6 +93,7 @@
 				infoText: '加载中',
 				isNewMessageInformValue: true,
 				modalShow: false,
+				phoneNumberValue: '',
 				modalContent: ''
 			}
 		},
@@ -106,6 +107,7 @@
 			}
 		},
 		onShow() {
+			this.phoneNumberValue = !this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}' ? '' : this.userBasicInfo.mobile
 		},
 		methods: {
 			...mapMutations([
@@ -163,7 +165,7 @@
 			// 更换手机号事件
 			updatePhoneNumberEvent () {
 				uni.navigateTo({
-					url: '/minePackage/pages/updatePhoneNumber/updatePhoneNumber'
+					url: '/minePackage/pages/updatePhoneOldCode/updatePhoneOldCode'
 				})
 			}
 		}

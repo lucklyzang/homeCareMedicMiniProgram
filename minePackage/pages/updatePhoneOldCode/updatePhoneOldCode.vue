@@ -9,31 +9,12 @@
 				</nav-bar> 
 		  </view>
 		</view>
-		<view class="update-phone-number-content" v-if="!isUpdatePhoneNumberSuccess">
+		<view class="update-phone-number-content">
 			<view class="old-phone-number">
 				<text>你当前手机号码为:</text>
-				<text>{{ !userBasicInfo || JSON.stringify(userBasicInfo) == '{}' ? '' : userBasicInfo.mobile  }}</text>
+				<text>{{ phoneNumberValue  }}</text>
 			</view>
 			<view class="form-box">
-				<view class="phone-number">
-					<view class="phone-number-left" @click.native="uFormItemLabelClickEvent">
-						<text>{{ selectCountryCode.label }}</text>
-						<u-icon name="arrow-up" size="16" color="#C6C9CC" v-if="isShowcountryCodeBox"></u-icon>
-						<u-icon name="arrow-down" size="16" color="#C6C9CC" v-if="!isShowcountryCodeBox"></u-icon>
-						<view class="country-code-box" v-if="isShowcountryCodeBox">
-							<view class="country-code-list" :class="{'countryCodeListStyle':selectCountryCodeIndex === index}" @click.stop="countryCodeItemClickEvent(item,index)" v-for="(item,index) in countryCodeList" :key="index">
-								<text>{{ item.label }}</text>
-							</view>
-						</view>
-					</view>
-					<view class="phone-number-right">
-						<u--input
-							placeholder="请输入手机号码"
-							border="none"
-							v-model="phoneNumberValue"
-						></u--input>
-					</view>
-				</view>
 				<view class="verification-code">
 					<view class="verification-code-left">
 						<text>验证码</text>
@@ -52,18 +33,9 @@
 				</view>
 			</view>
 		</view>
-		<view class="update-success" v-if="isUpdatePhoneNumberSuccess">
-			<image src="@/static/img/uodate-phone-success.png"></image>
-			<text>更换成功!</text>
-		</view>
 		<view class="sure-btn-box">
 			<view class="sure-btn" @click="sureEvent">
-				<text>确定</text>
-			</view>
-		</view>
-		<view class="back-btn-box" v-if="isUpdatePhoneNumberSuccess">
-			<view class="back-btn" @click="backTo">
-				<text>返回</text>
+				<text>下一步</text>
 			</view>
 		</view>
 	</view>
@@ -78,7 +50,6 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { updateMobile } from '@/api/user.js'
 	import { sendPhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
@@ -89,10 +60,8 @@
 			return {
 				showLoadingHint: false,
 				infoText: '更换中···',
-				oldMessage: {},
 				phoneNumberValue: '',
 				noClick: true,
-				isUpdatePhoneNumberSuccess: false,
 				verificationCodeValue: '',
 				isShowcountryCodeBox: false,
 				showGetVerificationCode: true,
@@ -117,10 +86,8 @@
 			proId() {
 			}
 		},
-		onLoad(options) {
-			if (options.transmitData == '{}') { return };
-			let temporaryAddress = JSON.parse(options.transmitData);
-			this.oldMessage = temporaryAddress
+		onShow() {
+			this.phoneNumberValue = !this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}' ? '' : this.userBasicInfo.mobile
 		},
 		methods: {
 			...mapMutations([
@@ -145,23 +112,6 @@
 			
 			// 获取验证码事件
 			getVerificationCodeEvent () {
-				if (!this.phoneNumberValue) {
-					this.$refs.uToast.show({
-						message: '请输入手机号码!',
-						type: 'error',
-						position: 'bottom'
-					});
-					return
-				};
-				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
-				if (!myreg.test(this.phoneNumberValue)) {
-					this.$refs.uToast.show({
-						message: '手机号格式有误,请重新输入!',
-						type: 'error',
-						position: 'bottom'
-					})
-					return
-				};
 				const TIME_COUNT = 60;
 				if (!this.timer) {
 					this.count = TIME_COUNT;
@@ -220,51 +170,8 @@
 				})
 			},
 			
-			// 更换手机号
-			updateMobileEvent (data) {
-				this.showLoadingHint = true;
-				updateMobile(data).then((res) => {
-					if ( res && res.data.code == 0) {
-						this.isUpdatePhoneNumberSuccess = true
-					} else {
-						this.$refs.uToast.show({
-							message: res.data.msg,
-							type: 'error',
-							position: 'center'
-						})
-					};
-					this.showLoadingHint = false;
-				})
-				.catch((err) => {
-					this.showLoadingHint = false;
-					this.$refs.uToast.show({
-						message: err.message,
-						type: 'error',
-						position: 'center'
-					})
-				})
-			},
-			
-			
 			// 确定事件
 			sureEvent () {
-				if (!this.phoneNumberValue) {
-					this.$refs.uToast.show({
-						message: '请输入手机号码!',
-						type: 'error',
-						position: 'center'
-					});
-					return
-				};
-				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
-				if (!myreg.test(this.phoneNumberValue)) {
-					this.$refs.uToast.show({
-						message: '手机号格式有误,请重新输入!',
-						type: 'error',
-						position: 'center'
-					})
-					return
-				};
 				if (!this.verificationCodeValue) {
 					this.$refs.uToast.show({
 						message: '验证码不能为空!',
@@ -273,10 +180,13 @@
 					});
 					return
 				};
-				this.updateMobileEvent({
-					code: this.verificationCodeValue,
-					mobile: this.phoneNumberValue,
-					oldCode: this.oldMessage.oldCode
+				// 传递通知详情内容
+				let mynavData = JSON.stringify({
+					oldMobile: this.phoneNumberValue,
+					oldCode: this.verificationCodeValue
+				});
+				uni.navigateTo({
+					url: '/minePackage/pages/updatePhoneNumber/updatePhoneNumber?transmitData='+mynavData
 				})
 			}
 		}
@@ -337,57 +247,6 @@
 					}
 				}
 			};
-			.phone-number {
-				height: 60px;
-				padding: 0 10px;
-				box-sizing: border-box;
-				background: #fff;
-				display: flex;
-				align-items: center;
-				position: relative;
-				.phone-number-left {
-					width: 100px;
-					display: flex;
-					align-items: center;
-					>text {
-						color: #101010;
-						font-size: 14px;
-						margin-right: 4px;
-						vertical-align: middle;
-					};
-					::v-deep .u-icon {
-						margin-top: 4px;
-					};
-					.country-code-box {
-						position: absolute;
-						top: 62px;
-						left: 0;
-						width: 150px;
-						border-radius: 4px;
-						border: 1px solid #dcdfe6;
-						overflow: auto;
-						max-height: 170px;
-						background-color: #fff;
-						box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-						padding: 5px 0;
-						z-index: 100;
-						.country-code-list {
-							height: 30px;
-							display: flex;
-							align-items: center;
-							font-size: 14px;
-							padding-left: 6px;
-							box-sizing: border-box;
-							color: #101010
-						};
-						.countryCodeListStyle {
-							background: #f5f7fa !important;
-							color: #5064EB !important
-						}
-					}
-				};
-				.phone-number-right {}
-			};
 			.verification-code {
 				margin-top: 20px;
 				height: 60px;
@@ -429,22 +288,6 @@
 				}
 			}
 		};
-		.update-success {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			image {
-				width: 66px;
-				height: 66px;
-			};
-			>text {
-				margin-top: 30px;
-				font-size: 16px;
-				color: #101010
-			}
-		};
 		.sure-btn-box {
 			height: 100px;
 			display: flex;
@@ -460,24 +303,6 @@
 				background: #5064EB;
 				border-radius: 10px;
 				font-size: 16px;
-				color: #fff
-			}
-		};
-		.back-btn-box {
-			height: 100px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			.back-btn {
-				width: 70%;
-				margin: 0 auto;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				height: 50px;
-				background: #5064EB;
-				border-radius: 8px;
-				font-size: 18px;
 				color: #fff
 			}
 		}

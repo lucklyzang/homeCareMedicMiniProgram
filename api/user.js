@@ -167,3 +167,54 @@ export function tradeStatistics(receive) {
     method: 'get'
   })
 };
+
+// 标记站内信为已读(通知)
+export function updateNotifymessageRead(ids) {
+  return request({
+    url: `/app-api/system/notify-message/update-read?ids=${ids}`,
+    method: 'put'
+  })
+}
+
+// 查询通知概要
+export function notifyMessageSummary() {
+  return request({
+    url: '/app-api/system/notify-message/summary',
+    method: 'get'
+  })
+}
+
+// 获得我的通知信息分页
+export function notifyMessageSummaryPage(data) {
+  return request({
+    url: '/app-api/system/notify-message/my-page',
+    method: 'get',
+		params: data
+  })
+}
+
+// 标记公告为已读
+export function updateNotifyRead(id) {
+  return request({
+    url: `/app-api/system/notice/update-read?id=${id}`,
+    method: 'put'
+  })
+}
+
+// 查询公告概要
+export function notifySummary(data) {
+  return request({
+    url: '/app-api/system/notice/summary',
+    method: 'get',
+		params: data
+  })
+}
+
+// 获得公告信息分页
+export function notifySummaryPage(data) {
+  return request({
+    url: '/app-api/system/notice/page',
+    method: 'get',
+		params: data
+  })
+}

@@ -778,9 +778,11 @@
 							type: 'error',
 							position: 'center'
 						})
-					}
+					};
+					this.showLoadingHint = false;
 				})
 				.catch((err) => {
+					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',

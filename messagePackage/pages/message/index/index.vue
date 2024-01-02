@@ -36,7 +36,7 @@
 						</view>
 					</view>
 				</view>
-				<!-- <u-loadmore :status="status" v-show="fullNoticeList.length > 0"/> -->
+				<!-- <u-loadmore :status="status" v-if="fullNoticeList.length > 0"/> -->
 			</scroll-view>
 		</view>
 	</view>
@@ -121,7 +121,7 @@
 		.top-area-box {
 			position: relative;
 			width: 100%;
-			height: 80px;
+			height: 100px;
 			::v-deep .nav {
 				width: 100%;
 				background: #fff;
@@ -137,6 +137,7 @@
 			}
 		};
 		.message-list-wrapper {
+			background: #FAFAFA;
 			flex: 1;
 			overflow: auto;
 			display: flex;
@@ -168,6 +169,7 @@
 				};
 				margin-bottom: 20px;
 				.message-inner-list {
+					background: #fff;
 					margin-top: 15px;
 					padding: 0 6px 10px 6px;
 					box-sizing: border-box;
