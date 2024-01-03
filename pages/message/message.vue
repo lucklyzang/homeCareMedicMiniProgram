@@ -22,7 +22,7 @@
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
 			<view class="message-list" @click="enterMessageListEvent('资讯')">
 				<view class="message-photo">
-					<u-image src="@/static/img/latest-news-icon.png" width="46" height="46">
+					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
 						 <template v-slot:loading>
 						    <u-loading-icon color="red"></u-loading-icon>
 						  </template>
@@ -54,7 +54,7 @@
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
 			<view class="message-list" @click="enterMessageListEvent('资讯')">
 				<view class="message-photo">
-					<u-image src="@/static/img/latest-news-icon.png" width="46" height="46">
+					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
 						 <template v-slot:loading>
 						    <u-loading-icon color="red"></u-loading-icon>
 						  </template>
@@ -83,7 +83,7 @@
 			</view>
 			<view class="message-list" @click="enterMessageListEvent('通知')">
 				<view class="message-photo">
-					<u-image src="@/static/img/inform-icon.png" width="46" height="46">
+					<u-image src="@/static/img/inform-icon.png" width="35" height="35">
 						 <template v-slot:loading>
 						    <u-loading-icon color="red"></u-loading-icon>
 						  </template>
@@ -112,7 +112,7 @@
 			</view>
 			<view class="message-list" @click="enterMessageListEvent('公告')">
 				<view class="message-photo">
-					<u-image src="@/static/img/inform-icon.png" width="46" height="46">
+					<u-image src="@/static/img/inform-icon.png" width="35" height="35">
 						 <template v-slot:loading>
 						    <u-loading-icon color="red"></u-loading-icon>
 						  </template>
@@ -447,18 +447,24 @@
 						.message-number {
 							text-align: right;
 							>text {
-								width: 20px;
-								height: 20px;
+								width: 21px;
+								height: 21px;
 								color: #fff;
 								text-align: center;
-								line-height: 20px;
+								line-height: 21px;
 								font-size: 12px;
 								display: inline-block;
 								border-radius: 50%;
-								background: #E86F50
+								background: #E86F50;
+								padding: 0 2px;
+								box-sizing: border-box;
+								text-overflow: ellipsis;
+								overflow: hidden;
+								white-space: nowrap;
+								box-sizing: border-box;
 							}
 						}
-					};
+					}
 				}
 			}
 		}	

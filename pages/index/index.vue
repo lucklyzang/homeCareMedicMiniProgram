@@ -828,7 +828,7 @@
 			},
 			
 			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
-				var _this = this;
+				let _this = this;
 				uni.getSetting({
 					success(res) {
 						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
@@ -841,7 +841,7 @@
 			},
 			
 			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
-				var _this = this;
+				let _this = this;
 				uni.authorize({
 					scope: a,
 					success() { //允许授权

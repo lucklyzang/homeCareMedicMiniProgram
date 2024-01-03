@@ -3,54 +3,59 @@
 		<u-toast ref="uToast" />
 		<u-overlay :show="showLoadingHint"></u-overlay>
 		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
+		<!-- 放大图片弹框 -->
+		<view class="magnify-img-box">
+			<u-popup :show="magnifyImgDialogShow" @close="magnifyImgDialogShow = false" :closeable="true" mode="center" round="6" :closeOnClickOverlay="true" :safeAreaInsetTop="true">
+				<image :src="currentImgUrl" mode="widthFix"></image>
+			</u-popup>
+		</view>
 		<!-- 订单相关服务操作弹框 -->
 		<view class="order-form-details-dialog-box">
 			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
 				<view class="accept-order-date">
-						<view class="accept-order-date-title">
-							<text>接受服务订单时间</text>
-						</view>
-						<view class="accept-order-date-content">
-							<text>{{ getNowFormatDate(new Date(serviceMessage.acceptTime),4) }}</text>
-						</view>
+					<view class="accept-order-date-title">
+						<text>接受服务订单时间</text>
 					</view>
-					<view class="accept-order-date" v-if="serviceMessage.status >= 40 && serviceMessage.status <= 60">
-						<view class="accept-order-date-title">
-							<text>出发时间</text>
-						</view>
-						<view class="accept-order-date-content">
-							<text>{{ getNowFormatDate(new Date(serviceMessage.setOutTime),4) }}</text>
-						</view>
+					<view class="accept-order-date-content">
+						<text>{{ getNowFormatDate(new Date(serviceMessage.acceptTime),4) }}</text>
 					</view>
-					<view class="accept-order-date" v-if="serviceMessage.status == 50 || serviceMessage.status == 60">
-						<view class="accept-order-date-title">
-							<text>开始服务时间</text>
-						</view>
-						<view class="accept-order-date-content">
-							<text>{{ getNowFormatDate(new Date(serviceMessage.startTime),4) }}</text>
-						</view>
+				</view>
+				<view class="accept-order-date" v-if="serviceMessage.status >= 40 && serviceMessage.status <= 60">
+					<view class="accept-order-date-title">
+						<text>出发时间</text>
 					</view>
-					<view class="accept-order-date" v-if="serviceMessage.status == 60">
-						<view class="accept-order-date-title">
-							<text>完成服务时间</text>
-						</view>
-						<view class="accept-order-date-content">
-							<text>{{ getNowFormatDate(new Date(serviceMessage.completeTime),4) }}</text>
-						</view>
+					<view class="accept-order-date-content">
+						<text>{{ getNowFormatDate(new Date(serviceMessage.setOutTime),4) }}</text>
 					</view>
-					<view class="btn-area" v-if="serviceMessage.status <= 50">
-						<text v-if="serviceMessage.status == 30" @click="departSureEvent">立即出发</text>
-						<text v-if="serviceMessage.status == 40" @click="startSureEvent">开始服务</text>
-						<text v-if="serviceMessage.status == 50" @click="completeSureEvent">完成服务</text>
-						<text>{{ getNowFormatDate(new Date(),1) }}</text>
+				</view>
+				<view class="accept-order-date" v-if="serviceMessage.status == 50 || serviceMessage.status == 60">
+					<view class="accept-order-date-title">
+						<text>开始服务时间</text>
 					</view>
-					<view class="bottom-info-area" v-if="serviceMessage.status <= 50">
-						<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
-						<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
-						<text>已进入服务范围</text>
-						<text>重新定位</text>
+					<view class="accept-order-date-content">
+						<text>{{ getNowFormatDate(new Date(serviceMessage.startTime),4) }}</text>
 					</view>
-				</u-popup>
+				</view>
+				<view class="accept-order-date" v-if="serviceMessage.status == 60">
+					<view class="accept-order-date-title">
+						<text>完成服务时间</text>
+					</view>
+					<view class="accept-order-date-content">
+						<text>{{ getNowFormatDate(new Date(serviceMessage.completeTime),4) }}</text>
+					</view>
+				</view>
+				<view class="btn-area" v-if="serviceMessage.status <= 50">
+					<text v-if="serviceMessage.status == 30" @click="departSureEvent">立即出发</text>
+					<text v-if="serviceMessage.status == 40" @click="startSureEvent">开始服务</text>
+					<text v-if="serviceMessage.status == 50" @click="completeSureEvent">完成服务</text>
+					<text>{{ getNowFormatDate(new Date(),1) }}</text>
+				</view>
+				<view class="bottom-info-area" v-if="serviceMessage.status <= 50">
+					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
+					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
+					<text>已进入服务范围</text>
+					<text>重新定位</text>
+				</view>
 			</u-popup>
 		</view>
 		<!-- 拒绝订单原因弹框 -->
@@ -144,7 +149,7 @@
 				</view>
 				<view class="order-form-center">
 					<view class="order-form-center-left">
-						<u-image src="@/static/img/health-nurse.png" width="88" height="88">
+						<u-image :src="serviceMessage.items[0]['picUrl']" width="88" height="88">
 							 <template v-slot:loading>
 							    <u-loading-icon color="red"></u-loading-icon>
 							  </template>
@@ -208,7 +213,7 @@
 					<text>患者资料</text>
 				</view>
 				<view class="patient-data-image">
-					<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images">
+					<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images" @click="magnifyImgEvent(item,index)">
 						<u-image :src="item" width="100" mode="widthFix">
 							 <template v-slot:loading>
 									<u-loading-icon color="red"></u-loading-icon>
@@ -224,6 +229,7 @@
 					<text>11.2km</text>
 				</view>
 				<view class="service-site-map-area">
+					<map id="map" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
 				</view>
 			</view>
 			<view class="order-flow">
@@ -335,7 +341,8 @@
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				infoText: '',
 				showLoadingHint: false,
-				orderFormDetailsDialogShow: false,
+				magnifyImgDialogShow: false,
+				currentImgUrl: '',
 				currentFlow: null,
 				orderFormDetailsDialogShow: false,
 				refuseOrderFormDialogShow: false,
@@ -443,7 +450,18 @@
 						specialityScores: 0,
 						content: ''
 					}
-				}
+				},
+				latitude: 39.909,
+				longitude: 116.39742,
+				markers: [{
+						id: 123,
+						latitude: 39.909,
+						longitude: 116.39742,
+						width: 40,
+						height: 40,
+						iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
+						title: "提示"
+					}]
 			}
 		},
 		computed: {
@@ -467,6 +485,7 @@
 			...mapMutations([
 			]),
 			
+			// 复制事件
 			copyContent(data) {
 				uni.setClipboardData({
 					data,
@@ -480,6 +499,12 @@
 						})
 					}
 				})
+			},
+			
+			// 查看放大图片事件
+			magnifyImgEvent (item,index) {
+				this.magnifyImgDialogShow = true;
+				this.currentImgUrl = item
 			},
 			
 			// 格式化时间(带中文)
@@ -624,6 +649,9 @@
 							break;
 							case '50' :
 							return 3
+							break;
+							case '80' :
+							return 0
 							break;
 						}	
 					} else {
@@ -907,6 +935,27 @@
 			left: 50%;
 			transform: translate(-50%,-50%);
 			z-index: 20000;
+		};
+		.magnify-img-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 98%;
+						max-height: 90vh;
+						overflow: auto;
+						image {
+							width: 100%;
+						};
+						.u-popup__content__close {
+							.uicon-close {
+								color: #00070F !important;
+								font-weight: bold !important
+							}
+						}
+					}	
+				}
+			}
 		};
 		.order-form-details-dialog-box {
 			::v-deep .u-popup {

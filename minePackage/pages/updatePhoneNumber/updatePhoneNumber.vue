@@ -78,6 +78,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import _ from 'lodash'
 	import { updateMobile } from '@/api/user.js'
 	import { sendPhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
@@ -124,6 +125,7 @@
 		},
 		methods: {
 			...mapMutations([
+				'changeUserBasicInfo'
 			]),
 			
 			// 顶部导航返回事件
@@ -225,7 +227,11 @@
 				this.showLoadingHint = true;
 				updateMobile(data).then((res) => {
 					if ( res && res.data.code == 0) {
-						this.isUpdatePhoneNumberSuccess = true
+						this.isUpdatePhoneNumberSuccess = true;
+						// 变更存储的手机号为修改成功后的值
+						let temporaryUserBasicInfo = _.cloneDeep(this.userBasicInfo);
+						temporaryUserBasicInfo['mobile'] = this.phoneNumberValue;
+						this.changeUserBasicInfo(temporaryUserBasicInfo)
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
