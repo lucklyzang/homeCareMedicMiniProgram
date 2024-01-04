@@ -2,6 +2,7 @@
 	<view class="content-box">
 		<u-overlay :show="isShowDateDropDown"></u-overlay>
 		<u-toast ref="uToast" />
+		<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="我的账单" @backClick="backTo">
@@ -11,8 +12,7 @@
 		<view class="my-bill-top-box">
 			<view class="all-time-title" @click="dateDownUpEvent">
 				<text>全部时间</text>
-				<u-icon name="arrow-down-fill" color="#81838F" size="22" v-if="!isShowDateDropDown"></u-icon>
-				<u-icon name="arrow-up-fill" color="#81838F" size="22" v-if="isShowDateDropDown"></u-icon>
+				<u-icon :name="!isShowDateDropDown ? 'arrow-down-fill' : 'arrow-up-fill'" color="#81838F" size="15"></u-icon>
 			</view>
 			<view class="date-drop-down" v-if="isShowDateDropDown">
 				<view class="top-cut-btn">
@@ -38,14 +38,12 @@
 					</view>
 					<view class="time-quantum-content">
 						<view class="time-quantum-start" @click="timeQuantumStartEvent">
-							<text>{{ getNowFormatDate(new Date(startDateValue),3) }}</text>
-							<u-icon name="arrow-down" color="#BBBBBB" size="14" v-if="!startDateShow"></u-icon>
-							<u-icon name="arrow-up" color="#BBBBBB" size="14" v-if="startDateShow"></u-icon>
+							<text>{{ getNowFormatDate(new Date(startDateValue),2) }}</text>
+							<u-icon :name="!startDateShow ? 'arrow-down' : 'arrow-up'" color="#BBBBBB" size="10"></u-icon>
 						</view>
 						<view class="time-quantum-end" @click="timeQuantumEndEvent">
-							<text>{{ getNowFormatDate(new Date(endDateValue),3) }}</text>
-							<u-icon name="arrow-down" color="#BBBBBB" size="14" v-if="!endDateShow"></u-icon>
-							<u-icon name="arrow-up" color="#BBBBBB" size="14" v-if="endDateShow"></u-icon>
+							<text>{{ getNowFormatDate(new Date(endDateValue),2) }}</text>
+							<u-icon :name="!endDateShow ? 'arrow-down' : 'arrow-up'" color="#BBBBBB" size="10"></u-icon>
 						</view>
 					</view>
 				</view>
@@ -60,55 +58,37 @@
 			</view>
 		</view>
 		<view class="my-bill-bottom-box">
-			<view class="my-bill-title">
-				<text>{{ currentSelectDate }}</text>
-			</view>
-			<view class="my-bill-list-box">
-				<view class="my-bill-list">
-					<view class="my-bill-list-left">
-						<view class="week-text">
-							<text>周三</text>
-						</view>
-						<view class="date-text">
-							<text>07/15</text>
-						</view>
+			<u-empty text="您还没有相关账单" mode="list" v-if="isShowNoData"></u-empty>
+			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
+				<view class="my-bill-out-list" v-for="(item,index) in fullBillList" :key="index">
+					<view class="my-bill-title">
+						<text>{{ item.month }}</text>
 					</view>
-					<view class="my-bill-list-center">
-						<view class="my-bill-list-center-top">
-							<text>余额提现</text>
+					<view class="my-bill-list" v-for="(innerItem,innerIndex) in item.list" :key="innerIndex" @click="enterBillDetailsEvent(innerItem)">
+						<view class="my-bill-list-left">
+							<view class="week-text">
+								<text>{{ judgeWeek(innerItem.cashTime) }}</text>
+							</view>
+							<view class="date-text">
+								<text>{{ getNowFormatDate(new Date(innerItem.cashTime),5) }}</text>
+							</view>
 						</view>
-						<view class="my-bill-list-center-bottom">
-							<text>提现到招商银行储蓄卡（9527）</text>
+						<view class="my-bill-list-center">
+							<view class="my-bill-list-center-top">
+								<text>{{ innerItem.occurType === 'IN' ? '订单到账' : innerItem.occurType === 'OUT' ? '余额提现' : '未知类型' }}</text>
+							</view>
+							<view class="my-bill-list-center-bottom" v-if="innerItem.occurType === 'OUT'">
+								<text>{{ `提现到${innerItem.cashBank}储蓄卡 (${cutLastSomeChars(innerItem.cashCard,4)})` }}</text>
+							</view>
 						</view>
-					</view>
-					<view class="my-bill-list-right">
-						<text>-</text>
-						<text>1500.00元</text>
-					</view>
-				</view>
-				<view class="my-bill-list">
-					<view class="my-bill-list-left">
-						<view class="week-text">
-							<text>周三</text>
+						<view class="my-bill-list-right">
+							<text>{{ innerItem.occurType === 'IN' ? '+' : innerItem.occurType === 'OUT' ? '-' : '' }}</text>
+							<text>{{ `${innerItem.amount}元` }}</text>
 						</view>
-						<view class="date-text">
-							<text>07/15</text>
-						</view>
-					</view>
-					<view class="my-bill-list-center">
-						<view class="my-bill-list-center-top">
-							<text>余额提现</text>
-						</view>
-						<view class="my-bill-list-center-bottom">
-							<text>提现到招商银行储蓄卡（9527）</text>
-						</view>
-					</view>
-					<view class="my-bill-list-right">
-						<text>-</text>
-						<text>1500.00元</text>
 					</view>
 				</view>
-			</view>
+				<u-loadmore :status="status" v-if="fullBillList.length > 0" />
+			</scroll-view>
 		</view>
 		<view class="start-date">
 			<u-datetime-picker
@@ -117,7 +97,7 @@
 				@cancel="startDateShow = false"
 				@confirm="startDateSureEvent"
 				v-model="startDateValue"
-				mode="year-month"
+				mode="date"
 			></u-datetime-picker>
 		</view>
 		<view class="end-date">
@@ -127,7 +107,7 @@
 				@cancel="endDateShow = false"
 				@confirm="endDateSureEvent"
 				v-model="endDateValue"
-				mode="year-month"
+				mode="date"
 			></u-datetime-picker>
 		</view>
 	</view>
@@ -140,8 +120,10 @@
 	} from 'vuex'
 	import {
 		setCache,
-		removeAllLocalStorage
+		removeAllLocalStorage,
+		fenToYuan
 	} from '@/common/js/utils'
+	import { nurseBillPage } from '@/api/user.js'
 	import xflSelect from '@/components/xfl-select/xfl-select.vue'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
@@ -151,8 +133,15 @@
 		},
 		data() {
 			return {
+				infoText: '加载中···',
 				showLoadingHint: false,
-				infoText: '加载中',
+				currentPageNum: 1,
+				pageSize: 20,
+				totalCount: 0,
+				status: 'nomore',
+				isShowNoData: false,
+				billList: [],
+				fullBillList: [],
 				isShowDateDropDown: false,
 				currentTypeIndex: 0,
 				chooseTypeList: ['按月选择','按时间段选择'],
@@ -187,11 +176,126 @@
 			proId() {
 			}
 		},
-		onShow() {
+		onLoad() {
+			this.queryNurseBillPage({
+				pageNo: this.currentPageNum,
+				pageSize: this.pageSize,
+				start: this.joinFullDate(this.currentSelectDate,'start'),
+				end: this.joinFullDate(this.currentSelectDate,'end')
+			},true)
 		},
 		methods: {
 			...mapMutations([
 			]),
+			
+			scrolltolower () {
+				let totalPage = Math.ceil(this.totalCount/this.pageSize);
+				if (this.currentPageNum >= totalPage) {
+					this.status = 'nomore'
+				} else {
+					this.status = 'loadmore';
+					this.currentPageNum = this.currentPageNum + 1;
+					this.queryNurseBillPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						start: this.currentTypeIndex === 0 ? this.joinFullDate(this.currentSelectDate,'start') : this.getNowFormatDate(new Date(this.startDateValue),2),
+						end: this.currentTypeIndex === 0 ? this.joinFullDate(this.currentSelectDate,'end') : this.getNowFormatDate(new Date(this.endDateValue),2)
+					},false)
+				}
+			},
+			
+			// 截取字符串指定后几位
+			cutLastSomeChars (str,count) {
+				if (!str || str.length == 0) {
+					return
+				};
+				const lastSomeChars = str.substr(str.length - count);
+				return lastSomeChars
+			},
+			
+			// 拼接完整日期
+			joinFullDate (date,type) {
+				let currentYear = new Date(date).getFullYear();
+				let month = new Date(date).getMonth();
+				let day = this.getMonthDay(currentYear,month);
+				let temporaryMonth = month + 1 <= 9 ? '0' + (month + 1) : (month + 1);
+				let temporaryDay = day <= 9 ? '0' + day : day;
+				if (type === 'start') {
+					return `${currentYear}-${temporaryMonth}-01`
+				} else {
+					return `${currentYear}-${temporaryMonth}-${temporaryDay}`
+				}
+			},
+			
+			// 查询护士账单
+			queryNurseBillPage(data,flag) {
+				this.billList = [];
+				this.isShowNoData = false;
+				if (flag) {
+					this.fullBillList = [];
+					this.showLoadingHint = true
+				} else {
+					this.showLoadingHint = false;
+					this.infoText = '';
+					this.status = 'loading';
+				};
+				nurseBillPage(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.totalCount = res.data.data.total;
+						this.billList = res.data.data.list;
+						this.billList.forEach((item) => {
+							item.amount = fenToYuan(item.amount)
+						});
+						if (res.data.data.list.length > 0) {
+							this.billList.forEach((item) => {
+								return item.payPrice = fenToYuan(item.payPrice)
+							})
+						};
+						this.fullBillList = this.fullBillList.concat(this.billList);
+						if (this.fullBillList.length == 0) {
+							this.isShowNoData = true
+						} else {
+							this.isShowNoData = false
+						};
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						let totalPage = Math.ceil(this.totalCount/this.pageSize);
+						if (this.currentPage >= totalPage) {
+							this.status = 'nomore'
+						} else {
+							this.status = 'loadmore';
+						}	
+					}
+				})
+				.catch((err) => {
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						this.status = 'loadmore'
+					};
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 进入账单详情事件
+			enterBillDetailsEvent (innerItem) {
+				let mynavData = JSON.stringify(innerItem);
+				uni.navigateTo({
+					url: '/minePackage/pages/myBillDetails/myBillDetails?transmitData='+mynavData
+				})
+			},
 			
 			// 日期细分选择框切换事件
 			dateDownUpEvent () {
@@ -211,6 +315,15 @@
 				this.currentSelectDate = this.getNowFormatDate(new Date (temporaryDate),3)
 			},
 			
+			// 获取某月的天数
+			getMonthDay(year, month) {
+			  let days = new Date(year, month + 1, 0).getDate();
+				if (days <= 9) {
+					days = '0'+ days
+				};
+			  return days
+			},
+			
 			// 时间选择重置事件
 			resetEvent () {
 				if (this.currentTypeIndex == 0) {
@@ -225,13 +338,28 @@
 			
 			// 时间选择确定事件
 			sureEvent () {
-				if (this.startDateValue > this.endDateValue) {
-					this.$refs.uToast.show({
-						message: '开始日期不能大于结束日期!',
-						type: 'error',
-						position: 'center'
-					});
-					return
+				if (this.currentTypeIndex === 0) {
+					this.queryNurseBillPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						start: this.joinFullDate(this.currentSelectDate,'start'),
+						end: this.joinFullDate(this.currentSelectDate,'end')
+					},true)
+				} else {
+					if (this.startDateValue > this.endDateValue) {
+						this.$refs.uToast.show({
+							message: '开始日期不能大于结束日期!',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					};
+					this.queryNurseBillPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						start: this.getNowFormatDate(new Date(this.startDateValue),2),
+						end: this.getNowFormatDate(new Date(this.endDateValue),2)
+					},true)
 				};
 				this.isShowDateDropDown = false
 			},
@@ -274,6 +402,35 @@
 			timeQuantumEndEvent () {
 				this.startDateShow = false;
 				this.endDateShow = !this.endDateShow
+			},
+			
+			// 判断周几
+			judgeWeek (currentDate) {
+			let date = new Date(currentDate);
+			let day = date.getDay();
+			switch (day) {
+				case 0:
+					return "周日"
+					break;
+				case 1:
+					return "周一"
+					break;
+				case 2:
+					return "周二"
+					break;
+				case 3:
+					return "周三"
+					break;
+				case 4:
+					return "周四"
+					break;
+				case 5:
+					return "周五"
+					break;
+				case 6:
+					return "周六"
+					break
+				}
 			},
 			
 			// 格式化时间
@@ -334,6 +491,16 @@
 	.content-box {
 		@include content-wrapper;
 		background: #fff;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		::v-deep .u-transition {
 			z-index: 1 !important;
 			.u-toast__content {
@@ -513,19 +680,28 @@
 		};
 		.my-bill-bottom-box {
 			flex: 1;
-			overflow: auto;
 			padding: 10px;
+			overflow: auto;
 			box-sizing: border-box;
-			.my-bill-title {
-				height: 34px;
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				font-size: 14px;
-				color: #101010;
-			};
-			.my-bill-list-box {
-				margin-top: 6px;
+			position: relative;
+			 ::v-deep .u-empty {
+			 	position: absolute;
+			 	top: 50%;
+			 	left: 50%;
+			 	transform: translate(-50%,-50%)
+			 };
+			 .scroll-view {
+					height: 100%
+			 };
+			.my-bill-out-list {
+				.my-bill-title {
+					height: 34px;
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					font-size: 14px;
+					color: #101010;
+				};
 				.my-bill-list {
 					display: flex;
 					align-items: center;

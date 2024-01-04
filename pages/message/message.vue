@@ -104,7 +104,7 @@
 						<view class="message-date">
 							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),2) }}</text>
 						</view>
-						<view class="message-number">
+						<view class="message-number" v-if="notifyMessageSummary.notRead > 0">
 							<text>{{ notifyMessageSummary.notRead }}</text>
 						</view>
 					</view>
@@ -133,7 +133,7 @@
 						<view class="message-date">
 							<text>{{ getNowFormatDate(new Date(notifySummary.time),2) }}</text>
 						</view>
-						<view class="message-number">
+						<view class="message-number" v-if="notifySummary.notRead > 0">
 							<text>{{ notifySummary.notRead }}</text>
 						</view>
 					</view>

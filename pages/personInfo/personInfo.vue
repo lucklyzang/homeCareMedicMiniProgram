@@ -276,6 +276,10 @@
 				tradeStatistics().then((res) => {
 					if ( res && res.data.code == 0) {
 						let temporaryData = _.cloneDeep(res.data.data);
+						temporaryData.orderCount = temporaryData.orderCount === 'NaN'  || !temporaryData.orderCount ? 0 : temporaryData.orderCount;
+						temporaryData.todayAmount = temporaryData.todayAmount === 'NaN' || !temporaryData.todayAmount ? 0 : temporaryData.todayAmount;
+						temporaryData.todayCount = temporaryData.todayCount === 'NaN' || !temporaryData.todayCount ? 0 : temporaryData.todayCount;
+						temporaryData.totalAmount = temporaryData.totalAmount === 'NaN' || !temporaryData.totalAmount ? 0 : temporaryData.totalAmount;
 						temporaryData.todayAmount = fenToYuan(temporaryData.todayAmount);
 						temporaryData.totalAmount = fenToYuan(temporaryData.totalAmount);
 						this.storeTradeStatisticsMessage(temporaryData);

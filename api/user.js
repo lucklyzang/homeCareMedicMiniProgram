@@ -218,3 +218,20 @@ export function notifySummaryPage(data) {
 		params: data
   })
 }
+
+// 近期账单
+export function recentNurseBill() {
+  return request({
+    url: '/app-api/trade/nurse-bill/recent',
+    method: 'get'
+  })
+}
+
+// 账单分页
+export function nurseBillPage(data) {
+  return request({
+    url: '/app-api/trade/nurse-bill/page',
+    method: 'get',
+		params: data
+  })
+}

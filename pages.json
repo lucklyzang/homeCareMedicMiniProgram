@@ -199,6 +199,15 @@
 					}
 				},
 				{
+					"path": "pages/myBillDetails/myBillDetails",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/updatePhoneNumber/updatePhoneNumber",
 					"style": {
 						"navigationBarTitleText": "",
