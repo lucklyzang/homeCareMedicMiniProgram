@@ -335,9 +335,8 @@
 						display: flex;
 						align-items: center;
 						justify-content: space-between;
-						padding: 0 6px 0 6px;
+						padding: 6px;
 						box-sizing: border-box;
-						height: 46px;
 						@include bottom-border-1px(#BBBBBB);
 						>text {
 							color: #101010;

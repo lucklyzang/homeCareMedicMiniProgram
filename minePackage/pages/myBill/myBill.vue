@@ -7,10 +7,10 @@
 					<text>选择提现方式</text>
 				</view>
 				<view class="center-content">
-					<view class="sure-btn">
+					<view class="sure-btn" @click="withdrawEvent('银行卡')">
 						<text>银行卡提现</text>
 					</view>
-					<view class="cancel-btn">
+					<view class="cancel-btn" @click="withdrawEvent('支付宝')">
 						<text>支付宝提现</text>
 					</view>
 				</view>
@@ -157,6 +157,20 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 提现事件
+			withdrawEvent (text) {
+				if (text == '银行卡') {
+					uni.navigateTo({
+						url: '/minePackage/pages/bankCardWithdraw/bankCardWithdraw'
+					})
+				} else if (text == '支付宝') {
+					uni.navigateTo({
+						url: '/minePackage/pages/alipayWithdraw/alipayWithdraw'
+					})
+				};
+				this.withdrawalMethodDialogShow = false
 			},
 			
 			// 判断周几

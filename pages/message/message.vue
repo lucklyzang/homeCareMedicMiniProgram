@@ -81,7 +81,7 @@
 					</view>
 				</view>
 			</view>
-			<view class="message-list" @click="enterMessageListEvent('通知')">
+			<view class="message-list" @click="enterMessageListEvent('通知')" v-if="haveNotifyMessageSummaryInfo == true">
 				<view class="message-photo">
 					<u-image src="@/static/img/inform-icon.png" width="35" height="35">
 						 <template v-slot:loading>
@@ -110,7 +110,7 @@
 					</view>
 				</view>
 			</view>
-			<view class="message-list" @click="enterMessageListEvent('公告')">
+			<view class="message-list" @click="enterMessageListEvent('公告')" v-if="haveNotifySummaryInfo == true">
 				<view class="message-photo">
 					<u-image src="@/static/img/inform-icon.png" width="35" height="35">
 						 <template v-slot:loading>
@@ -171,6 +171,8 @@
 					title: '',
 					time: ''
 				},
+				haveNotifyMessageSummaryInfo: false,
+				haveNotifySummaryInfo: false,
 				notifySummary: {
 					notRead: '',
 					title: '',
@@ -206,9 +208,15 @@
 			// 查询通知摘要
 			queryNotifyMessageSummary () {
 				this.showLoadingHint = true;
+				this.haveNotifyMessageSummaryInfo = false;
 				notifyMessageSummary().then((res) => {
 					if ( res && res.data.code == 0) {
-						this.notifyMessageSummary = res.data.data
+						if (!res.data.data) {
+							this.haveNotifyMessageSummaryInfo = false;
+						} else {
+							this.haveNotifyMessageSummaryInfo = true;
+							this.notifyMessageSummary = res.data.data;
+						};
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -231,9 +239,15 @@
 			// 查询公告摘要
 			queryNotifySummary () {
 				this.showLoadingHint = true;
+				this.haveNotifySummaryInfo = false;
 				notifySummary({terminal:'NURSE'}).then((res) => {
 					if ( res && res.data.code == 0) {
-						this.notifySummary = res.data.data;
+						if (!res.data.data) {
+							this.haveNotifySummaryInfo = false;
+						} else {
+							this.haveNotifySummaryInfo = true;
+							this.notifySummary = res.data.data;
+						}
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,

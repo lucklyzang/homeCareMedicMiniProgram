@@ -8,7 +8,7 @@
 		  </view>
 		</view>
 		<view class="message-content-wrapper">
-			{{ detailsMessage.templateContent }}
+			<rich-text :nodes="detailsMessage.content"></rich-text>
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
 		</view>
 	</view>
@@ -33,7 +33,7 @@
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				infoText: '',
 				detailsMessage: {
-					templateContent: ''
+					content: ''
 				},
 				showLoadingHint: false,
 				status: 'nomore',

@@ -18,10 +18,10 @@
 					</text>
 					<view class="message-inner-list" v-for="(innerItem,innerIndex) in item.list" :key="innerIndex" @click="enterLatestNewsDetailsEvent(item,innerItem)">
 						<view class="message-inner-list-top">
-							<text>{{ innerItem.templateNickname }}</text>
+							<text>{{ innerItem.title }}</text>
 						</view>
 						<view class="message-inner-list-bottom">
-							<text>{{ innerItem.templateContent }}</text>
+							<rich-text :nodes="innerItem.content"></rich-text>
 						</view>
 					</view>
 				</view>
@@ -75,7 +75,8 @@
 		onLoad() {
 			this.queryNotifySummaryPageList({
 				pageNo: this.currentPage,
-				pageSize: this.pageSize
+				pageSize: this.pageSize,
+				terminal: 'NURSE'
 			},true)
 		},
 		methods: {
@@ -196,7 +197,8 @@
 					this.currentPage = this.currentPage + 1;
 					this.queryNotifySummaryPageList({
 						pageNo: this.currentPage,
-						pageSize: this.pageSize
+						pageSize: this.pageSize,
+						terminal: 'NURSE'
 					},false)
 				}
 			},
@@ -335,9 +337,8 @@
 						display: flex;
 						align-items: center;
 						justify-content: space-between;
-						padding: 0 6px 0 6px;
+						padding: 6px;
 						box-sizing: border-box;
-						height: 46px;
 						@include bottom-border-1px(#BBBBBB);
 						>text {
 							color: #101010;
