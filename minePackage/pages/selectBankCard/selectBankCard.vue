@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="选择银行卡" @backClick="backTo">
@@ -8,11 +10,12 @@
 		  </view>
 		</view>
 		<view class="select-bank-card-box">
-			<view class="card-list" v-for="(item,index) in cardList" :key="index" @click="cardSelectedEvent(item,index)">
+			<u-empty text="您还没有绑定银行卡" mode="list" v-if="isShowNoData"></u-empty>
+			<view class="card-list" v-for="(item,index) in cardList" :key="item.id" @click="cardSelectedEvent(item,index)">
 				<view class="card-top">
 					<view class="card-top-left"></view>
 					<view class="card-top-center">
-						{{ item.cardName }}
+						{{ item.bank }}
 					</view>
 					<view class="card-top-right">
 						<view class="select-circle" v-if="!item.checked"></view>
@@ -20,14 +23,14 @@
 					</view>
 				</view>
 				<view class="card-center">
-					{{ item.cardNumber }}
+					{{ item.cardNo }}
 				</view>
 			</view>
 		</view>
 		<view class="add-bank-card-btn">
 			<text @click="addBankCardEvent">添加银行卡</text>
 		</view>
-		<view class="sure-btn">
+		<view class="sure-btn" @click="sureEvent">
 			<text>确定</text>
 		</view>
 	</view>
@@ -42,6 +45,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { getCareBankCardList } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -50,24 +54,16 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
-				cardList: [
-					{
-						cardName: '中国建设银行储蓄卡',
-						cardNumber: '62178930483048394343',
-						checked: false
-					},
-					{
-						cardName: '中国农业银行储蓄卡',
-						cardNumber: '2217893048304435454',
-						checked: true
-					}
-				]
+				infoText: '加载中···',
+				isShowNoData: true,
+				cardList: []
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userInfo',
+				'userBasicInfo',
+				'selectedBankMessage'
 			]),
 			userName() {
 			},
@@ -75,9 +71,11 @@
 			}
 		},
 		onShow() {
+			this.getCareBankCardListEvent()
 		},
 		methods: {
 			...mapMutations([
+				'storeSelectedBankMessage'
 			]),
 			
 			// 顶部导航返回事件
@@ -90,7 +88,58 @@
 				this.cardList.forEach((el) => {
 					el.checked = false
 				});
-				item.checked = !item.checked
+				this.$set(this.cardList[index],'checked',!this.cardList[index].checked);
+				this.$forceUpdate();
+			},
+			
+			// 获取提现银行卡列表
+			getCareBankCardListEvent () {
+				this.infoText = '加载中···';
+				this.showLoadingHint = true;
+				this.isShowNoData = false;
+				this.cardList = [];
+				getCareBankCardList({careId : this.userInfo.careId}).then((res) => {
+					if ( res && res.data.code == 0) {
+						if (res.data.data.length > 0) {
+							this.cardList = res.data.data;
+							this.cardList.forEach((item) => { item.checked = false});
+							// 回显选中的银行卡
+							if (JSON.stringify(this.selectedBankMessage) != '{}') {
+								let temporaryId = this.selectedBankMessage['id'];
+								let temporaryIndex = this.cardList.findIndex((item) => { return item.id == temporaryId});
+								if (temporaryIndex != -1) {
+									this.$set(this.cardList[temporaryIndex],'checked',true);
+									this.$forceUpdate();
+								}
+							} else {
+								let temporaryMessage = this.cardList.filter((item) => { return item.defaultStatus == true})[0];
+								let temporaryId = temporaryMessage['id'];
+								let temporaryIndex = this.cardList.findIndex((item) => { return item.id == temporaryId});
+								if (temporaryIndex != -1) {
+									this.$set(this.cardList[temporaryIndex],'checked',true);
+									this.$forceUpdate();
+								}
+							}
+						} else {
+							this.isShowNoData = true
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
 			},
 			
 			// 添加银行卡事件
@@ -98,6 +147,13 @@
 				uni.navigateTo({
 					url: '/minePackage/pages/bindBankCard/bindBankCard'
 				})
+			},
+			
+			// 确定事件
+			sureEvent () {
+				let temporaryMessage = this.cardList.filter((item) => { return item.checked == true})[0];
+				this.storeSelectedBankMessage(temporaryMessage);
+				uni.navigateBack()
 			}
 		}
 	}
@@ -112,6 +168,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #fff;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #fff;
@@ -136,6 +203,13 @@
 			overflow: auto;
 			padding: 20px;
 			box-sizing: border-box;
+			position: relative;
+			::v-deep .u-empty {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%,-50%)
+			};
 			.card-list {
 				width: 100%;
 				height: 130px;

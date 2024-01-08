@@ -207,12 +207,16 @@
 					uni.navigateTo({
 						url: '/minePackage/pages/careQualificationAuthentication/careQualificationAuthentication?transmitData='+mynavData
 					})
+				} else {
+					uni.navigateTo({
+						url: '/minePackage/pages/otherQualificationAuthentication/otherQualificationAuthentication?transmitData='+mynavData
+					})
 				}
 			},
 			
 			// 完善个人信息事件
 			perfectPersonalMessageEvent () {
-				if (this.perfect) { return };
+				// if (this.perfect) { return };
 				uni.navigateTo({
 					url: '/minePackage/pages/perfectPersonalMessage/perfectPersonalMessage'
 				})

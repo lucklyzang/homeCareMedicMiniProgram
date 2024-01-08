@@ -21,7 +21,7 @@
 		<view class="personal-message-box">
 			<view class="personal-message-top">
 				<view class="personal-photo">
-					<image :src="defaultPersonPhotoIconPng"></image>
+					<image :src="personPhotoSource" @click="getImg"></image>
 				</view>
 				<view class="account-number">
 					<view class="account-number-left">
@@ -226,12 +226,13 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
+	import store from '@/store'
 	import {
 		setCache,
 		removeAllLocalStorage,
 		IdCard
 	} from '@/common/js/utils'
-	import { medicalCarePerfect } from '@/api/user.js'
+	import { getUserMessage ,medicalCarePerfect } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -277,6 +278,10 @@
 						content: '成都妇幼儿童医院'
 					}
 				],
+				personPhotoSource: '',
+				personPhotoFile: '',
+				photoImageOnlinePath: '',
+				personPhotoBase64: '',
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png")
 			}
 		},
@@ -290,15 +295,51 @@
 			proId() {
 			}
 		},
-		onShow() {
+		onLoad() {
+			// 初次进入该页面时，查询用户基本信息
+			if (!this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}') {
+				this.queryUserBasicMessage()
+			} else {
+				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+				this.photoImageOnlinePath = !this.userBasicInfo.avatar ? '' : this.userBasicInfo.avatar;
+			}
 		},
 		methods: {
 			...mapMutations([
+				'changeUserBasicInfo'
 			]),
 			
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 获取用户基本信息
+			queryUserBasicMessage () {
+				this.showLoadingHint = true;
+				this.infoText = '加载中...';
+				getUserMessage().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.changeUserBasicInfo(res.data.data);
+						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
+						this.photoImageOnlinePath = !this.userBasicInfo.avatar ? '' : this.userBasicInfo.avatar;
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			},
 			
 			// 身份证号输入框失去焦点事件
@@ -385,7 +426,7 @@
 			},
 			
 			// 保存事件
-			saveEvent () {
+			async saveEvent () {
 				if (!this.emergencyContactNumberValue) {
 					this.$refs.uToast.show({
 						message: '请输入紧急联系人方式',
@@ -445,6 +486,12 @@
 						return
 					}  
 				};
+				// 上传图片文件流到服务端(头像)
+				if (this.personPhotoFile) {
+					if (this.personPhotoFile.indexOf('http://') == -1 || this.personPhotoFile.indexOf('https://') == -1) {
+						await this.uploadFileEvent(this.personPhotoFile)
+					}
+				};	
 				this.medicalCarePerfectEvent({
 					id: this.userInfo.careId,
 					name: this.personNameValue,
@@ -459,8 +506,76 @@
 					practiceTime: this.workingSeniorityDefaultValue == '选择时间' ? '' : this.workingSeniorityDefaultValue,
 					genius: [],
 					introduction: this.introValue,
-					avatar: "",
+					avatar: !this.photoImageOnlinePath ? '' : this.photoImageOnlinePath,
 					email: ""
+				})
+			},
+			
+			// 上传图片方法
+			getImg() {
+				let that = this;
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['original', 'compressed'],
+					sourceType: ['album', 'camera'],
+					success: function(res) {
+						uni.previewImage({
+							urls: res.tempFilePaths
+						});
+						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
+							that.personPhotoFile = res.tempFiles[imgI]['path'];
+							uni.getFileSystemManager().readFile({
+								filePath: res.tempFilePaths[imgI],
+								encoding: 'base64',
+								success: res => {
+									let base64 = 'data:image/jpeg;base64,' + res.data;
+									that.personPhotoBase64 = base64;
+									that.personPhotoSource = that.personPhotoBase64;
+								}
+							})
+						}
+					}
+				})
+			},
+			
+			// 上传图片到服务器
+			uploadFileEvent (imgI) {
+				this.infoText = '上传中···';
+				this.showLoadingHint = true;
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+					 url: 'https://dev.nurse.blinktech.cn/nurse/app-api/infra/file/upload',
+					 filePath: imgI,
+					 name: 'file',
+					 header: {
+						'content-type': 'multipart/form-data',
+						'Authorization': `Bearer ${store.getters.token}`
+					 },
+					 success: (res) => {
+						if (res.statusCode == 200) {
+							let temporaryData = JSON.parse(res.data);
+							this.photoImageOnlinePath = temporaryData.data;
+							resolve()
+						} else {
+							this.showLoadingHint = false;
+							this.$refs.uToast.show({
+								message: '上传图片失败',
+								type: 'error',
+								position: 'center'
+							});
+							reject()
+						}
+					 },
+					 fail: (err) => {
+						this.showLoadingHint = false;
+						this.$refs.uToast.show({
+							message: err,
+							type: 'error',
+							position: 'center'
+						});
+						reject()
+					 }
+					})
 				})
 			},
 			
@@ -470,6 +585,11 @@
 				this.showLoadingHint = true;
 				medicalCarePerfect(data).then((res) => {
 					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: '信息完善成功',
+							type: 'success',
+							position: 'center'
+						});
 						uni.navigateBack()
 					} else {
 						this.$refs.uToast.show({

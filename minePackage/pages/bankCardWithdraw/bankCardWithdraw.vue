@@ -8,7 +8,7 @@
 		  </view>
 		</view>
 		<view class="withdraw-box">
-			<view class="add-bank-area">
+			<view class="add-bank-area" v-if="cardList.length == 0">
 				<view class="add-bank-top">
 					<text>尚未添加银行卡</text>
 				</view>
@@ -16,7 +16,7 @@
 					<text>点击添加</text>
 				</view>
 			</view>
-			<view class="checke-bank-area">
+			<view class="checke-bank-area" v-else>
 				<view class="checke-bank-left">
 					<view class="circle-outer">
 						<view class="circle-inner">
@@ -25,10 +25,10 @@
 				</view>
 				<view class="checke-bank-center">
 					<view class="checke-bank-center-top">
-						中国建设银行储蓄卡
+						{{ selectedBankMessage.bank }}
 					</view>
 					<view class="checke-bank-center-bottom">
-						6217 **** **** 6666
+						{{ selectedBankMessage.cardNo }}
 					</view>
 				</view>
 				<view class="checke-bank-right" @click="changeBankCardEvent">
@@ -104,6 +104,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { getCareBankCardList } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -114,11 +115,14 @@
 				showLoadingHint: false,
 				infoText: '加载中',
 				moneyValue: '',
+				cardList: []
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userInfo',
+				'userBasicInfo',
+				'selectedBankMessage'
 			]),
 			userName() {
 			},
@@ -126,9 +130,11 @@
 			}
 		},
 		onShow() {
+			this.getCareBankCardListEvent()
 		},
 		methods: {
 			...mapMutations([
+				'storeSelectedBankMessage'
 			]),
 			
 			// 顶部导航返回事件
@@ -140,6 +146,28 @@
 			addBankCardEvent () {
 				uni.navigateTo({
 					url: '/minePackage/pages/bindBankCard/bindBankCard'
+				})
+			},
+			
+			// 获取提现银行卡列表
+			getCareBankCardListEvent () {
+				this.cardList = [];
+				getCareBankCardList({careId : this.userInfo.careId}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.cardList = res.data.data;
+						if (JSON.stringify(this.selectedBankMessage) == '{}') {
+							let temporaryMessage = this.cardList.filter((item) => { return item.defaultStatus == true})[0]
+							this.storeSelectedBankMessage(temporaryMessage)
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+				})
+				.catch((err) => {
 				})
 			},
 			

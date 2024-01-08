@@ -235,3 +235,21 @@ export function nurseBillPage(data) {
 		params: data
   })
 }
+
+// 创建提现银行卡
+export function createCareBankCard(data) {
+  return request({
+    url: '/app-api/hospital/care-bank-card/create',
+    method: 'post',
+		data
+  })
+};
+
+// 获得提现银行卡列表
+export function getCareBankCardList(data) {
+  return request({
+    url: '/app-api/hospital/care-bank-card/list',
+    method: 'get',
+		params: data
+  })
+};

@@ -13,6 +13,10 @@ export default {
 			state.tradeStatisticsMessage = getCache('tradeStatisticsMessage') ? getCache('tradeStatisticsMessage') : {};
 			return state.tradeStatisticsMessage
 		},
+		selectedBankMessage: (state) => {
+			state.selectedBankMessage = getCache('selectedBankMessage') ? getCache('selectedBankMessage') : {};
+			return state.selectedBankMessage
+		},
   },
   mutations:{
 		changeTimeMessage (state, playLoad) {
@@ -33,6 +37,13 @@ export default {
 			if (playLoad && playLoad != 'null') {
 				setCache('tradeStatisticsMessage', playLoad);
 				state.tradeStatisticsMessage = playLoad
+			}
+		},
+		// 保存选中的银行卡信息
+		storeSelectedBankMessage(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('selectedBankMessage', playLoad);
+				state.selectedBankMessage = playLoad
 			}
 		},
 		//重置设备的状态

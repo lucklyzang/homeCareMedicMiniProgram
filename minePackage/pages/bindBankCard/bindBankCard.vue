@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="绑定银行卡" @backClick="backTo">
@@ -30,7 +32,8 @@
 							borderBottom
 						>
 							<u--input
-								v-model="modelBankCard.formInfo.cardName"
+								type="number"
+								v-model="modelBankCard.formInfo.cardNum"
 								placeholder="请输入卡号"
 								border="none"
 							></u--input>
@@ -115,7 +118,7 @@
 				</u-checkbox-group>
 				<text>《服务协议》</text>
 			</view>
-			<view class="sure-btn">
+			<view class="sure-btn" @click="bindSureEvent">
 				<text>确定</text>
 			</view>
 		</view>
@@ -131,6 +134,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { createCareBankCard } from '@/api/user.js'
 	import { sendPhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
@@ -140,7 +144,7 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '绑定中···',
 				showAffiliationBankDialog: false,
 				noClick: true,
 				isClickGetCode: false,
@@ -157,6 +161,7 @@
 				modelBankCard: {
 					formInfo: {
 						cardName: '',
+						cardNum: '',
 						idCardNum: '',
 						mobile: '',
 						phoneCode: '',
@@ -178,6 +183,7 @@
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -284,6 +290,127 @@
 						position: 'bottom'
 					})
 				})
+			},
+			
+			// 绑定银行卡接口
+			createCareBankCardEvent (data) {
+				this.infoText = '绑定中···';
+				this.showLoadingHint = true;
+				createCareBankCard(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						if (res.data.data == 0) {
+							this.$refs.uToast.show({
+								message: '绑定成功',
+								type: 'success',
+								position: 'center'
+							});
+							uni.navigateBack()
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			// 绑定事件
+			bindSureEvent () {
+				if (!this.modelBankCard.formInfo.cardName) {
+					this.$refs.uToast.show({
+						message: '请输入持卡人姓名',
+						type: 'erroe',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.modelBankCard.formInfo.cardNum) {
+					this.$refs.uToast.show({
+						message: '请输入银行卡号',
+						type: 'erroe',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.modelBankCard.formInfo.affiliationBank) {
+					this.$refs.uToast.show({
+						message: '请选择归属银行',
+						type: 'erroe',
+						position: 'center'
+					});
+					return
+				};
+				if (!this.modelBankCard.formInfo.idCardNum) {
+					this.$refs.uToast.show({
+						message: '请输入身份证号码',
+						type: 'erroe',
+						position: 'bottom'
+					});
+					return
+				};
+				if (!this.modelBankCard.formInfo.mobile) {
+					this.$refs.uToast.show({
+						message: '请输入预留手机号',
+						type: 'erroe',
+						position: 'bottom'
+					});
+					return
+				};
+				let regIdCard = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
+				if (!regIdCard.test(this.modelBankCard.formInfo.idCardNum)) {
+					if (this.modelBankCard.formInfo.idCardNum) {
+						this.$refs.uToast.show({
+							message: '身份证格式格式有误,请重新输入!',
+							type: 'error',
+							position: 'center'
+						});
+						return
+					}  
+				};
+				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+				if (!myreg.test(this.modelBankCard.formInfo.mobile)) {
+					this.$refs.uToast.show({
+						message: '手机号格式有误,请重新输入!',
+						type: 'error',
+						position: 'bottom'
+					});
+					return
+				};
+				if (this.isReadAgreeChecked.length == 0) {
+					this.$refs.uToast.show({
+						message: '请勾选阅读并同意《服务协议》!',
+						type: 'error',
+						position: 'bottom'
+					});
+					return
+				};
+				// 绑定银行卡
+				this.createCareBankCardEvent({
+					careId: this.userInfo.careId,
+					name: this.modelBankCard.formInfo.cardName,
+					cardNo: this.modelBankCard.formInfo.cardNum,
+					bank: this.modelBankCard.formInfo.affiliationBank,
+					idCard: this.modelBankCard.formInfo.idCardNum,
+					mobile: this.modelBankCard.formInfo.mobile,
+					defaultStatus: true
+				})
 			}
 		}
 	}
@@ -298,6 +425,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #fff;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #fff;

@@ -10,11 +10,11 @@
 		<view class="my-qr-code-box">
 			<view class="qr-code-content-box">
 				<view class="qr-code-photo">
-					<image :src="defaultPersonPhotoIconPng"></image>
+					<image :src="personPhotoSource"></image>
 				</view>
 				<view class="qr-code-content">
 					<image :src="qrCodeIconPng"></image>
-					<text>旗木卡卡西</text>
+					<text>{{ niceNameValue }}</text>
 					<text>成都市妇女儿童中心医院副主任护师</text>
 				</view>
 			</view>
@@ -61,6 +61,8 @@
 				shareWhiteIconPng: require("@/static/img/share-white.png"),
 				saveWhiteIconPng: require("@/static/img/save-white.png"),
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
+				niceNameValue: '',
+				personPhotoSource: '',
 				infoText: '加载中'
 			}
 		},
@@ -74,6 +76,12 @@
 			}
 		},
 		onShow() {
+			if (!this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}') {
+				
+			} else {
+				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
+			}
 		},
 		methods: {
 			...mapMutations([
@@ -129,8 +137,12 @@
 				background: rgba(80, 100, 235, 0.06);
 				border-radius: 10px;
 				.qr-code-photo {
+					width: 90px;
+					height: 90px;
+					border-radius: 50%;
 					transform: translateY(-50%);
 					image {
+						border-radius: 50%;
 						width: 90px;
 						height: 90px
 					}
