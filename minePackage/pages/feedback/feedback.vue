@@ -18,7 +18,7 @@
 				</view>
 				<view class="feedback-category-content">
 					<view class="feedback-category-list" :class="{'feedbackCategoryStyle' : feedbackCategoryIndex === index}" @click="feedbackCategoryClickEvent(item,index)" v-for="(item,index) in feedbackCategoryList">
-						<text>{{ item }}</text>
+						<text>{{ item.label }}</text>
 					</view>
 				</view>
 			</view>
@@ -90,6 +90,7 @@
 	} from '@/common/js/utils'
 	import store from '@/store'
 	import { createFeedback } from '@/api/user.js'
+	import { getUserDictData } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -103,10 +104,11 @@
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				topCutList: ['常见问题','使用技巧'],
 				topCutIndex: 0,
-				feedbackCategoryList: ['提建议','要投述','想咨询','有想法'],
+				feedbackCategoryList: [],
 				problemDescriptionValue: '',
 				contactInformationValue: '',
 				feedbackCategoryIndex: null,
+				feedbackCategory: {},
 				sureCancelShow: false,
 				imgArr: [],
 				imgFileArr: [],
@@ -125,6 +127,7 @@
 			}
 		},
 		onShow() {
+			this.getUserDictDataEvent()
 		},
 		methods: {
 			...mapMutations([
@@ -132,7 +135,8 @@
 			
 			// 反馈类别点击事件
 			feedbackCategoryClickEvent (item,index) {
-				this.feedbackCategoryIndex = index
+				this.feedbackCategoryIndex = index;
+				this.feedbackCategory = item
 			},
 			
 			// 弹框确定按钮
@@ -151,6 +155,22 @@
 			photoDelete(item, index) {
 				this.sureCancelShow = true;
 				this.imgIndex = index
+			},
+			
+			// 获取反馈类型字典数据
+			getUserDictDataEvent () {
+				this.infoText = '加载中···';
+				this.showLoadingHint = true;
+				this.feedbackCategoryList = [];
+				getUserDictData({type: 'feedback_type'}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.feedbackCategoryList = res.data.data
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+				})
 			},
 			
 			// 提交事件
@@ -187,7 +207,7 @@
 				};
 				this.createFeedbackEvent({
 					userId: this.userInfo.userId,
-					type: 1,
+					type: this.feedbackCategory.id,
 					description: this.problemDescriptionValue,
 					images: this.imgOnlinePathArr,
 					mobile: this.contactInformationValue,

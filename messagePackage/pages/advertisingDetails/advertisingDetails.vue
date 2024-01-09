@@ -8,7 +8,7 @@
 		  </view>
 		</view>
 		<view class="advertising-details-box">
-			
+			<rich-text :nodes="currentContent"></rich-text>
 		</view>
 	</view>
 </template>
@@ -30,19 +30,23 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中'
+				infoText: '加载中',
+				currentContent: ''
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userBasicInfo',
+				'selectBannerMessage'
 			]),
 			userName() {
 			},
 			proId() {
 			}
 		},
-		onShow() {
+		onLoad() {
+			this.currentContent = this.selectBannerMessage['content'][this.selectBannerMessage.index]['content'];
+			this.currentContent = this.currentContent.replace(/\<img/gi, '<img class="mystyle"');
 		},
 		methods: {
 			...mapMutations([
@@ -87,9 +91,13 @@
 			flex: 1;
 			width: 96%;
 			margin: 0 auto;
-			padding: 10px 10px 20px 10px;
+			padding: 10px 0 20px 0;
 			box-sizing: border-box;
-			overflow: auto
+			overflow: auto;
+			.mystyle {
+				width: 100%;
+				display: block;
+			}
 		}
 	}
 </style>

@@ -17,6 +17,7 @@ export default {
 			state.selectedBankMessage = getCache('selectedBankMessage') ? getCache('selectedBankMessage') : {};
 			return state.selectedBankMessage
 		},
+		selectBannerMessage: state => state.selectBannerMessage
   },
   mutations:{
 		changeTimeMessage (state, playLoad) {
@@ -49,6 +50,10 @@ export default {
 		//重置设备的状态
 		resetServiceInfoState(state) {
 				Object.assign(state, getDefaultServiceState())
+		},
+		//保存选中的首页banner信息
+		changeSelectBannerMessage (state, playLoad) {
+			state.selectBannerMessage = playLoad
 		}
   },
   actions: {

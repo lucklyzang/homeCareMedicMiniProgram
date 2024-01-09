@@ -229,7 +229,7 @@
 					<text>11.2km</text>
 				</view>
 				<view class="service-site-map-area">
-					<map id="map" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
+					<map id="map" @tap="clickMapEvent" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
 				</view>
 			</view>
 			<view class="order-flow">
@@ -454,14 +454,14 @@
 				latitude: 39.909,
 				longitude: 116.39742,
 				markers: [{
-						id: 123,
-						latitude: 39.909,
-						longitude: 116.39742,
-						width: 40,
-						height: 40,
-						iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
-						title: "提示"
-					}]
+					id: 123,
+					latitude: 39.909,
+					longitude: 116.39742,
+					width: 40,
+					height: 40,
+					iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
+					title: "提示"
+				}]
 			}
 		},
 		computed: {
@@ -505,6 +505,14 @@
 			magnifyImgEvent (item,index) {
 				this.magnifyImgDialogShow = true;
 				this.currentImgUrl = item
+			},
+			
+			// 点击地图事件
+			clickMapEvent (address) {
+				uni.navigateTo({
+					url: '/orderFormPackage/pages/orderForm/orderFormMapEnlarge/orderFormMapEnlarge'
+				});
+				console.log('点击地图了',address)
 			},
 			
 			// 格式化时间(带中文)

@@ -16,6 +16,7 @@ export function getDefaultServiceState() {
 		serviceOrderFormSureChooseMessage: {},
 		editServiceOrderFormSureChooseMessage: {},
 		tradeStatisticsMessage: {},
-		selectedBankMessage: {}
+		selectedBankMessage: {},
+		selectBannerMessage: {}
 	}	
 };
