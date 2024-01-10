@@ -27,7 +27,7 @@
 					<text>问题描述(必填)</text>
 				</view>
 				<view class="problem-description-content">
-					<u--textarea v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
+					<u--textarea count maxlength="200" v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
 				</view>
 			</view>
 			<view class="upload-pictures">
@@ -191,9 +191,26 @@
 					});
 					return
 				};
+				if (this.problemDescriptionValue.length <= 15) {
+					this.$refs.uToast.show({
+						message: '请填写超过15字以上描述',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
 				if (!this.contactInformationValue) {
 					this.$refs.uToast.show({
 						message: '请输入联系方式',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
+				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+				if (!myreg.test(this.contactInformationValue)) {
+					this.$refs.uToast.show({
+						message: '输入手机号码有误，请核对后重新输入!',
 						type: 'error',
 						position: 'center'
 					});
@@ -306,6 +323,28 @@
 							urls: res.tempFilePaths
 						});
 						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
+							let url = res.tempFiles[imgI].path;
+							//获取最后一个的位置
+							let index = url.lastIndexOf(".");
+							//获取后缀
+							let jpgUrl = url.substr(index + 1);
+							if (jpgUrl != "png" && jpgUrl != "jpg" && jpgUrl != "jpeg") {
+								that.$refs.uToast.show({
+									message: '只可上传jpg或png格式的图片!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
+							let isLt2M = res.tempFiles[imgI].size/1024/1024 < 5;
+							if (!isLt2M) {
+								that.$refs.uToast.show({
+									message: '图片必须小于5MB!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
 							that.imgFileArr.push(res.tempFiles[imgI]['path']);
 							uni.getFileSystemManager().readFile({
 								filePath: res.tempFilePaths[imgI],

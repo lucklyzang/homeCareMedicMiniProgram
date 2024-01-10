@@ -191,6 +191,8 @@
 			}
 		},
 		onShow() {
+			this.queryNotifySummary();
+			this.queryNotifyMessageSummary()
 		},
 		methods: {
 			...mapMutations([

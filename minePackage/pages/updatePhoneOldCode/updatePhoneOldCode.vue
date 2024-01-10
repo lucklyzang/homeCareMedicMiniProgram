@@ -22,6 +22,7 @@
 					<view class="verification-code-center">
 						<u--input
 							placeholder="请输入验证码"
+							type="number"
 							border="none"
 							v-model="verificationCodeValue"
 						></u--input>
@@ -140,7 +141,7 @@
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {
 							this.$refs.uToast.show({
-								message: '验证码发送成功',
+								message: '验证码已发送至您的手机，请查收',
 								type: 'success',
 								position: 'center'
 							})

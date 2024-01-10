@@ -30,6 +30,7 @@
 						<u--input
 							placeholder="请输入手机号码"
 							border="none"
+							type="number"
 							v-model="phoneNumberValue"
 						></u--input>
 					</view>
@@ -40,6 +41,7 @@
 					</view>
 					<view class="verification-code-center">
 						<u--input
+							type="number"
 							placeholder="请输入验证码"
 							border="none"
 							v-model="verificationCodeValue"
@@ -158,7 +160,7 @@
 				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
 				if (!myreg.test(this.phoneNumberValue)) {
 					this.$refs.uToast.show({
-						message: '手机号格式有误,请重新输入!',
+						message: '请输入正确的手机号!',
 						type: 'error',
 						position: 'bottom'
 					})
@@ -192,7 +194,7 @@
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {
 							this.$refs.uToast.show({
-								message: '验证码发送成功',
+								message: '验证码已发送至您的手机，请查收',
 								type: 'success',
 								position: 'center'
 							})

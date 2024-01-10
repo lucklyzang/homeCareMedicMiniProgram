@@ -475,6 +475,15 @@
 					});
 					return
 				};
+				let myreg = /^[1][3,4,5,6,7,8,9][0-9]{9}$/;
+				if (!myreg.test(this.emergencyContactNumberValue)) {
+					this.$refs.uToast.show({
+						message: '输入紧急联系人方式有误，请核对后重新输入!',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
 				let regIdCard = /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/;
 				if (!regIdCard.test(this.idCardValue)) {
 					if (this.idCardValue) {
