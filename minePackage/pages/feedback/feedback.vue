@@ -27,7 +27,7 @@
 					<text>问题描述(必填)</text>
 				</view>
 				<view class="problem-description-content">
-					<u--textarea count maxlength="200" v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
+					<u--textarea  height="100" count maxlength="200" v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
 				</view>
 			</view>
 			<view class="upload-pictures">
@@ -224,7 +224,7 @@
 				};
 				this.createFeedbackEvent({
 					userId: this.userInfo.userId,
-					type: this.feedbackCategory.id,
+					type: this.feedbackCategory.value,
 					description: this.problemDescriptionValue,
 					images: this.imgOnlinePathArr,
 					mobile: this.contactInformationValue,

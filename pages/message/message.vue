@@ -20,7 +20,7 @@
 		</u-transition>
 		<view class="message-list-wrapper" v-if="tabIndex === 0">
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="message-list" @click="enterMessageListEvent('资讯')">
+			<view class="message-list" @click="enterMessageListEvent('消息')">
 				<view class="message-photo">
 					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
 						 <template v-slot:loading>
@@ -52,7 +52,7 @@
 		</view>
 		<view class="message-list-wrapper" v-else>
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="message-list" @click="enterMessageListEvent('资讯')">
+			<view class="message-list" @click="enterMessageListEvent('资讯')" v-if="haveLatestNewInfo == true">
 				<view class="message-photo">
 					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
 						 <template v-slot:loading>
@@ -67,16 +67,16 @@
 						</view>
 						<view class="message-overview">
 							<text>
-								婚纱款式杀杀杀杀杀杀杀杀杀杀杀杀杀杀杀开发了大家附件是解放军封建士大夫
+								{{ latestNewsSummary.title }}
 							</text>
 						</view>
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>1小时前</text>
+							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),2) }}</text>
 						</view>
-						<view class="message-number">
-							<text>8</text>
+						<view class="message-number" v-if="latestNewsSummary.unReadCount > 0">
+							<text>{{ latestNewsSummary.unReadCount }}</text>
 						</view>
 					</view>
 				</view>
@@ -152,7 +152,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { notifyMessageSummary, notifySummary } from '@/api/user.js'
+	import { notifyMessageSummary, notifySummary, latestNews } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -166,6 +166,11 @@
 				showLoadingHint: false,
 				tabIndex: 0,
 				tabList: ['聊天消息','系统消息'],
+				latestNewsSummary: {
+					unReadCount: '',
+					title: '',
+					createTime: ''
+				},
 				notifyMessageSummary: {
 					notRead: '',
 					title: '',
@@ -173,6 +178,7 @@
 				},
 				haveNotifyMessageSummaryInfo: false,
 				haveNotifySummaryInfo: false,
+				haveLatestNewInfo: false,
 				notifySummary: {
 					notRead: '',
 					title: '',
@@ -191,6 +197,7 @@
 			}
 		},
 		onShow() {
+			this.queryLatestNews({terminal: 'NURSE'});
 			this.queryNotifySummary();
 			this.queryNotifyMessageSummary()
 		},
@@ -202,9 +209,41 @@
 			tabCutEvent (item,index) {
 				this.tabIndex = index;
 				if (this.tabIndex == 1) {
+					this.queryLatestNews({terminal: 'NURSE'});
 					this.queryNotifySummary();
-					this.queryNotifyMessageSummary()
+					this.queryNotifyMessageSummary();
 				}
+			},
+			
+			// 查询最新一条未读资讯
+			queryLatestNews (data) {
+				this.showLoadingHint = true;
+				this.haveLatestNewInfo = false;
+				latestNews(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						if (JSON.stringify(res.data.data) == "{}") {
+							this.haveLatestNewInfo = false;
+						} else {
+							this.haveLatestNewInfo = true;
+							this.latestNewsSummary = res.data.data;
+						};
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
 			},
 			
 			// 查询通知摘要

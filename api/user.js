@@ -219,6 +219,33 @@ export function notifySummaryPage(data) {
   })
 }
 
+// 获取最新一条未读资讯
+export function latestNews(data) {
+  return request({
+    url: '/app-api/promotion/information/get/latest/summary',
+    method: 'get',
+		params: data
+  })
+}
+
+// 获取资讯分页
+export function newsPage(data) {
+  return request({
+    url: '/app-api/promotion/information/page',
+    method: 'get',
+		params: data
+  })
+}
+
+// 资讯标记已读
+export function updateNewsRead(data) {
+  return request({
+    url: '/app-api/promotion/information/update/read',
+    method: 'put',
+		data
+  })
+}
+
 // 近期账单
 export function recentNurseBill() {
   return request({

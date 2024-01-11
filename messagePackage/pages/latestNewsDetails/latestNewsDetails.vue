@@ -8,8 +8,8 @@
 		  </view>
 		</view>
 		<view class="message-content-wrapper">
-			最新资讯详情
-			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
+			<rich-text :nodes="detailsMessage.description"></rich-text>
+			<u-empty text="暂无资讯" mode="list" v-if="isShowNoData"></u-empty>
 		</view>
 	</view>
 </template>
@@ -34,7 +34,10 @@
 				infoText: '',
 				showLoadingHint: false,
 				status: 'nomore',
-				isShowNoData: false
+				isShowNoData: false,
+				detailsMessage: {
+					description: ''
+				}
 			}
 		},
 		computed: {
@@ -46,8 +49,13 @@
 			proId() {
 			}
 		},
-		onShow() {
-		},
+		onLoad(options) {
+			if (options.transmitData == '{}') { return };
+			let temporaryAddress = JSON.parse(decodeURIComponent(options.transmitData));
+			this.detailsMessage = temporaryAddress;
+			this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
+			this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"')
+		},	
 		methods: {
 			...mapMutations([
 			]),
@@ -94,6 +102,14 @@
 			padding: 0 16px 16px 16px;
 			box-sizing: border-box;
 			position: relative;
+			.mystyle {
+				width: 100%;
+				display: block;
+			};
+			.pstyle {
+				width: 100%;
+				word-break: break-all;
+			};
 			 ::v-deep .u-empty {
 			 	position: absolute;
 			 	top: 50%;
