@@ -532,6 +532,28 @@
 							urls: res.tempFilePaths
 						});
 						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
+							let url = res.tempFiles[imgI].path;
+							//获取最后一个的位置
+							let index = url.lastIndexOf(".");
+							//获取后缀
+							let jpgUrl = url.substr(index + 1);
+							if (jpgUrl != "png" && jpgUrl != "jpg" && jpgUrl != "jpeg") {
+								that.$refs.uToast.show({
+									message: '只可上传jpg或png格式的图片!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
+							let isLt2M = res.tempFiles[imgI].size/1024/1024 < 10;
+							if (!isLt2M) {
+								that.$refs.uToast.show({
+									message: '图片必须小于10MB!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
 							that.personPhotoFile = res.tempFiles[imgI]['path'];
 							uni.getFileSystemManager().readFile({
 								filePath: res.tempFilePaths[imgI],
