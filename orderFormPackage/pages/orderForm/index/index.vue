@@ -166,7 +166,7 @@
 						</view>
 						<view class="expectation-date">
 							<text>期望时间</text>
-							<text>{{ `${getNowFormatDateText(serviceMessage.serviceDate)} (${judgeWeek(serviceMessage.serviceDate)}) ${serviceMessage.serviceTime}` }}</text>
+							<text v-if="serviceMessage.serviceDate">{{ `${getNowFormatDateText(serviceMessage.serviceDate)} (${judgeWeek(serviceMessage.serviceDate)}) ${serviceMessage.serviceTime}` }}</text>
 						</view>
 						<view class="evaluation-form">
 							<text>初步评估单</text>

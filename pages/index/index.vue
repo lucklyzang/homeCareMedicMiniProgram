@@ -228,7 +228,7 @@
 		fenToYuan,
 		formatMsgTime
 	} from '@/common/js/utils'
-	import { getUserBannerList, createCallPolice, medicalCareHasAuth } from '@/api/user.js'
+	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getHomeProductCategory } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
@@ -275,26 +275,6 @@
 				isShowServiceCategory: true,
 				serviceCategoryValue: [],
 				serviceCategoryList: [
-					{
-						id: 1,
-						content: '母婴护理',
-						selected: false
-					}, 
-					{
-						id: 2,
-						content: '宝宝护理',
-						selected: false
-					},
-					{
-						id: 3,
-						content: '慢病护理',
-						selected: false
-					}, 
-					{
-						id: 4,
-						content: '基本护理',
-						selected: false
-					}
 				],
 				isShowServiceProject: true,
 				serviceProjectValue: [],
@@ -326,6 +306,7 @@
 		},	
 		onShow() {
 			this.queryUserBannerList({position: 2});
+			this.queryHomeProductCategory();
 			this.queryMedicalCareHasAuth();
 			this.queryTradeOrderPage({
 				pageNo: this.currentPageNum,
@@ -367,6 +348,42 @@
 				})
 			},
 			
+			// 查询首页服务类别
+			queryHomeProductCategory() {
+				this.showLoadingHint = true;
+				this.serviceCategoryList = [];
+				getHomeProductCategory().then((res) => {
+					if ( res && res.data.code == 0) {
+						let productTypeList = res.data.data;
+						for (let item of productTypeList) {
+							this.serviceCategoryList.push({
+								id: item.id,
+								content: item.name,
+								parentId: item.parentId,
+								selected: false
+							})
+						};
+						if (res.data.data.length == 0) {
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			// 身份认证事件
 			identityAuthenticationEvent () {
 				uni.navigateTo({
@@ -376,16 +393,29 @@
 			
 			// 服务类别点击事件
 			serviceCategoryItemClickEvent (item,index) {
-				this.serviceCategoryList[index]['selected'] = !this.serviceCategoryList[index]['selected']
+				this.$set(this.serviceCategoryList[index],'selected',!this.serviceCategoryList[index]['selected']);
+				this.$forceUpdate()
 			},
 			
 			// 服务项目点击事件
 			serviceProjectItemClickEvent (item,index) {
-				this.serviceProjectList[index]['selected'] = !this.serviceProjectList[index]['selected']
+				this.$set(this.serviceProjectList[index],'selected',!this.serviceProjectList[index]['selected']);
+				this.$forceUpdate()
 			},
 			
 			// 服务项目下拉框隐藏事件
 			serviceServiceHide () {
+				this.serviceProjectList.forEach((item,index) => {
+					this.$set(this.serviceProjectList[index],'selected',false);
+					this.$forceUpdate()
+				});
+				this.serviceProjectValue.forEach((item) => {
+					let temporaryIndex = this.serviceProjectList.findIndex((innerItem) => { return  innerItem.id == item.id});
+					if (temporaryIndex != -1) {
+						this.$set(this.serviceProjectList[temporaryIndex],'selected',true);
+						this.$forceUpdate()
+					}
+				});
 				this.temporaryCategoriesArr = [];
 				this.temporarySpuIdsArr = [];
 				if (this.serviceProjectValue.length > 0) {
@@ -415,6 +445,17 @@
 			
 			// 服务类别下拉框隐藏事件
 			serviceCategoryHide () {
+				this.serviceCategoryList.forEach((item,index) => {
+					this.$set(this.serviceCategoryList[index],'selected',false);
+					this.$forceUpdate()
+				});
+				this.serviceCategoryValue.forEach((item) => {
+					let temporaryIndex = this.serviceCategoryList.findIndex((innerItem) => { return  innerItem.id == item.id});
+					if (temporaryIndex != -1) {
+						this.$set(this.serviceCategoryList[temporaryIndex],'selected',true);
+						this.$forceUpdate()
+					}
+				});
 				this.temporaryCategoriesArr = [];
 				this.temporarySpuIdsArr = [];
 				if (this.serviceCategoryValue.length > 0) {
@@ -594,7 +635,7 @@
 			
 			// 服务类别下拉框值改变事件
 			serviceCategoryChange(e) {
-				console.log('服务类别', e, this.serviceCategoryValue)
+				console.log('服务类别', e, this.serviceCategoryValue);
 			},
 			
 			// 服务项目下拉框值改变事件

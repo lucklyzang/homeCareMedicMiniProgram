@@ -112,6 +112,13 @@
 						};
 						this.totalCount = res.data.data.total;
 						this.noticeList = res.data.data.list;
+						this.noticeList.forEach((item) => {
+							item.list.forEach((innerItem) => {
+								innerItem.content = innerItem.content.replace(/\<img/gi, '<img class="mystyle"');
+								innerItem.content = innerItem.content.replace(/\<p/gi, '<p class="pstyle"');
+								innerItem.content = innerItem.content.replace(/\<div/gi, '<div class="dstyle"')
+							})
+						});
 						this.fullNoticeList = this.fullNoticeList.concat(this.noticeList);
 						if (this.fullNoticeList.length == 0) {
 							this.isShowNoData = true;
@@ -352,7 +359,19 @@
 						color: #888888;
 						font-size: 14px;
 						margin-top: 10px;
-						text-align: justify
+						text-align: justify;
+						.mystyle {
+							width: 100%;
+							display: block;
+						};
+						.pstyle {
+							width: 100%;
+							word-break: break-all;
+						};
+						.dstyle {
+							width: 100%;
+							word-break: break-all;
+						}
 					}
 				}
 			}

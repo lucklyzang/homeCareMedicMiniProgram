@@ -10,6 +10,14 @@ export function getUserBannerList(data) {
   })
 };
 
+// 获取商品分类(首页筛选)
+export function getHomeProductCategory() {
+  return request({
+    url: '/app-api/product/category/index',
+    method: 'get'
+  })
+}
+
 // 获取医护信息(当前登录医护)
 export function getUserMessage() {
   return request({

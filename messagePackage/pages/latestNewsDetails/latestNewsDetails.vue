@@ -54,7 +54,8 @@
 			let temporaryAddress = JSON.parse(decodeURIComponent(options.transmitData));
 			this.detailsMessage = temporaryAddress;
 			this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
-			this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"')
+			this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"');
+			this.detailsMessage.description = this.detailsMessage.description.replace(/\<div/gi, '<div class="dstyle"')
 		},	
 		methods: {
 			...mapMutations([
@@ -107,6 +108,10 @@
 				display: block;
 			};
 			.pstyle {
+				width: 100%;
+				word-break: break-all;
+			};
+			.dstyle {
 				width: 100%;
 				word-break: break-all;
 			};

@@ -52,7 +52,10 @@
 		onLoad(options) {
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(decodeURIComponent(options.transmitData));
-			this.detailsMessage = temporaryAddress
+			this.detailsMessage = temporaryAddress;
+			this.detailsMessage.templateContent = this.detailsMessage.templateContent.replace(/\<img/gi, '<img class="mystyle"');
+			this.detailsMessage.templateContent = this.detailsMessage.templateContent.replace(/\<p/gi, '<p class="pstyle"');
+			this.detailsMessage.templateContent = this.detailsMessage.templateContent.replace(/\<div/gi, '<div class="dstyle"')
 		},	
 		methods: {
 			...mapMutations([
@@ -100,6 +103,18 @@
 			padding: 0 16px 16px 16px;
 			box-sizing: border-box;
 			position: relative;
+			.mystyle {
+				width: 100%;
+				display: block;
+			};
+			.pstyle {
+				width: 100%;
+				word-break: break-all;
+			};
+			.dstyle {
+				width: 100%;
+				word-break: break-all;
+			};
 			 ::v-deep .u-empty {
 			 	position: absolute;
 			 	top: 50%;

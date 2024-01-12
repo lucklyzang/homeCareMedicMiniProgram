@@ -113,7 +113,8 @@
 						this.noticeList = res.data.data.list;
 						this.noticeList.forEach((item) => {
 							item.description = item.description.replace(/\<img/gi, '<img class="mystyle"');
-							item.description = item.description.replace(/\<p/gi, '<p class="pstyle"')
+							item.description = item.description.replace(/\<p/gi, '<p class="pstyle"');
+							item.description = item.description.replace(/\<div/gi, '<div class="dstyle"')
 						});
 						this.fullNoticeList = this.fullNoticeList.concat(this.noticeList);
 						if (this.fullNoticeList.length == 0) {
@@ -362,6 +363,10 @@
 							display: block;
 						};
 						.pstyle {
+							width: 100%;
+							word-break: break-all;
+						};
+						.dstyle {
 							width: 100%;
 							word-break: break-all;
 						}
