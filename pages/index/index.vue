@@ -116,7 +116,7 @@
 		</view>
 		<view class="top-area">
 			<image src="@/static/img/home-site.png"></image>
-			<text>成都市武侯区三和街道</text>
+			<text>{{ currentAddress }}</text>
 		</view>
 		<u-transition :show="showLoadingHint" mode="fade-down">
 			<view class="loading-box" v-if="showLoadingHint">
@@ -301,10 +301,13 @@
 					}
 				],
 				temporaryCategoriesArr: [],
-				temporarySpuIdsArr: []
+				temporarySpuIdsArr: [],
+				currentAddress: '获取位置中···'
 			}
 		},	
 		onShow() {
+			// 获取当前所在位置
+			this.isGetLocation();
 			this.queryUserBannerList({position: 2});
 			this.queryHomeProductCategory();
 			this.queryMedicalCareHasAuth();
@@ -902,13 +905,52 @@
 			getLocation() {
 				uni.getLocation({
 					type: 'gcj02',
+					isHighAccuracy: true,
 					success: (res) => {
 						console.log('经纬度地址',res);
 						this.longitude = res.longitude;
-						this.latitude = res.latitude
+						this.latitude = res.latitude;
+						this.getLocationDetail()
 					},
 					fail: (err) => {
-						console.log('err',err)
+						this.currentAddress = '无法获取位置信息！无法使用位置功能';
+						this.$refs.uToast.show({
+							message: '无法获取位置信息！无法使用位置功能',
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+			},
+			
+			//根据经纬度获取详细的地址
+			getLocationDetail () {
+				uni.request({
+					header: {
+						"Content-Type": "application/text"
+					},
+					url: 'https://apis.map.qq.com/ws/geocoder/v1/?location=' + this.latitude + ',' + this.longitude +
+													'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+					success:(res)=> {
+						//成功获取到经纬度
+						if (res.statusCode == 200) {
+							this.currentAddress = res.data.result.address;
+						} else {
+							this.currentAddress = '获取地理位置失败';
+							this.$refs.uToast.show({
+								message: '获取地理位置失败',
+								type: 'error',
+								position: 'center'
+							})
+						}
+					},
+					fail: (err) => {
+						this.currentAddress = '获取地理位置失败';
+						this.$refs.uToast.show({
+							message: `${err.errMsg}`,
+							type: 'error',
+							position: 'center'
+						})
 					}
 				})
 			},

@@ -115,6 +115,22 @@ export function getMedicalCareAptitudeList(data) {
   })
 };
 
+// 获得组织机构列表
+export function getOrganizationList(data) {
+  return request({
+    url: '/app-api/system/organization/list',
+    method: 'get'
+  })
+};
+
+// 查询医护详细信息
+export function getMedicalCareDetails(data) {
+  return request({
+    url: '/app-api/hospital/medical-care/detail',
+    method: 'get'
+  })
+};
+
 // 创建医护资质
 export function createMedicalCareAptitude(data) {
   return request({

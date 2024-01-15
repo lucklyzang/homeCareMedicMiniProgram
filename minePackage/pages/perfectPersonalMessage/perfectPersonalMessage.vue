@@ -130,7 +130,8 @@
 					</view>
 					<view class="professional-title-right">
 						<w-select
-								style="margin-left:10px;" 
+								style="margin-left:10px;"
+								defaultValue="请选择您的职称"
 								v-model='professionalTitleValue'
 								:list='professionalTitleList'
 								valueName='content' 
@@ -148,6 +149,7 @@
 					<view class="professional-title-right">
 						<w-select
 								style="margin-left:10px;"
+								defaultValue="请选择您挂靠的机构"
 								v-model='organizationValue'
 								:list='organizationList'
 								valueName='content' 
@@ -178,7 +180,7 @@
 					</view>
 					<view class="emergency-contact-number-right">
 						<u--input
-							placeholder="请输入服务量"
+							placeholder="请输入您从业至今护理人数(大概)"
 							fontSize="14px"
 							color="#979797"
 							v-model="serviceQuantityValue"
@@ -194,7 +196,7 @@
 					</view>
 					<view class="service-duration-right">
 						<u--input
-							placeholder="请输入服务时长"
+							placeholder="请输入您从业至今护理服务时长(大概)"
 							fontSize="14px"
 							color="#979797"
 							v-model="serviceDurationValue"
@@ -232,7 +234,8 @@
 		removeAllLocalStorage,
 		IdCard
 	} from '@/common/js/utils'
-	import { getUserMessage ,medicalCarePerfect } from '@/api/user.js'
+	import { getUserDictData } from '@/api/login.js'
+	import { getUserMessage ,medicalCarePerfect, getMedicalCareDetails, getOrganizationList } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -257,27 +260,9 @@
 				serviceDurationValue: '',
 				introValue: '',
 				professionalTitleValue: "",
-				professionalTitleList: [
-					{
-						id: 1,
-						content: '护士'
-					}, 
-					{
-						id: 2,
-						content: '医生'
-					}
-				],
+				professionalTitleList: [],
 				organizationValue: '',
-				organizationList: [
-					{
-						id: 1,
-						content: '成都中医院'
-					}, 
-					{
-						id: 2,
-						content: '成都妇幼儿童医院'
-					}
-				],
+				organizationList: [],
 				personPhotoSource: '',
 				personPhotoFile: '',
 				photoImageOnlinePath: '',
@@ -295,14 +280,13 @@
 			proId() {
 			}
 		},
-		onLoad() {
-			// 初次进入该页面时，查询用户基本信息
-			if (!this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}') {
-				this.queryUserBasicMessage()
-			} else {
-				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
-				this.photoImageOnlinePath = !this.userBasicInfo.avatar ? '' : this.userBasicInfo.avatar;
-			}
+		onShow () {
+			// 查询医护详细信息
+			this.getMedicalCareDetailsEvent();
+			// 查询组织机构信息
+			this.getOrganizationListEvent();
+			// 查询职称信息
+			this.getUserDictDataEvent()
 		},
 		methods: {
 			...mapMutations([
@@ -314,15 +298,26 @@
 				uni.navigateBack()
 			},
 			
-			// 获取用户基本信息
-			queryUserBasicMessage () {
+			// 获取医护详细信息
+			getMedicalCareDetailsEvent () {
 				this.showLoadingHint = true;
 				this.infoText = '加载中...';
-				getUserMessage().then((res) => {
+				getMedicalCareDetails().then((res) => {
 					if ( res && res.data.code == 0) {
-						this.changeUserBasicInfo(res.data.data);
-						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
-						this.photoImageOnlinePath = !this.userBasicInfo.avatar ? '' : this.userBasicInfo.avatar;
+						this.personPhotoSource = !res.data.data.avatar ? this.defaultPersonPhotoIconPng : res.data.data.avatar;
+						this.photoImageOnlinePath = !res.data.data.avatar ? '' : res.data.data.avatar;
+						this.personNameValue = res.data.data.name;
+						this.idCardValue = res.data.data.idCard;
+						this.genderValue = res.data.data.sex == 1 ? '男' : '女';
+						this.birthdayValue = res.data.data.birthday;
+						this.ageValue = res.data.data.age;
+						this.emergencyContactNumberValue = res.data.data.critical;
+						this.professionalTitleValue = res.data.data.title;
+						this.organizationValue = res.data.data.title.organization;
+						this.workingSeniorityDefaultValue = res.data.data.practiceTime;
+						this.serviceQuantityValue = res.data.data.quantity;
+						this.serviceDurationValue = res.data.data.timeLength;
+						this.introValue =  res.data.data.introduction
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -417,12 +412,68 @@
 			
 			// 职称下拉框值改变事件
 			professionalTitleChange(e) {
-				console.log('职称',e)
+				console.log('职称',e, this.professionalTitleValue)
 			},
 			
 			// 机构下拉框值改变事件
 			organizationChange(e) {
 				console.log('机构',e, this.organizationValue)
+			},
+			
+			// 获取组织机构信息
+			getOrganizationListEvent () {
+				this.showLoadingHint = true;
+				this.infoText = '加载中...';
+				this.organizationList = [];
+				getOrganizationList().then((res) => {
+					this.showLoadingHint = false;
+					if ( res && res.data.code == 0) {
+						if (res.data.data.length > 0) {
+							for (let item of res.data.data) {
+								this.organizationList.push({
+									id: item.id,
+									content: item.name
+								})
+							}
+						}
+					}
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			//获取护师职称数据
+			getUserDictDataEvent () {
+				this.showLoadingHint = true;
+				this.infoText = '加载中...';
+				this.professionalTitleList = [];
+				getUserDictData({type: 'technical_title'}).then((res) => {
+					this.showLoadingHint = false;
+					if ( res && res.data.code == 0) {
+						if (res.data.data.length > 0) {
+							for (let item of res.data.data) {
+								this.professionalTitleList.push({
+									id: item.value,
+									content: item.label
+								})
+							}
+						}
+					}
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			},
 			
 			// 保存事件

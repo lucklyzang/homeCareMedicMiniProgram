@@ -275,6 +275,7 @@
 			getLocation() {
 				uni.getLocation({
 					type: 'gcj02',
+					isHighAccuracy: true,
 					success: (res) => {
 						this.longitude = res.longitude;
 						this.latitude = res.latitude
