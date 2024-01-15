@@ -313,7 +313,7 @@
 						this.ageValue = res.data.data.age;
 						this.emergencyContactNumberValue = res.data.data.critical;
 						this.professionalTitleValue = res.data.data.title;
-						this.organizationValue = res.data.data.title.organization;
+						this.organizationValue = res.data.data.organization;
 						this.workingSeniorityDefaultValue = res.data.data.practiceTime;
 						this.serviceQuantityValue = res.data.data.quantity;
 						this.serviceDurationValue = res.data.data.timeLength;
