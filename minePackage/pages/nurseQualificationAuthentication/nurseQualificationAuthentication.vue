@@ -100,11 +100,11 @@
 							<text>恭喜你，护士资格证上传成功</text>
 						</view>
 						<view class="step-two-explain-two">
-							<text>你提交的认证资料已通过审核</text>
+							<text>你提交的认证资料正在审核</text>
 						</view>
 						<view class="step-two-explain-three">
-							<text>杨大坤</text>
-							<text>身份证：3**********0</text>
+							<text>{{ authenticationName }}</text>
+							<text> {{ `资格证: ${authenticationNum}` }}</text>
 						</view>
 					</view>
 					<view class="step-two-btn" @click="perfectPersonalMessageEvent">
@@ -146,6 +146,8 @@
 				content: '',
 				frontImageFileArr: [],
 				frontImageBase64Arr: [],
+				authenticationName: '',
+				authenticationNum:  '',
 				backImageFileArr: [],
 				backImageBase64Arr: [],
 				frontImageOnlineArr: [],
@@ -282,7 +284,9 @@
 					this.frontImageOnlineArr = [];
 					this.backImageOnlineArr = [];
 					if ( res && res.data.code == 0) {
-						this.stepActive = 1
+						this.stepActive = 1;
+						this.authenticationName = res.data.data.name;
+						this.authenticationNum =  res.data.data.idCard;
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,

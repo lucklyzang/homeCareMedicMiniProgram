@@ -67,10 +67,10 @@
 					<view class="my-bill-list" v-for="(innerItem,innerIndex) in item.list" :key="innerIndex" @click="enterBillDetailsEvent(innerItem)">
 						<view class="my-bill-list-left">
 							<view class="week-text">
-								<text>{{ judgeWeek(innerItem.cashTime) }}</text>
+								<text>{{ judgeWeek(innerItem.createTime) }}</text>
 							</view>
 							<view class="date-text">
-								<text>{{ getNowFormatDate(new Date(innerItem.cashTime),5) }}</text>
+								<text>{{ getNowFormatDate(new Date(innerItem.createTime),5) }}</text>
 							</view>
 						</view>
 						<view class="my-bill-list-center">

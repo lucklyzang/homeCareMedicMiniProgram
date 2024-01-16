@@ -306,8 +306,6 @@
 			}
 		},	
 		onShow() {
-			// 获取当前所在位置
-			this.isGetLocation();
 			this.queryUserBannerList({position: 2});
 			this.queryHomeProductCategory();
 			this.queryMedicalCareHasAuth();
@@ -318,7 +316,13 @@
 				spuIds: this.temporarySpuIdsArr,
 				minPrice: this.minPriceValue,
 				maxPrice: this.maxPriceValue
-			},true)
+			},true);
+			// 获取当前所在位置
+			try {
+				this.isGetLocation()
+			} catch(err) {
+				
+			}
 		},
 		computed: {
 			...mapGetters([

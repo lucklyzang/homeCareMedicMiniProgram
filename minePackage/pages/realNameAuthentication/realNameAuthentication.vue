@@ -145,8 +145,8 @@
 							<text>你提交的认证资料已通过审核</text>
 						</view>
 						<view class="step-two-explain-three">
-							<text>杨大坤</text>
-							<text>身份证：3**********0</text>
+							<text>{{ authenticationName }}</text>
+							<text> {{ `身份证: ${authenticationNum}` }}</text>
 						</view>
 					</view>
 					<view class="step-two-btn" @click="backTo">
@@ -184,6 +184,8 @@
 				showLoadingHint: false,
 				infoText: '加载中···',
 				stepActive: 0,
+				authenticationName: '',
+				authenticationNum: '',
 				frontImageFileArr: [],
 				backImageFileArr: [],
 				handImageFileArr: [],
@@ -285,7 +287,6 @@
 			
 			// 上传图片到服务器
 			uploadFileEvent (imgI,text) {
-				console.log('1',imgI);
 				this.infoText = '上传中···';
 				this.showLoadingHint = true;
 				return new Promise((resolve, reject) => {
@@ -340,7 +341,9 @@
 					this.backImageOnlineArr = [];
 					this.handImageOnlineArr = [];
 					if ( res && res.data.code == 0) {
-						this.stepActive = 1
+						this.stepActive = 1;
+						this.authenticationName = res.data.data.name;
+						this.authenticationNum =  res.data.data.idCard;
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,

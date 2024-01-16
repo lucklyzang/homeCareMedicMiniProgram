@@ -3,7 +3,7 @@
 		<u-toast ref="uToast" />
 		<u-overlay :show="showLoadingHint"></u-overlay>
 		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
-		<view>
+		<view v-if="nurseMessageLoadComplete">
 			<u-datetime-picker
 				:show="workingSeniorityDialogShow"
 				v-model="workingSeniorityValue"
@@ -128,10 +128,10 @@
 						<text>*</text>
 						<text>职称</text>
 					</view>
-					<view class="professional-title-right">
+					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
 						<w-select
 								style="margin-left:10px;"
-								defaultValue="请选择您的职称"
+								:defaultValue="defaultProfessionalTitleValue"
 								v-model='professionalTitleValue'
 								:list='professionalTitleList'
 								valueName='content' 
@@ -146,10 +146,10 @@
 						<text>*</text>
 						<text>机构</text>
 					</view>
-					<view class="professional-title-right">
+					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
 						<w-select
 								style="margin-left:10px;"
-								defaultValue="请选择您挂靠的机构"
+								:defaultValue="defaultOrganizationValue"
 								v-model='organizationValue'
 								:list='organizationList'
 								valueName='content' 
@@ -247,7 +247,7 @@
 			return {
 				showLoadingHint: false,
 				infoText: '保存中···',
-				workingSeniorityDefaultValue: '选择时间',
+				workingSeniorityDefaultValue: '请选择从业时间',
 				workingSeniorityDialogShow: false,
 				workingSeniorityValue: Number(new Date()),
 				personNameValue: '',
@@ -260,13 +260,16 @@
 				serviceDurationValue: '',
 				introValue: '',
 				professionalTitleValue: "",
+				defaultProfessionalTitleValue: "请选择您的职称",
 				professionalTitleList: [],
 				organizationValue: '',
+				defaultOrganizationValue: '请选择您挂靠的机构',
 				organizationList: [],
 				personPhotoSource: '',
 				personPhotoFile: '',
 				photoImageOnlinePath: '',
 				personPhotoBase64: '',
+				nurseMessageLoadComplete: false,
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png")
 			}
 		},
@@ -282,11 +285,7 @@
 		},
 		onShow () {
 			// 查询医护详细信息
-			this.getMedicalCareDetailsEvent();
-			// 查询组织机构信息
-			this.getOrganizationListEvent();
-			// 查询职称信息
-			this.getUserDictDataEvent()
+			this.getMedicalCareDetailsEvent()
 		},
 		methods: {
 			...mapMutations([
@@ -302,8 +301,13 @@
 			getMedicalCareDetailsEvent () {
 				this.showLoadingHint = true;
 				this.infoText = '加载中...';
+				this.nurseMessageLoadComplete = false;
 				getMedicalCareDetails().then((res) => {
 					if ( res && res.data.code == 0) {
+						// 查询组织机构信息
+						this.getOrganizationListEvent();
+						// 查询职称信息
+						this.getUserDictDataEvent();
 						this.personPhotoSource = !res.data.data.avatar ? this.defaultPersonPhotoIconPng : res.data.data.avatar;
 						this.photoImageOnlinePath = !res.data.data.avatar ? '' : res.data.data.avatar;
 						this.personNameValue = res.data.data.name;
@@ -312,9 +316,10 @@
 						this.birthdayValue = res.data.data.birthday;
 						this.ageValue = res.data.data.age;
 						this.emergencyContactNumberValue = res.data.data.critical;
-						this.professionalTitleValue = res.data.data.title;
-						this.organizationValue = res.data.data.organization;
-						this.workingSeniorityDefaultValue = res.data.data.practiceTime;
+						this.professionalTitleValue = res.data.data.title ? res.data.data.title.toString() : '';
+						this.organizationValue = res.data.data.organization ? res.data.data.organization.toString() : '';
+						this.workingSeniorityDefaultValue = !res.data.data.practiceTime ? '请选择从业时间' : this.getNowFormatDate(new Date(res.data.data.practiceTime),2);
+						this.workingSeniorityValue = !res.data.data.practiceTime ? Number(new Date()) : Number(new Date(res.data.data.practiceTime));
 						this.serviceQuantityValue = res.data.data.quantity;
 						this.serviceDurationValue = res.data.data.timeLength;
 						this.introValue =  res.data.data.introduction
@@ -325,9 +330,11 @@
 							position: 'bottom'
 						})
 					};
+					this.nurseMessageLoadComplete = true;
 					this.showLoadingHint = false
 				})
 				.catch((err) => {
+					this.nurseMessageLoadComplete = true;
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: err.message,
@@ -431,9 +438,15 @@
 						if (res.data.data.length > 0) {
 							for (let item of res.data.data) {
 								this.organizationList.push({
-									id: item.id,
+									id: item.id.toString(),
 									content: item.name
 								})
+							};
+							let temporaryMessageArr = this.organizationList.filter((innerItem) => { return innerItem.id == this.organizationValue });
+							if (temporaryMessageArr.length > 0) {
+								this.defaultOrganizationValue = [0]['content']
+							} else {
+								this.defaultOrganizationValue = '请选择您挂靠的机构'
 							}
 						}
 					}
@@ -462,6 +475,12 @@
 									id: item.value,
 									content: item.label
 								})
+							};
+							let temporaryMessageArr = this.professionalTitleList.filter((innerItem) => { return innerItem.id == this.professionalTitleValue });
+							if (temporaryMessageArr.length > 0) {
+								this.defaultProfessionalTitleValue = [0]['content']
+							} else {
+								this.defaultProfessionalTitleValue = "请选择您的职称"
 							}
 						}
 					}
@@ -486,23 +505,23 @@
 					});
 					return
 				};
-				if (!this.professionalTitleValue && this.professionalTitleValue != 0) {
+				if (!this.professionalTitleValue && this.professionalTitleValue !== 0) {
 					this.$refs.uToast.show({
-						message: '请选择职称',
+						message: '请选择您的职称',
 						type: 'error',
 						position: 'center'
 					});
 					return
 				};
-				if (!this.organizationValue && this.organizationValue != 0) {
+				if (!this.organizationValue && this.organizationValue !== 0) {
 					this.$refs.uToast.show({
-						message: '请选择机构',
+						message: '请选择您挂靠的机构',
 						type: 'error',
 						position: 'center'
 					});
 					return
 				};
-				if (this.workingSeniorityDefaultValue == '选择时间') {
+				if (this.workingSeniorityDefaultValue == '请选择从业时间') {
 					this.$refs.uToast.show({
 						message: '请选择从业时间',
 						type: 'error',
@@ -563,7 +582,7 @@
 					organization: this.organizationValue,
 					quantity: this.serviceQuantityValue,
 					timeLength: this.serviceDurationValue,
-					practiceTime: this.workingSeniorityDefaultValue == '选择时间' ? '' : this.workingSeniorityDefaultValue,
+					practiceTime: this.workingSeniorityDefaultValue == '请选择从业时间' ? '' : this.workingSeniorityDefaultValue,
 					genius: [],
 					introduction: this.introValue,
 					avatar: !this.photoImageOnlinePath ? '' : this.photoImageOnlinePath,
@@ -750,6 +769,7 @@
 					image {
 						width: 100px;
 						height: 100px;
+						border-radius: 50%;
 					}
 				};
 				.account-number {
