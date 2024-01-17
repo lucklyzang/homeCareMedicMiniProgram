@@ -19,11 +19,14 @@
 						<text>实名认证</text>
 					</view>
 				</view>
-				<view class="real-name-authentication-right" v-if="!realname">
+				<view class="real-name-authentication-right" v-if="realname == 'NO'">
 					<text>未实名</text>
 				</view>
-				<view class="real-name-authentication-right-real-name" v-else>
+				<view class="real-name-authentication-right-real-name" v-if="realname == 'YES'">
 					<text>已实名</text>
+				</view>
+				<view class="real-name-authentication-right-real-name-fail" v-if="realname == 'FAIL'">
+					<text>实名失败</text>
 				</view>
 			</view>
 			<view class="certificate-authentication-title">
@@ -44,7 +47,7 @@
 								<text>未认证</text>
 							</view>
 						</view>
-						<view class="certificate-have-authentication" v-if="item.passed == 'OPEN' || item.passed == 'APPLYING'">
+						<view class="certificate-have-authentication" @click="nurseQualificationAuthenticationEvent(item,index)" v-if="item.passed == 'OPEN' || item.passed == 'APPLYING' || item.passed == 'REFUSED'">
 							<view class="certificate-have-authentication-left">
 								<view class="image-box">
 									<image :src="item.picUrl"></image>
@@ -55,7 +58,7 @@
 							</view>
 							<view class="certificate-have-authentication-right">
 								<image src="@/static/img/have-authentication-icon.png" v-if="item.passed == 'OPEN'"></image>
-								<text>{{ item.passed == 'OPEN' ? '已认证' : '审核中'}}</text>
+								<text :class="{'textStyle' : item.passed == 'REFUSED'}">{{ item.passed == 'OPEN' ? '已认证' : item.passed == 'APPLYING' ? '审核中' : '未通过'}}</text>
 							</view>
 						</view>
 					</view>	
@@ -124,7 +127,7 @@
 			this.queryUserBasicMessage();
 			if (this.userBasicInfo && JSON.stringify(this.userBasicInfo) != '{}') {
 				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
-				this.realname = this.userBasicInfo.realname == 'YES' ? true : false;
+				this.realname = this.userBasicInfo.realname;
 				this.perfect = this.userBasicInfo.perfect == 'YES' ? true : false;
 				this.aptitude = this.userBasicInfo.aptitude == 'YES' ? true : false
 			}
@@ -166,7 +169,7 @@
 					if ( res && res.data.code == 0) {
 						this.changeUserBasicInfo(res.data.data);
 						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
-						this.realname = this.userBasicInfo.realname == 'YES' ? true : false;
+						this.realname = this.userBasicInfo.realname;
 						this.perfect = this.userBasicInfo.perfect == 'YES' ? true : false;
 						this.aptitude = this.userBasicInfo.aptitude == 'YES' ? true : false
 					} else {
@@ -190,7 +193,7 @@
 			
 			// 实名认证事件
 			realNameAuthenticationEvent () {
-				if (this.realname) { return };
+				if (this.realname == 'YES') { return };
 				uni.navigateTo({
 					url: '/minePackage/pages/realNameAuthentication/realNameAuthentication'
 				})
@@ -198,6 +201,9 @@
 			
 			// 护士资格认证事件
 			nurseQualificationAuthenticationEvent (item,index) {
+				if (item.passed == 'OPEN' || item.passed == 'APPLYING') {
+					return
+				};
 				let mynavData = JSON.stringify(item);
 				if (item.name == '护士资格证') {
 					uni.navigateTo({
@@ -322,6 +328,10 @@
 				.real-name-authentication-right-real-name {
 					font-size: 14px;
 					color: #E8CB51;
+				};
+				.real-name-authentication-right-real-name-fail {
+					font-size: 14px;
+					color: red;
 				}
 			};
 			.certificate-authentication-title {
@@ -423,6 +433,9 @@
 								font-size: 14px;
 								color: #E8CB51;
 								vertical-align: middle
+							};
+							.textStyle {
+								color: red !important;
 							}
 						}
 					}
@@ -458,8 +471,9 @@
 						border-radius: 50%;
 						background: #fff;
 						image {
-							width: 24px;
-							height: 24px;
+							width: 32px;
+							height: 32px;
+							border-radius: 50%;
 						}
 					};
 					.personal-information-text {

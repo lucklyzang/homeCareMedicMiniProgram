@@ -105,7 +105,7 @@
 				return
 			};
 			this.billMessage = JSON.parse(options.transmitData);
-			this.billMessage.amount = fenToYuan(this.billMessage.amount);
+			// this.billMessage.amount = fenToYuan(this.billMessage.amount);
 			console.log('账单详情信息',this.billMessage)
 		},
 		methods: {

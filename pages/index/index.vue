@@ -184,7 +184,7 @@
 			<view class="real-time-order-form-title-box">
 				<text>实时订单</text>
 			</view>
-			<view class="real-time-order-form-list-box">
+			<view class="real-time-order-form-list-box" v-if="canAcceptOrder">
 				<u-empty text="暂无实时订单" mode="list" v-if="isShowNoData"></u-empty>
 				<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
 					<view class="real-time-order-form-list" v-for="(item,index) in fullTradeList" :key="index">
@@ -1209,7 +1209,7 @@
 			text {
 				@include no-wrap;
 				display: inline-block;
-				flex: 1;
+				width: 65%;
 				font-size: 13px;
 				color: #fff
 			}

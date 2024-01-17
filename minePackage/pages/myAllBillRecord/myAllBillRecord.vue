@@ -243,12 +243,11 @@
 					if ( res && res.data.code == 0) {
 						this.totalCount = res.data.data.total;
 						this.billList = res.data.data.list;
-						this.billList.forEach((item) => {
-							item.amount = fenToYuan(item.amount)
-						});
 						if (res.data.data.list.length > 0) {
 							this.billList.forEach((item) => {
-								return item.payPrice = fenToYuan(item.payPrice)
+								item.list.forEach((innerItem) => {
+									innerItem.amount = fenToYuan(innerItem.amount)
+								})
 							})
 						};
 						this.fullBillList = this.fullBillList.concat(this.billList);

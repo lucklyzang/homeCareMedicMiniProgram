@@ -103,8 +103,8 @@
 							<text>你提交的认证资料正在审核</text>
 						</view>
 						<view class="step-two-explain-three">
-							<text>{{ authenticationName }}</text>
-							<text> {{ `资格证: ${authenticationNum}` }}</text>
+							<!-- <text>{{ authenticationName }}</text>
+							<text> {{ `资格证: ${authenticationNum}` }}</text> -->
 						</view>
 					</view>
 					<view class="step-two-btn" @click="perfectPersonalMessageEvent">
@@ -209,6 +209,28 @@
 							urls: res.tempFilePaths
 						});
 						for (let imgI = 0, len = res.tempFilePaths.length; imgI < len; imgI++) {
+							let url = res.tempFiles[imgI].path;
+							//获取最后一个的位置
+							let index = url.lastIndexOf(".");
+							//获取后缀
+							let jpgUrl = url.substr(index + 1);
+							if (jpgUrl != "png" && jpgUrl != "jpg" && jpgUrl != "jpeg") {
+								that.$refs.uToast.show({
+									message: '只能上传jpg/png格式的图片!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
+							let isLt2M = res.tempFiles[imgI].size/1024/1024 < 5;
+							if (!isLt2M) {
+								that.$refs.uToast.show({
+									message: '文件不能大于5MB!',
+									type: 'error',
+									position: 'center'
+								});
+								continue
+							};
 							if (text == 'front') {
 								that.frontImageFileArr.push(res.tempFiles[imgI]['path']);
 							} else if (text == 'back') {
@@ -266,8 +288,9 @@
 					 fail: (err) => {
 						this.showLoadingHint = false;
 						this.$refs.uToast.show({
-							message: err,
+							message: err.errMsg,
 							type: 'error',
+							duration: 5000,
 							position: 'center'
 						});
 						reject()
@@ -456,6 +479,9 @@
 						font-size: 12px;
 						color: #B7B6B6
 					};
+					.step-right {
+						margin-left: 24px;
+					};
 					.stepTextStyle {
 						color: #5064EB !important;
 					}
@@ -621,8 +647,8 @@
 						};
 						.step-two-explain-three {
 							width: 200px;
-							height: 70px;
-							background: #F2F2F2;
+							height: 100px;
+							background: #fff;
 							border-radius: 2px;
 							display: flex;
 							align-items: center;

@@ -51,10 +51,11 @@
 					</view>
 					<view class="person-name-right">
 						<u--input
-							placeholder="请输入身份证号"
+							placeholder="身份证号"
 							@blur="idcardBlurEvent"
 							fontSize="14px"
 							color="#979797"
+							readonly
 							v-model="idCardValue"
 							border="none"
 							type="idcard"
@@ -67,7 +68,7 @@
 					</view>
 					<view class="person-name-right">
 						<u--input
-							placeholder="请输入性别"
+							placeholder="性别"
 							disabled
 							fontSize="14px"
 							color="#979797"
@@ -82,7 +83,7 @@
 					</view>
 					<view class="person-name-right">
 						<u--input
-							placeholder="请输入生日"
+							placeholder="生日"
 							disabled
 							fontSize="14px"
 							color="#979797"
@@ -97,7 +98,7 @@
 					</view>
 					<view class="person-name-right">
 						<u--input
-							placeholder="请输入年龄"
+							placeholder="年龄"
 							disabled
 							fontSize="14px"
 							color="#979797"
@@ -444,7 +445,7 @@
 							};
 							let temporaryMessageArr = this.organizationList.filter((innerItem) => { return innerItem.id == this.organizationValue });
 							if (temporaryMessageArr.length > 0) {
-								this.defaultOrganizationValue = [0]['content']
+								this.defaultOrganizationValue = temporaryMessageArr[0]['content']
 							} else {
 								this.defaultOrganizationValue = '请选择您挂靠的机构'
 							}
@@ -478,7 +479,7 @@
 							};
 							let temporaryMessageArr = this.professionalTitleList.filter((innerItem) => { return innerItem.id == this.professionalTitleValue });
 							if (temporaryMessageArr.length > 0) {
-								this.defaultProfessionalTitleValue = [0]['content']
+								this.defaultProfessionalTitleValue = temporaryMessageArr[0]['content']
 							} else {
 								this.defaultProfessionalTitleValue = "请选择您的职称"
 							}
@@ -670,8 +671,9 @@
 					 fail: (err) => {
 						this.showLoadingHint = false;
 						this.$refs.uToast.show({
-							message: err,
+							message: err.errMsg,
 							type: 'error',
+							duration: 5000,
 							position: 'center'
 						});
 						reject()

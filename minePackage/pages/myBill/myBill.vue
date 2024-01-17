@@ -272,26 +272,6 @@
 				recentNurseBill().then((res) => {
 					if ( res && res.data.code == 0) {
 						this.recentNurseBillList = res.data.data;
-						this.recentNurseBillList.push(
-								{
-									amount: 1000,
-									occurType: "OUT",
-									cashTime: "2023-10-12 14:34:56",
-									cashCard: "12343437548938",
-									cashBank: "中国建设银行",
-									cashStatus: "10",
-									createTime: "2021-05-11 12:44:16"
-								},
-								{
-									amount: 1509,
-									occurType: "IN",
-									cashTime: "2021-06-11 13:14:11",
-									cashCard: "42343437567483267",
-									cashBank: "中国工商银行",
-									cashStatus: "0",
-									createTime: "2024-11-11 18:40:06"
-								}
-						);
 						this.recentNurseBillList.forEach((item) => {
 							item.amount = fenToYuan(item.amount)
 						});
