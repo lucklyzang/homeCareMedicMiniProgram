@@ -78,3 +78,11 @@ export function getUserDictData(data) {
 		params: data
   })
 }
+
+// 获取微信小程序订阅模版列表
+export function getSubscribeTemplateList(type) {
+  return request({
+    url: `/app-api/infra/subscribe-config/list/${type}`,
+    method: 'get'
+  })
+}

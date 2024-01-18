@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" fontColor="#FFFFFF" backState='3000' bgColor="none" title="数据统计" @backClick="backTo">
@@ -13,8 +15,16 @@
 				<text>温馨提示：本页面数据每五分钟更新一次</text>
 			</view>
 			<view class="top-area">
-				<view class="date-case" @click="dateDialogCutEvent">
-					<text>{{ getNowFormatDate(new Date(startDateValue),3) }}</text>
+				<view class="date-case" @click="dayDialogCutEvent" v-if="statisticalTypeIndex == 0">
+					<text>{{ getNowFormatDate(new Date(dayDateValue),2) }}</text>
+					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
+				</view>
+				<view class="date-case" @click="weekDialogCutEvent" v-if="statisticalTypeIndex == 1">
+					<text>{{ getNowFormatDate(new Date(weekDateValue),3) }}</text>
+					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
+				</view>
+				<view class="date-case" @click="monthDialogCutEvent" v-if="statisticalTypeIndex == 2">
+					<text>{{ getNowFormatDate(new Date(monthDateValue),3) }}</text>
 					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
 				</view>
 				<view class="statistical-type-cut">
@@ -22,16 +32,13 @@
 						<text>{{ item }}</text>
 					</view>
 				</view>
-				<view class="proceeds-order-form">
+				<view class="proceeds-order-form" v-if="statisticalTypeIndex == 0">
 					<view class="proceeds-statistical">
 						<view class="proceeds-statistical-title">
 							<text>总收款 (元)</text>
 						</view>
 						<view class="money-content">
-							<text>￥ 685.00</text>
-						</view>
-						<view class="increase-rate">
-							<text>较上月增长23%</text>
+							<text>{{ `￥${dayProceeds}` }}</text>
 						</view>
 					</view>
 					<view class="order-form-statistical">
@@ -39,108 +46,150 @@
 							<text>订单量</text>
 						</view>
 						<view class="order-form-content">
-							<text>2500单</text>
+							<text>{{ `${dayOrderCount}单` }}</text>
+						</view>
+					</view>
+				</view>
+				<view class="proceeds-order-form" v-if="statisticalTypeIndex == 1">
+					<view class="proceeds-statistical">
+						<view class="proceeds-statistical-title">
+							<text>总收款 (元)</text>
+						</view>
+						<view class="money-content">
+							<text>{{ `￥${weekProceeds}` }}</text>
+						</view>
+						<view class="increase-rate">
+							<text>{{ `较上周增长${weekProceedsIncrease}` }} </text>
+						</view>
+					</view>
+					<view class="order-form-statistical">
+						<view class="order-form-statistical-title">
+							<text>订单量</text>
+						</view>
+						<view class="order-form-content">
+							<text>{{ `${weekOrderCount}单` }}</text>
 						</view>
 						<view class="order-form-rate">
-							<text>较上月增长10%</text>
+							<text>{{ `较上周增长${weekOrderCountIncrease}` }} </text>
+						</view>
+					</view>
+				</view>
+				<view class="proceeds-order-form" v-if="statisticalTypeIndex == 2">
+					<view class="proceeds-statistical">
+						<view class="proceeds-statistical-title">
+							<text>总收款 (元)</text>
+						</view>
+						<view class="money-content">
+							<text>{{ `￥${monthProceeds}` }}</text>
+						</view>
+						<view class="increase-rate">
+							<text>{{ `较上月增长${monthProceedsIncrease}` }} </text>
+						</view>
+					</view>
+					<view class="order-form-statistical">
+						<view class="order-form-statistical-title">
+							<text>订单量</text>
+						</view>
+						<view class="order-form-content">
+							<text>{{ `${monthOrderCount}单` }}</text>
+						</view>
+						<view class="order-form-rate">
+							<text>{{ `较上月增长${monthOrderCountIncrease}` }} </text>
 						</view>
 					</view>
 				</view>
 			</view>
-			<view class="center-area">
+			<view class="center-area" v-if="statisticalTypeIndex == 1">
+				<view class="line-chart-title">
+					<text>周报订单趋势图</text>
+				</view>
+				<view class="line-chart">
+					<u-empty text="暂无数据" v-if="!weekChartData.isShow"></u-empty>
+					<qiun-data-charts v-if="weekChartData.isShow" :inScrollView="true" :canvas2d="true" canvasId="hfdjskfhdjkfdtef123gh" type="area" :opts="orderMonthOpts" :ontouch="true" :chartData="weekChartData['data']" />
+				</view>
+			</view>
+			<view class="center-area" v-if="statisticalTypeIndex == 2">
 				<view class="line-chart-title">
 					<text>月报订单趋势图</text>
 				</view>
 				<view class="line-chart">
 					<u-empty text="暂无数据" v-if="!monthChartData.isShow"></u-empty>
-					<qiun-data-charts v-if="monthChartData.isShow" :inScrollView="true" :canvas2d="true" canvasId="abcdatef123gh" type="area" :opts="orderMonthOpts" :ontouch="true" :chartData="monthChartData['data']" />
+					<qiun-data-charts v-if="monthChartData.isShow" :inScrollView="true" :canvas2d="true" canvasId="abcdahdskdhtef123gh" type="area" :opts="orderMonthOpts" :ontouch="true" :chartData="monthChartData['data']" />
 				</view>
 			</view>
-			<view class="bottom-area">
+			<view class="bottom-area" v-if="statisticalTypeIndex == 0">
 				<view class="order-type-title">
 					<text>订单类型占比</text>
 				</view>
 				<view class="doughnut-chart">
-					<view class="doughnut-chart-left">
-						<view class="nurse-doughnut-chart">
-							<u-empty text="暂无数据" v-if="!nurseMonthData.isShow"></u-empty>
-							<qiun-data-charts
-								v-if="nurseMonthData.isShow"
-								type="arcbar"
-								:canvas2d="true"
-								canvasId="abfddf97sf7878atef123gh"
-								:opts="nurseMonthOpts"
-								:chartData="nurseMonthData.data"
-							/>
-						</view>
-						<view class="nurse-doughnut-title">
-							<text>上门护理</text>
-						</view>
-					</view>
-					<view class="doughnut-chart-right">
-						<view class="chaperonage-doughnut-chart">
-							<u-empty text="暂无数据" v-if="!chaperonageMonthData.isShow"></u-empty>
-							<qiun-data-charts
-								v-if="chaperonageMonthData.isShow"
-								type="arcbar"
-								:canvas2d="true" 
-								canvasId="abcddsdsdsf7878atef123gh"
-								:opts="chaperonageMonthOpts"
-								:chartData="chaperonageMonthData.data"
-							/>
-						</view>
-						<view class="chaperonage-doughnut-title">
-							<text>陪诊陪护</text>
-						</view>
-					</view>
+					<qiun-data-charts
+						v-if="dayChartOrderTypeData.isShow"
+						type="column"
+						:canvas2d="true"
+						canvasId="jgfpogjfgtef123gh"
+						:opts="orderTypeMonthOpts"
+						:chartData="dayChartOrderTypeData.data"
+					/>
 				</view>
-				<view class="order-type-box">
-					<view class="order-type-nurse">
-						<view class="deal-money">
-							<view class="deal-money-left">
-								<text>交易金额</text>
-							</view>
-							<view class="deal-money-right">
-								<text>￥4321.00</text>
-							</view>
-						</view>
-						<view class="deal-count">
-							<view class="deal-count-left">
-								<text>交易笔数</text>
-							</view>
-							<view class="deal-count-right">
-								<text>453笔</text>
-							</view>
-						</view>
-					</view>
-					<view class="order-type-chaperonage">
-						<view class="deal-money">
-							<view class="deal-money-left">
-								<text>交易金额</text>
-							</view>
-							<view class="deal-money-right">
-								<text>￥4321.00</text>
-							</view>
-						</view>
-						<view class="deal-count">
-							<view class="deal-count-left">
-								<text>交易笔数</text>
-							</view>
-							<view class="deal-count-right">
-								<text>453笔</text>
-							</view>
-						</view>
-					</view>
+			</view>
+			<view class="bottom-area" v-if="statisticalTypeIndex == 1">
+				<view class="order-type-title">
+					<text>订单类型占比</text>
+				</view>
+				<view class="doughnut-chart">
+					<qiun-data-charts
+						v-if="weekChartOrderTypeData.isShow"
+						type="column"
+						:canvas2d="true"
+						canvasId="abfhjgkflgffgf7878atef123gh"
+						:opts="orderTypeMonthOpts"
+						:chartData="weekChartOrderTypeData.data"
+					/>
+				</view>
+			</view>
+			<view class="bottom-area" v-if="statisticalTypeIndex == 2">
+				<view class="order-type-title">
+					<text>订单类型占比</text>
+				</view>
+				<view class="doughnut-chart">
+					<qiun-data-charts
+						v-if="monthChartOrderTypeData.isShow"
+						type="column"
+						:canvas2d="true"
+						canvasId="abfddsdsdsdfsf7878atef123gh"
+						:opts="orderTypeMonthOpts"
+						:chartData="monthChartOrderTypeData.data"
+					/>
 				</view>
 			</view>
 		</view>
-		<view class="start-date">
+		<view class="day-date">
 			<u-datetime-picker
-				:show="startDateShow"
-				@close="startDateShow = false"
-				@cancel="startDateShow = false"
-				@confirm="startDateSureEvent"
-				v-model="startDateValue"
+				:show="dayDateShow"
+				@close="dayDateShow = false"
+				@cancel="dayDateShow = false"
+				@confirm="dayDateSureEvent"
+				v-model="dayDateValue"
+				mode="date"
+			></u-datetime-picker>
+		</view>
+		<view class="week-date">
+			<u-datetime-picker
+				:show="weekDateShow"
+				@close="weekDateShow = false"
+				@cancel="monthDateShow = false"
+				@confirm="weekDateSureEvent"
+				v-model="weekDateValue"
+				mode="date"
+			></u-datetime-picker>
+		</view>
+		<view class="month-date">
+			<u-datetime-picker
+				:show="monthDateShow"
+				@close="monthDateShow = false"
+				@cancel="monthDateShow = false"
+				@confirm="monthDateSureEvent"
+				v-model="monthDateValue"
 				mode="year-month"
 			></u-datetime-picker>
 		</view>
@@ -156,6 +205,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { getDayOrderStatistics, getWeekOrderStatistics, getMonthOrderStatistics} from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -166,63 +216,56 @@
 				showLoadingHint: false,
 				infoText: '加载中',
 				loginBackgroundPng: require("@/static/img/login-background.png"),
-				startDateShow: false,
-				startDateValue: Number(new Date()),
+				dayDateShow: false,
+				dayDateValue: Number(new Date()),
+				weekDateShow: false,
+				weekDateValue: Number(new Date()),
+				monthDateShow: false,
+				monthDateValue: Number(new Date()),
+				dayProceeds: '465.00',
+				dayOrderCount: 45,
+				weekProceeds: '865.00',
+				weekOrderCount: 125,
+				weekProceedsIncrease: '13%',
+				weekOrderCountIncrease: '33%',
+				monthProceeds: '4565.00',
+				monthOrderCount: 5655,
+				monthProceedsIncrease: '43%',
+				monthOrderCountIncrease: '53%',
 				statisticalTypeList: ['日统计','周统计','月统计'],
 				statisticalTypeIndex: 0,
-				nurseMonthData: {
+				dayChartOrderTypeData: {
 					isShow: true,
 					noData: false,
 					data: {}
 				},
-				nurseMonthOpts: {
-					color: ["#3926C8"],
-					padding: undefined,
-					title: {
-						name: "￥43231.00",
-						fontSize: 14,
-						color: "#3926C8"
-					},
-					subtitle: {
-						name: ""
-					},
-					extra: {
-						arcbar: {
-							type: "circle",
-							width: 8,
-							backgroundColor: "#E9E9E9",
-							startAngle: 1.5,
-							endAngle: 0.25,
-							gap: 2
-						}
-					}
-				},
-				chaperonageMonthData: {
+				weekChartOrderTypeData: {
 					isShow: true,
 					noData: false,
 					data: {}
 				},
-				chaperonageMonthOpts: {
-					color: ["#33DB3D"],
+				monthChartOrderTypeData: {
+					isShow: true,
+					noData: false,
+					data: {}
+				},
+				orderTypeMonthOpts: {
+					color: ["#5A7BF4"],
 					padding: undefined,
-					title: {
-						name: "￥43231.00",
-						fontSize: 14,
-						color: "#33DB3D"
-					},
-					subtitle: {
-						name: ""
-					},
+					legend: { show: false },
 					extra: {
-						arcbar: {
-							type: "circle",
-							width: 8,
-							backgroundColor: "#E9E9E9",
-							startAngle: 1.5,
-							endAngle: 0.25,
-							gap: 2
+						column: {
+							type: "group",
+							width: 35,
+							activeBgColor: "#000000",
+							activeBgOpacity: 0.08
 						}
 					}
+				},
+				weekChartData: {
+					isShow: true,
+					noData: false,
+					data: {}
 				},
 				monthChartData: {
 					isShow: true,
@@ -232,7 +275,7 @@
 				orderMonthOpts: {
 					dataPointShapeType: 'hollow',
 					dataLabel: false,
-					color: ["#5064EB"],
+					color: ["#5A7BF4"],
 					padding: [10,10,10,10],
 					legend: { show: false },
 					xAxis: {
@@ -280,28 +323,42 @@
 			
 			getServerData() {
 				//模拟从服务器获取数据时的延时
+				this.weekChartData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				this.monthChartData = {
 					isShow: true,
 					noData: true,
 					data: {}
 				};
-				this.nurseMonthData = {
+				this.dayChartOrderTypeData = {
 					isShow: true,
 					noData: true,
 					data: {}
-				},
-				this.chaperonageChartData = {
+				};
+				this.weekChartOrderTypeData = {
 					isShow: true,
 					noData: true,
 					data: {}
-				},
+				};
+				this.monthChartOrderTypeData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				setTimeout(() => {
+					this.dayChartOrderTypeData['isShow'] = true;
+					this.dayChartOrderTypeData['noData'] = false;
+					this.weekChartData['isShow'] = true;
+					this.weekChartData['noData'] = false;
+					this.weekChartOrderTypeData['isShow'] = true;
+					this.weekChartOrderTypeData['noData'] = false;
 					this.monthChartData['isShow'] = true;
 					this.monthChartData['noData'] = false;
-					this.nurseMonthData['isShow'] = true;
-					this.nurseMonthData['noData'] = false;
-					this.chaperonageChartData['isShow'] = true;
-					this.chaperonageChartData['noData'] = false;
+					this.monthChartOrderTypeData['isShow'] = true;
+					this.monthChartOrderTypeData['noData'] = false;
 					//模拟服务器返回数据，如果数据格式和标准格式不同，需自行按下面的格式拼接
 					let res = {
 						categories: ["周一","周二","周三","周四","周五","周六","周日"],
@@ -312,43 +369,137 @@
 						]
 					};
 					this.monthChartData['data'] = JSON.parse(JSON.stringify(res));
-					let resTwo = {
-						series: [
-							{
-								name: "正确率",
-								color: "#3926C8",
-								data: 0.8
-							}
-						]
-					};
-					this.nurseMonthData['data'] = JSON.parse(JSON.stringify(resTwo));
+					this.weekChartData['data'] = JSON.parse(JSON.stringify(res));
+					//模拟服务器返回数据，如果数据格式和标准格式不同，需自行按下面的格式拼接
 					let resThree = {
+						categories: ["妈妈护理","宝宝护理","健康护理","特色护理"],
 						series: [
 							{
-								name: "正确率",
-								color: "#33DB3D",
-								data: 0.2
+								name: '',
+								data: [30,88,22,65]
 							}
 						]
 					};
-					this.chaperonageMonthData['data'] = JSON.parse(JSON.stringify(resThree));
+					this.monthChartOrderTypeData['data'] = JSON.parse(JSON.stringify(resThree));
+					this.weekChartOrderTypeData['data'] = JSON.parse(JSON.stringify(resThree));
+					this.dayChartOrderTypeData['data'] = JSON.parse(JSON.stringify(resThree));
 				}, 500)
 			},
-					
-			// 日期选择框显示隐藏切换事件
-			dateDialogCutEvent () {
-				this.startDateShow = true
+			
+			// 月日期选择框显示隐藏切换事件
+			monthDialogCutEvent () {
+				this.monthDateShow = true;
 			},
 			
-			// 开始时间确定事件
-			startDateSureEvent (value) {
-				this.startDateValue = value['value'];
-				this.startDateShow = false
+			// 月开始时间确定事件
+			monthDateSureEvent (value) {
+				this.monthDateValue = value['value'];
+				this.monthDateShow = false
+			},
+					
+			// 周日期选择框显示隐藏切换事件
+			weekDialogCutEvent () {
+				this.weekDateShow = true;
+			},
+			
+			// 周开始时间确定事件
+			weekDateSureEvent (value) {
+				this.weekDateValue = value['value'];
+				this.weekDateShow = false
+			},
+			
+			// 天日期选择框显示隐藏切换事件
+			dayDialogCutEvent () {
+				this.dayDateShow = true;
+			},
+			
+			// 天开始时间确定事件
+			dayDateSureEvent (value) {
+				this.dayDateValue = value['value'];
+				this.dayDateShow = false
 			},
 			
 			// 统计类型切换事件
 			statisticalTypeCut (item,index) {
 				this.statisticalTypeIndex = index
+			},
+			
+			// 获取日统计数据
+			getDayOrderStatisticsEvent(data) {
+				this.showLoadingHint = true;
+				this.infoText = '加载中···';
+				getDayOrderStatistics(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 获取周统计数据
+			getWeekOrderStatisticsEvent(data) {
+				this.showLoadingHint = true;
+				this.infoText = '加载中···';
+				getWeekOrderStatistics(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 获取月统计数据
+			getMonthOrderStatisticsEvent(data) {
+				this.showLoadingHint = true;
+				this.infoText = '加载中···';
+				getMonthOrderStatistics(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			},
 			
 			// 格式化时间
@@ -409,6 +560,17 @@
 	.content-box {
 		@include content-wrapper;
 		background: #F2F2F2;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			background: #F8F8F8;
@@ -605,54 +767,6 @@
 				};
 				.doughnut-chart {
 					margin: 20px 0;
-					display: flex;
-					justify-content: space-between;
-					.doughnut-chart-left {
-						flex: 1;
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						justify-content: center;
-						.nurse-doughnut-chart {
-							width: 30%;
-							height: 120px;
-							position: relative;
-							::v-deep .u-empty {
-							 	position: absolute;
-							 	top: 40%;
-							 	left: 50%;
-							 	transform: translate(-50%,-50%)
-							}
-						};
-						.nurse-doughnut-title {
-							margin-top: 10px;
-							font-size: 16px;
-							color: #3926C8;
-						}
-					};
-					.doughnut-chart-right {
-						flex: 1;
-						display: flex;
-						flex-direction: column;
-						align-items: center;
-						justify-content: center;
-						.chaperonage-doughnut-chart {
-							width: 30%;
-							height: 120px;
-							position: relative;
-							::v-deep .u-empty {
-							 	position: absolute;
-							 	top: 40%;
-							 	left: 50%;
-							 	transform: translate(-50%,-50%)
-							}
-						};
-						.chaperonage-doughnut-title {
-							margin-top: 10px;
-							font-size: 16px;
-							color: #33DB3D;
-						}
-					}
 				};
 				.order-type-box {
 					display: flex;

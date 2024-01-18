@@ -304,3 +304,30 @@ export function getCareBankCardList(data) {
 		params: data
   })
 };
+
+// 获取交易日数据
+export function getDayOrderStatistics(data) {
+  return request({
+    url: '/app-api/statistics/order/day',
+    method: 'get',
+		params: data
+  })
+};
+
+// 获取交易周数据
+export function getWeekOrderStatistics(data) {
+  return request({
+    url: '/app-api/statistics/order/week',
+    method: 'get',
+		params: data
+  })
+};
+
+// 获取交易月数据
+export function getMonthOrderStatistics(data) {
+  return request({
+    url: '/app-api/statistics/order/month',
+    method: 'get',
+		params: data
+  })
+};

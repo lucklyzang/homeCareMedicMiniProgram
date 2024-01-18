@@ -1,6 +1,16 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<!-- 触发订阅消息弹框 -->
+		<view class="subscription-dialog-box trigger-subscription-dialog-box">
+			<u-modal :show="showTriggerPopup" mode="center" @confirm="triggerConfirmHandle" @cancel="showTriggerPopup = false" confirmText="确定" cancelText="取消" cancelColor="#838C97" confirmColor="#5a7bf4" content="为了获取更好的使用体验,您是否需要订阅相关消息提醒?" :showCancelButton="true" title="订阅提示">
+			</u-modal>
+		</view>
+		<!-- 订阅消息提醒开启询问弹框 -->
+		<view class="subscription-dialog-box">
+			<u-modal :show="showPopup" mode="center" @confirm="confirmHandle" @cancel="cancelHandle" :confirmText="confirmText" :cancelText="cancelText" cancelColor="#838C97" confirmColor="#5a7bf4" :content="content" :showCancelButton="true" title="设置提示">
+			</u-modal>
+		</view>
 		<!-- 筛选弹框 -->
 		<view class="screen-dialog-box">
 			<u-popup :show="screenDialogShow" @close="screenDialogCloseEvent" mode="right" :closeOnClickOverlay="true" :safeAreaInsetTop="true" :safeAreaInsetBottom="true">
@@ -228,6 +238,7 @@
 		fenToYuan,
 		formatMsgTime
 	} from '@/common/js/utils'
+	import { getSubscribeTemplateList } from '@/api/login.js'
 	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getHomeProductCategory } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
@@ -238,6 +249,12 @@
 		},
 		data() {
 			return {
+				showTriggerPopup: false, // 触发订阅消息弹框显示
+				showPopup: false, // 订阅消息提醒开启询问弹框显示
+				content: '为了接收消息提醒,是否需要打开接收消息设置?', // 弹框提示内容，
+				confirmText: '开启消息提醒',
+				cancelText: '不需要',
+				tmplId: [],
 				infoText: '加载中···',
 				currentPageNum: 1,
 				pageSize: 20,
@@ -302,7 +319,8 @@
 				],
 				temporaryCategoriesArr: [],
 				temporarySpuIdsArr: [],
-				currentAddress: '获取位置中···'
+				currentAddress: '获取位置中···',
+				userCode: ''
 			}
 		},	
 		onShow() {
@@ -324,6 +342,12 @@
 				
 			}
 		},
+		
+		onLoad () {
+			this.getUserCode();
+			this.getSubscribeTemplateListEvent()
+		},
+		
 		computed: {
 			...mapGetters([
 				'userInfo',
@@ -342,6 +366,133 @@
 			...mapMutations([
 				'changeSelectBannerMessage'
 			]),
+			
+			// 获取用户登录凭证
+			getUserCode () {
+				// 获取用户code
+				let that = this;
+				uni.login({
+					provider: 'weixin',
+					success: function(loginRes) {
+						that.userCode = loginRes.code
+	　　　　}
+				})
+			},
+			
+			// 获取订阅消息模板列表
+			getSubscribeTemplateListEvent() {
+				this.showLoadingHint = true;
+				this.tmplId = [];
+				getSubscribeTemplateList(0).then((res) => {
+					if ( res && res.data.code == 0) {
+						for (let item of res.data.data) {
+							this.tmplId.push(item.templateId)
+						};
+						this.showTriggerPopup = true
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						title: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 订阅消息代码
+			// 判断消息订阅总开关是否打开
+			triggerConfirmHandle () {
+				this.showTriggerPopup = false;
+				uni.getSetting({
+					withSubscriptions: true,
+					success:(res)=> {
+						if (!res.subscriptionsSetting.mainSwitch) { // 订阅消息的总开关,如果是关着的,引导用户去打开
+							this.showPopup = true;
+						} else { // 如果开着，则继续向下打开弹窗，获取用户授权
+							this.messageSubscription()
+						}
+					},
+					fail:()=> {
+						this.messageSubscription() // 如果失败，也打开弹窗，获取用户授权
+					}
+				})
+			},
+			
+			// 弹窗点订阅，开启消息订阅提醒
+			confirmHandle() {
+				if (this.confirmText == '确定') {
+					this.messageSubscription()
+					return
+				};
+				uni.openSetting({
+					withSubscriptions: true,
+					complete:(res)=> {
+						uni.getSetting({
+							withSubscriptions: true,
+							success:(res)=> {
+								if (res.subscriptionsSetting.mainSwitch) { // 订阅消息的总开关,如果是开着的
+									this.content = '再次点击确定,弹出即可完成订阅';
+									this.cancelText = '取消';
+									this.confirmText = '确定';
+								} else {
+									this.showPopup = false;
+								}
+							},
+							fail:(err)=> {
+								this.$refs.uToast.show({
+									message: err.errMsg,
+									type: 'error',
+									position: 'bottom'
+								})
+							}
+						})
+					}
+				})
+			},
+			
+			// 弹窗点不订阅
+			cancelHandle() {
+				this.showPopup = false;
+			},
+			
+			// 订阅申请弹出,只允许点击弹出
+			// res['**************************'] == 'accept';
+			messageSubscription() {
+				this.showPopup = false;
+				this.content = '为了获取更好的使用体验,您是否需要订阅相关消息提醒?' // 弹框提示内容
+				this.confirmText = '开启消息提醒';
+				this.cancelText = '不需要';
+				uni.requestSubscribeMessage({
+					tmplIds: this.tmplId,
+					success: (res) => {
+						let temporaryTemIdArr = [];
+						for (let key in res) {
+							if (res[key] == "accept") {
+								uni.showToast({
+									title: '已允许消息推送'
+								});
+								temporaryTemIdArr.push(key)
+							}
+						}
+					},
+					fail: (err) => {
+						this.$refs.uToast.show({
+							message: err.errMsg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+			},
 			
 			// 轮播图点击事件
 			swiperClickEvent (index) {
@@ -1017,6 +1168,58 @@
 		};
 		::v-deep .u-transition {
 			z-index: 100000 !important;
+		};
+		.subscription-dialog-box {
+			::v-deep .u-popup__content{
+				.u-modal {
+					.u-modal__title {
+						font-size: 16px !important;
+						color: #101010 !important
+					};
+					.u-line {
+						border: none !important
+					};
+					.u-modal__content {
+						text-align: center;
+						padding: 20px 10px 30px 10px !important;
+						font-size: 14px !important;
+						color: #898C8C !important
+					};
+					.u-modal__button-group {
+						height: 50px;
+						justify-content: center;
+						.u-line {
+							border: none !important
+						};
+						.u-modal__button-group__wrapper--cancel {
+							flex: none !important;
+							width: 110px !important;
+							height: 34px !important;
+							line-height: 34px !important;
+							border-radius: 7px !important;
+							border: 1px solid #5a7bf4 !important;
+							margin-right: 30px;
+							.u-modal__button-group__wrapper__text {
+								font-size: 14px;
+								color: #5a7bf4 !important;
+							}
+						};
+						.u-modal__button-group__wrapper--confirm {
+							flex: none !important;
+							width: 110px !important;
+							height: 34px !important;
+							line-height: 34px !important;
+							border-radius: 7px !important;
+							background: #5a7bf4 !important;
+							border: none !important;
+							.u-modal__button-group__wrapper__text {
+								font-size: 14px;
+								color: #fff !important;
+							}
+						}
+					}
+				}
+			}	
 		};
 		.screen-dialog-box {
 			::v-deep .u-popup {

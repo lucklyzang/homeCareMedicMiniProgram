@@ -112,9 +112,11 @@
 						this.totalCount = res.data.data.total;
 						this.noticeList = res.data.data.list;
 						this.noticeList.forEach((item) => {
-							item.description = item.description.replace(/\<img/gi, '<img class="mystyle"');
-							item.description = item.description.replace(/\<p/gi, '<p class="pstyle"');
-							item.description = item.description.replace(/\<div/gi, '<div class="dstyle"')
+							if (item.hasOwnProperty('description')) {
+								item.description = item.description.replace(/\<img/gi, '<img class="mystyle"');
+								item.description = item.description.replace(/\<p/gi, '<p class="pstyle"');
+								item.description = item.description.replace(/\<div/gi, '<div class="dstyle"')
+							}
 						});
 						this.fullNoticeList = this.fullNoticeList.concat(this.noticeList);
 						if (this.fullNoticeList.length == 0) {
@@ -137,7 +139,7 @@
 						}
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
@@ -160,7 +162,7 @@
 						this.status = 'loadmore'
 					};
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
 						position: 'bottom'
 					})
@@ -175,7 +177,7 @@
 					if ( res && res.data.code == 0) {
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
@@ -185,7 +187,7 @@
 				.catch((err) => {
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
 						position: 'bottom'
 					})

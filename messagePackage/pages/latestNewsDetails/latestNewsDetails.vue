@@ -53,9 +53,11 @@
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(decodeURIComponent(options.transmitData));
 			this.detailsMessage = temporaryAddress;
-			this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
-			this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"');
-			this.detailsMessage.description = this.detailsMessage.description.replace(/\<div/gi, '<div class="dstyle"')
+			if (this.detailsMessage.hasOwnProperty('description')) {
+				this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
+				this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"');
+				this.detailsMessage.description = this.detailsMessage.description.replace(/\<div/gi, '<div class="dstyle"')
+			}
 		},	
 		methods: {
 			...mapMutations([

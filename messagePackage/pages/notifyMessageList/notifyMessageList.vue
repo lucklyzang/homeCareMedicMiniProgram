@@ -113,9 +113,11 @@
 						this.noticeList = res.data.data.list;
 						this.noticeList.forEach((item) => {
 							item.list.forEach((innerItem) => {
-								innerItem.templateContent = innerItem.templateContent.replace(/\<img/gi, '<img class="mystyle"');
-								innerItem.templateContent = innerItem.templateContent.replace(/\<p/gi, '<p class="pstyle"');
-								innerItem.templateContent = innerItem.templateContent.replace(/\<div/gi, '<div class="dstyle"')
+								if (innerItem.hasOwnProperty('templateContent')) {
+									innerItem.templateContent = innerItem.templateContent.replace(/\<img/gi, '<img class="mystyle"');
+									innerItem.templateContent = innerItem.templateContent.replace(/\<p/gi, '<p class="pstyle"');
+									innerItem.templateContent = innerItem.templateContent.replace(/\<div/gi, '<div class="dstyle"')
+								}	
 							})
 						});
 						this.fullNoticeList = this.fullNoticeList.concat(this.noticeList);
@@ -139,7 +141,7 @@
 						}
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
@@ -162,7 +164,7 @@
 						this.status = 'loadmore'
 					};
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
 						position: 'bottom'
 					})
@@ -177,7 +179,7 @@
 					if ( res && res.data.code == 0) {
 					} else {
 						this.$refs.uToast.show({
-							title: res.data.msg,
+							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
@@ -187,7 +189,7 @@
 				.catch((err) => {
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
-						title: err.message,
+						message: err.message,
 						type: 'error',
 						position: 'bottom'
 					})
