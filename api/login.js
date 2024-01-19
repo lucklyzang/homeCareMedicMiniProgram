@@ -86,3 +86,12 @@ export function getSubscribeTemplateList(type) {
     method: 'get'
   })
 }
+
+// 传递微信小程序订阅模版列id
+export function createSubscribe(data) {
+  return request({
+    url: '/app-api/infra/user-subscribe/create',
+    method: 'post',
+		data
+  })
+}

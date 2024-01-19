@@ -238,7 +238,7 @@
 		fenToYuan,
 		formatMsgTime
 	} from '@/common/js/utils'
-	import { getSubscribeTemplateList } from '@/api/login.js'
+	import { getSubscribeTemplateList, createSubscribe } from '@/api/login.js'
 	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getHomeProductCategory } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
@@ -374,7 +374,8 @@
 				uni.login({
 					provider: 'weixin',
 					success: function(loginRes) {
-						that.userCode = loginRes.code
+						that.userCode = loginRes.code;
+						console.log(that.userCode);
 	　　　　}
 				})
 			},
@@ -386,9 +387,11 @@
 				getSubscribeTemplateList(0).then((res) => {
 					if ( res && res.data.code == 0) {
 						for (let item of res.data.data) {
-							this.tmplId.push(item.templateId)
+							this.tmplId.push(item.templateId);
 						};
-						this.showTriggerPopup = true
+						if (this.tmplId.length > 0) {
+							this.showTriggerPopup = true
+						}
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -407,6 +410,36 @@
 					})
 				})
 			},
+			
+			// 创建订阅
+			createSubscribeEvent(data) {
+				this.showLoadingHint = true;
+				createSubscribe(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: '订阅成功!',
+							type: 'success',
+							position: 'center'
+						})
+					} else {
+						this.$refs.uToast.show({
+							message: '订阅失败!',
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						title: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			
 			// 订阅消息代码
 			// 判断消息订阅总开关是否打开
@@ -482,7 +515,13 @@
 								});
 								temporaryTemIdArr.push(key)
 							}
-						}
+						};
+						// 创建订阅
+						this.createSubscribeEvent({
+							templateIdList: temporaryTemIdArr,
+							code: this.userCode,
+							type: 0
+						})
 					},
 					fail: (err) => {
 						this.$refs.uToast.show({

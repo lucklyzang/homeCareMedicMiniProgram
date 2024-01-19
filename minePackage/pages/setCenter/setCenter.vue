@@ -134,7 +134,7 @@
 					};
 					if ( res && res.data.code == 0) {
 						this.$refs.uToast.show({
-							title: '退出登录成功!',
+							message: '退出登录成功!',
 							type: 'success',
 							position: 'bottom'
 						});

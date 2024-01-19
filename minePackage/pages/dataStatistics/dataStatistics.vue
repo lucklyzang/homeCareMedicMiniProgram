@@ -15,16 +15,17 @@
 				<text>温馨提示：本页面数据每五分钟更新一次</text>
 			</view>
 			<view class="top-area">
-				<view class="date-case" @click="dayDialogCutEvent" v-if="statisticalTypeIndex == 0">
-					<text>{{ getNowFormatDate(new Date(dayDateValue),2) }}</text>
+				<view class="date-case date-case-day" @click="dayDialogCutEvent" v-if="statisticalTypeIndex == 0">
+					<text>{{ getNowFormatDateText(new Date(dayDateValue),3) }}</text>
 					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
 				</view>
-				<view class="date-case" @click="weekDialogCutEvent" v-if="statisticalTypeIndex == 1">
-					<text>{{ getNowFormatDate(new Date(weekDateValue),3) }}</text>
-					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
+				<view class="date-case-week" v-if="statisticalTypeIndex == 1">
+					<u-icon name="arrow-left" size="30" color="#101010" @click="getCurrentWeek('minus')"></u-icon>
+					<text>{{`${getNowFormatDateText(currentStartWeekDate,3)} - ${getNowFormatDateText(currentEndWeekDate,3)}`}}</text>
+					<u-icon name="arrow-right" size="30" :color="isWeekPlusCanCilck ? '#101010' : '#c9c9c9'" @click="getCurrentWeek('plus')"></u-icon>
 				</view>
 				<view class="date-case" @click="monthDialogCutEvent" v-if="statisticalTypeIndex == 2">
-					<text>{{ getNowFormatDate(new Date(monthDateValue),3) }}</text>
+					<text>{{ getNowFormatDateText(new Date(monthDateValue),1) }}</text>
 					<u-icon name="calendar" color="rgba(0, 0, 0, 0.25)" size="20"></u-icon>
 				</view>
 				<view class="statistical-type-cut">
@@ -119,9 +120,10 @@
 			</view>
 			<view class="bottom-area" v-if="statisticalTypeIndex == 0">
 				<view class="order-type-title">
-					<text>订单类型占比</text>
+					<text>订单数量统计</text>
 				</view>
 				<view class="doughnut-chart">
+					<u-empty text="暂无数据" v-if="!dayChartOrderTypeData.isShow"></u-empty>
 					<qiun-data-charts
 						v-if="dayChartOrderTypeData.isShow"
 						type="column"
@@ -134,9 +136,10 @@
 			</view>
 			<view class="bottom-area" v-if="statisticalTypeIndex == 1">
 				<view class="order-type-title">
-					<text>订单类型占比</text>
+					<text>订单数量统计</text>
 				</view>
 				<view class="doughnut-chart">
+					<u-empty text="暂无数据" v-if="!weekChartOrderTypeData.isShow"></u-empty>
 					<qiun-data-charts
 						v-if="weekChartOrderTypeData.isShow"
 						type="column"
@@ -149,9 +152,10 @@
 			</view>
 			<view class="bottom-area" v-if="statisticalTypeIndex == 2">
 				<view class="order-type-title">
-					<text>订单类型占比</text>
+					<text>订单数量统计</text>
 				</view>
 				<view class="doughnut-chart">
+					<u-empty text="暂无数据" v-if="!monthChartOrderTypeData.isShow"></u-empty>
 					<qiun-data-charts
 						v-if="monthChartOrderTypeData.isShow"
 						type="column"
@@ -170,16 +174,6 @@
 				@cancel="dayDateShow = false"
 				@confirm="dayDateSureEvent"
 				v-model="dayDateValue"
-				mode="date"
-			></u-datetime-picker>
-		</view>
-		<view class="week-date">
-			<u-datetime-picker
-				:show="weekDateShow"
-				@close="weekDateShow = false"
-				@cancel="monthDateShow = false"
-				@confirm="weekDateSureEvent"
-				v-model="weekDateValue"
 				mode="date"
 			></u-datetime-picker>
 		</view>
@@ -215,25 +209,30 @@
 			return {
 				showLoadingHint: false,
 				infoText: '加载中',
+				isWeekPlusCanCilck: true,
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				dayDateShow: false,
 				dayDateValue: Number(new Date()),
-				weekDateShow: false,
-				weekDateValue: Number(new Date()),
+				currentStartWeekDate: '',
+				currentEndWeekDate: '',
+				initWeekDate: '',
 				monthDateShow: false,
 				monthDateValue: Number(new Date()),
-				dayProceeds: '465.00',
-				dayOrderCount: 45,
-				weekProceeds: '865.00',
-				weekOrderCount: 125,
-				weekProceedsIncrease: '13%',
-				weekOrderCountIncrease: '33%',
-				monthProceeds: '4565.00',
-				monthOrderCount: 5655,
-				monthProceedsIncrease: '43%',
-				monthOrderCountIncrease: '53%',
+				dayProceeds: '',
+				dayOrderCount: '',
+				weekProceeds: '',
+				weekOrderCount: '',
+				weekProceedsIncrease: '',
+				weekOrderCountIncrease: '',
+				monthProceeds: '',
+				monthOrderCount: '',
+				monthProceedsIncrease: '',
+				monthOrderCountIncrease: '',
 				statisticalTypeList: ['日统计','周统计','月统计'],
 				statisticalTypeIndex: 0,
+				weekMap: {},
+				timer: null,
+				timerTwo: null,
 				dayChartOrderTypeData: {
 					isShow: true,
 					noData: false,
@@ -251,7 +250,7 @@
 				},
 				orderTypeMonthOpts: {
 					color: ["#5A7BF4"],
-					padding: undefined,
+					padding: [20,10,10,10],
 					legend: { show: false },
 					extra: {
 						column: {
@@ -307,6 +306,7 @@
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -314,26 +314,33 @@
 			proId() {
 			}
 		},
-		onReady () {
-			this.getServerData()
+		onShow () {
+			this.getDayOrderStatisticsEvent({
+				day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+				careId: this.userInfo.careId
+			})
+		},
+		onUnload () {
+			this.clearTimer()
 		},
 		methods: {
 			...mapMutations([
 			]),
 			
+			clearTimer () {
+				if (this.timer) {
+					clearInterval(this.timer);
+					this.timer = null;    
+				};
+				if (this.timerTwo) {
+					clearTimeout(this.timerTwo);
+					this.timerTwo = null;   
+				}
+			},
+			
 			getServerData() {
 				//模拟从服务器获取数据时的延时
 				this.weekChartData = {
-					isShow: true,
-					noData: true,
-					data: {}
-				};
-				this.monthChartData = {
-					isShow: true,
-					noData: true,
-					data: {}
-				};
-				this.dayChartOrderTypeData = {
 					isShow: true,
 					noData: true,
 					data: {}
@@ -343,7 +350,17 @@
 					noData: true,
 					data: {}
 				};
+				this.monthChartData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				this.monthChartOrderTypeData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
+				this.dayChartOrderTypeData = {
 					isShow: true,
 					noData: true,
 					data: {}
@@ -386,6 +403,18 @@
 				}, 500)
 			},
 			
+			// 公共定时器(设定时间后执行一次)
+			commonOneTimerMethods (fn,time) {
+				clearInterval(this.timer);
+				this.timer = null;
+				this.timerTwo = setTimeout(this.commonTimerMethods(fn,time),1000*60*time);
+			},
+			
+			// 公共定时器(设定时间循环执行)
+			commonTimerMethods (fn,time) {
+				this.timer = setInterval(fn,1000*60*time);
+			},
+			
 			// 月日期选择框显示隐藏切换事件
 			monthDialogCutEvent () {
 				this.monthDateShow = true;
@@ -394,18 +423,44 @@
 			// 月开始时间确定事件
 			monthDateSureEvent (value) {
 				this.monthDateValue = value['value'];
-				this.monthDateShow = false
+				this.monthDateShow = false;
+				this.getMonthOrderStatisticsEvent({
+					day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					careId: this.userInfo.careId
+				})
 			},
 					
-			// 周日期选择框显示隐藏切换事件
-			weekDialogCutEvent () {
-				this.weekDateShow = true;
-			},
-			
-			// 周开始时间确定事件
-			weekDateSureEvent (value) {
-				this.weekDateValue = value['value'];
-				this.weekDateShow = false
+			// 获取上一周、下一周
+			getCurrentWeek (type) {
+				this.isWeekPlusCanCilck = true;
+				if (type == 'plus') {
+					// 当前周不能超过下周
+					let temporaryDate = this.getNowFormatDate(new Date(),2);
+					if (new Date(this.currentEndWeekDate).getTime() >= new Date(temporaryDate).getTime()) {
+						this.isWeekPlusCanCilck = false;
+						return 
+					};
+					let time = this.weekMap["next"]
+					this.weekMap = this.getWeek(new Date(time));
+					this.currentStartWeekDate = `${this.weekMap['syear']}-${this.weekMap["stext"]}`;
+					this.currentEndWeekDate = `${this.weekMap['eyear']}-${this.weekMap["etext"]}`;
+					this.initWeekDate = this.getNowFormatDateText(new Date(this.currentStartWeekDate),3);
+					if (new Date(this.currentEndWeekDate).getTime() >= new Date(temporaryDate).getTime()) {
+						this.isWeekPlusCanCilck = false
+					};
+				} else {
+					let time = this.weekMap["last"]
+					this.weekMap = this.getWeek(new Date(time));
+					this.currentStartWeekDate = `${this.weekMap['syear']}-${this.weekMap["stext"]}`;
+					this.currentEndWeekDate = `${this.weekMap['eyear']}-${this.weekMap["etext"]}`;
+					this.initWeekDate = this.getNowFormatDateText(new Date(this.currentStartWeekDate),3);
+				};
+				// 获取周统计数据
+				this.getWeekOrderStatisticsEvent({
+					careId: this.userInfo.careId,
+					startDate: this.currentStartWeekDate,
+					endDate: this.currentEndWeekDate
+				})
 			},
 			
 			// 天日期选择框显示隐藏切换事件
@@ -416,32 +471,114 @@
 			// 天开始时间确定事件
 			dayDateSureEvent (value) {
 				this.dayDateValue = value['value'];
-				this.dayDateShow = false
+				this.dayDateShow = false;
+				this.getDayOrderStatisticsEvent({
+					day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+					careId: this.userInfo.careId
+				})
 			},
 			
 			// 统计类型切换事件
 			statisticalTypeCut (item,index) {
-				this.statisticalTypeIndex = index
+				this.statisticalTypeIndex = index;
+				if (this.statisticalTypeIndex === 0) {
+					// 获取日统计数据
+					this.getDayOrderStatisticsEvent({
+						day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+						careId: this.userInfo.careId
+					})
+				} else if (this.statisticalTypeIndex === 1) {
+					this.weekMap = this.getWeek(new Date());
+					this.currentStartWeekDate = `${this.weekMap['syear']}-${this.weekMap["stext"]}`;
+					this.currentEndWeekDate = `${this.weekMap['eyear']}-${this.weekMap["etext"]}`;
+					this.initWeekDate = this.getNowFormatDateText(new Date(this.currentStartWeekDate),3);
+					let temporaryDate = this.getNowFormatDate(new Date(),3);
+					if (new Date(this.currentEndWeekDate).getTime() >= new Date(temporaryDate).getTime()) {
+						this.isWeekPlusCanCilck = false
+					};
+					// 获取周统计数据
+					this.getWeekOrderStatisticsEvent({
+						careId: this.userInfo.careId,
+						startDate: this.currentStartWeekDate,
+						endDate: this.currentEndWeekDate
+					})
+				} else if (this.statisticalTypeIndex === 2) {
+					// 获取月统计数据
+					this.getMonthOrderStatisticsEvent({
+						day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+						careId: this.userInfo.careId
+					})
+				}
 			},
 			
 			// 获取日统计数据
 			getDayOrderStatisticsEvent(data) {
-				this.showLoadingHint = true;
-				this.infoText = '加载中···';
+				this.dayChartOrderTypeData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				getDayOrderStatistics(data).then((res) => {
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getDayOrderStatisticsEvent({
+					// 	day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+					// 	careId: this.userInfo.careId
+					// }),5);
 					if ( res && res.data.code == 0) {
-						
+						this.dayProceeds =  res.data.data.totalAmount;
+						this.dayOrderCount = res.data.data.orderAmount;
+						if (res.data.data.orderTypeReport.length > 0) {
+							this.dayChartOrderTypeData['isShow'] = true;
+							this.dayChartOrderTypeData['noData'] = false;
+							let temporaryData = {
+								categories: [],
+								series: [
+									{
+										name: '',
+										data: []
+									}
+								]
+							};
+							for (let item of res.data.data.orderTypeReport) {
+								temporaryData.categories.push(item.typeName);
+								temporaryData.series[0]['data'].push(item.count)
+							};
+							this.dayChartOrderTypeData['data'] = JSON.parse(JSON.stringify(temporaryData));
+						} else {
+							this.dayChartOrderTypeData = {
+								isShow: false,
+								noData: true,
+								data: {}
+							}
+						}
 					} else {
+						this.dayChartOrderTypeData = {
+							isShow: false,
+							noData: false,
+							data: {}
+						};
 						this.$refs.uToast.show({
 							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
 					};
-					this.showLoadingHint = false;
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getDayOrderStatisticsEvent({
+					// 	day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+					// 	careId: this.userInfo.careId
+					// }),5);
+					this.dayChartOrderTypeData = {
+						isShow: false,
+						noData: false,
+						data: {}
+					};
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',
@@ -452,22 +589,114 @@
 			
 			// 获取周统计数据
 			getWeekOrderStatisticsEvent(data) {
-				this.showLoadingHint = true;
-				this.infoText = '加载中···';
+				this.weekChartData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
+				this.weekChartOrderTypeData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				getWeekOrderStatistics(data).then((res) => {
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getWeekOrderStatisticsEvent({
+					// 	careId: this.userInfo.careId,
+					// 	startDate: this.currentStartWeekDate,
+					// 	endDate: this.currentEndWeekDate
+					// }),5);
 					if ( res && res.data.code == 0) {
-						
+						this.weekProceeds = res.data.data.totalAmount;
+						this.weekOrderCount = res.data.data.orderAmount;
+						this.weekProceedsIncrease =  res.data.data.hasOwnProperty("cashGrow") ? res.data.data.cashGrow : '';
+						this.weekOrderCountIncrease = res.data.data.hasOwnProperty("orderGrow") ? res.data.data.orderGrow : '';
+						if (res.data.data.orderTypeReport.length > 0) {
+							this.weekChartOrderTypeData['isShow'] = true;
+							this.weekChartOrderTypeData['noData'] = false;
+							let temporaryData = {
+								categories: [],
+								series: [
+									{
+										name: '',
+										data: []
+									}
+								]
+							};
+							for (let item of res.data.data.orderTypeReport) {
+								temporaryData.categories.push(item.typeName);
+								temporaryData.series[0]['data'].push(item.count)
+							};
+							this.weekChartOrderTypeData['data'] = JSON.parse(JSON.stringify(temporaryData));
+						} else {
+							this.weekChartOrderTypeData = {
+								isShow: false,
+								noData: true,
+								data: {}
+							}
+						};
+						if (res.data.data.weekOrderReport.length > 0) {
+							this.weekChartData['isShow'] = true;
+							this.weekChartData['noData'] = false;
+							let temporaryData = {
+								categories: [],
+								series: [
+									{
+										data: []
+									}
+								]
+							};
+							for (let item of res.data.data.weekOrderReport) {
+								temporaryData.categories.push(this.judgeWeek(item.createTime));
+								temporaryData.series[0]['data'].push(item.count)
+							};
+							this.weekChartData['data'] = JSON.parse(JSON.stringify(temporaryData));
+						} else {
+							this.weekChartData = {
+								isShow: false,
+								noData: true,
+								data: {}
+							}
+						}
 					} else {
+						this.weekChartData = {
+							isShow: false,
+							noData: false,
+							data: {}
+						};
+						this.weekChartOrderTypeData = {
+							isShow: false,
+							noData: false,
+							data: {}
+						};
 						this.$refs.uToast.show({
 							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
-					};
-					this.showLoadingHint = false;
+					}
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getWeekOrderStatisticsEvent({
+					// 	careId: this.userInfo.careId,
+					// 	startDate: this.currentStartWeekDate,
+					// 	endDate: this.currentEndWeekDate
+					// }),5);
+					this.weekChartData = {
+						isShow: false,
+						noData: false,
+						data: {}
+					};
+					this.weekChartOrderTypeData = {
+						isShow: false,
+						noData: false,
+						data: {}
+					};
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',
@@ -478,28 +707,205 @@
 			
 			// 获取月统计数据
 			getMonthOrderStatisticsEvent(data) {
-				this.showLoadingHint = true;
-				this.infoText = '加载中···';
+				this.monthChartData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
+				this.monthChartOrderTypeData = {
+					isShow: true,
+					noData: true,
+					data: {}
+				};
 				getMonthOrderStatistics(data).then((res) => {
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getMonthOrderStatisticsEvent({
+					// 	day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					// 	careId: this.userInfo.careId
+					// }),5);
 					if ( res && res.data.code == 0) {
-						
+						this.monthProceeds = res.data.data.totalAmount;
+						this.monthOrderCount = res.data.data.orderAmount;
+						this.monthProceedsIncrease = res.data.data.hasOwnProperty("cashGrow") ? res.data.data.cashGrow : '';
+						this.monthOrderCountIncrease = res.data.data.hasOwnProperty("orderGrow") ? res.data.data.orderGrow : '';
+						if (res.data.data.orderTypeReport.length > 0) {
+							this.monthChartOrderTypeData['isShow'] = true;
+							this.monthChartOrderTypeData['noData'] = false;
+							let temporaryData = {
+								categories: [],
+								series: [
+									{
+										name: '',
+										data: []
+									}
+								]
+							};
+							for (let item of res.data.data.orderTypeReport) {
+								temporaryData.categories.push(item.typeName);
+								temporaryData.series[0]['data'].push(item.count)
+							};
+							this.monthChartOrderTypeData['data'] = JSON.parse(JSON.stringify(temporaryData));
+						} else {
+							this.monthChartOrderTypeData = {
+								isShow: false,
+								noData: true,
+								data: {}
+							}
+						};
+						if (res.data.data.monthOrderReport.length > 0) {
+							this.monthChartData['isShow'] = true;
+							this.monthChartData['noData'] = false;
+							let temporaryData = {
+								categories: [],
+								series: [
+									{
+										data: []
+									}
+								]
+							};
+							for (let item of res.data.data.monthOrderReport) {
+								temporaryData.categories.push(this.transitionWeekText(item.week));
+								temporaryData.series[0]['data'].push(item.count)
+							};
+							this.monthChartData['data'] = JSON.parse(JSON.stringify(temporaryData));
+						} else {
+							this.monthChartData = {
+								isShow: false,
+								noData: true,
+								data: {}
+							}
+						}
 					} else {
+						this.monthChartData = {
+							isShow: false,
+							noData: false,
+							data: {}
+						};
+						this.monthChartOrderTypeData = {
+							isShow: false,
+							noData: false,
+							data: {}
+						};
 						this.$refs.uToast.show({
 							message: res.data.msg,
 							type: 'error',
 							position: 'bottom'
 						})
 					};
-					this.showLoadingHint = false;
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
+					// 设定时间后执行一次
+					// clearInterval(this.timerTwo);
+					// this.timerTwo = null;
+					// this.commonOneTimerMethods(this.getMonthOrderStatisticsEvent({
+					// 	day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					// 	careId: this.userInfo.careId
+					// }),5);
+					this.monthChartData = {
+						isShow: false,
+						noData: false,
+						data: {}
+					};
+					this.monthChartOrderTypeData = {
+						isShow: false,
+						noData: false,
+						data: {}
+					};
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',
 						position: 'bottom'
 					})
 				})
+			},
+			
+			// 获取当前周
+			getWeek (date) {
+				let one_day = 86400000;
+				let day = date.getDay();
+				// 设置时间为当天的0点
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+				date.setMilliseconds(0);
+				let week_start_time = date.getTime() - (day - 1) * one_day;
+				let week_end_time = date.getTime() + (7 - day) * one_day;
+				let last = week_start_time - 2*24*60*60*1000;
+				let next = week_end_time + 24*60*60*1000;
+				let month1 = new Date(week_start_time).getMonth()+1;
+				let month2 = new Date(week_end_time).getMonth()+1;
+				let day1 = new Date(week_start_time).getDate();
+				let day2 = new Date(week_end_time).getDate();
+				if(month1<10){
+					month1 = "0"+month1;
+				};
+				if(month2<10){
+					month2 = "0"+month2;
+				};
+				if(day1<10){
+					day1 = "0"+day1;
+				};
+				if(day2<10){
+					day2 = "0" + day2;
+				};
+				let time1 = month1+"-"+day1;
+				let time2 = month2+"-"+day2;
+				let map = new Map();
+				map["syear"] =  new Date(week_start_time).getFullYear(); // 当前周周一的年份
+				map["eyear"] =  new Date(week_end_time).getFullYear(); // 当前周周天的年份
+				map["stime"] = week_start_time; // 当前周周一零点的毫秒数
+				map["etime"] = week_end_time; // 当前周周日零点的毫秒数
+				map["stext"] = time1; // 当前周 周一的日期 mm.dd 如 03.14
+				map["etext"] = time2; // 当前周 周日的日期 mm.dd 如 03.20
+				map["last"] = last; // 上一周 周六零点的毫秒数
+				map["next"] = next; // 下一周  周一零点的毫秒数
+				map["text"] = time1+" "+time2;
+				return map;
+			},
+			
+			// 转换周(文字)
+			transitionWeekText (day) {
+				let currentDay = day.toString();
+				switch (currentDay) {
+					case '1':
+						return "第一周"
+						break;
+					case '2':
+						return "第二周"
+						break;
+					case '3':
+						return "第三周"
+						break;
+					case '4':
+						return "第四周"
+						break;
+					case '5':
+						return "第五周"
+						break
+				}		
+			},
+			
+			// 格式化时间(带中文)
+			getNowFormatDateText(currentDate,type) {
+				// type: 1(只展示年月) 2(只展示月) 3(只展示年月日)
+				let currentdate;
+				let strDate = new Date(currentDate).getDate();
+				let seperator = "年";
+				let seperator1 = "月";
+				let seperator2 = "日";
+				let year = new Date(currentDate).getFullYear();
+				let month = new Date(currentDate).getMonth() + 1;
+				let hour = new Date(currentDate).getHours();
+				if (type == 1) {
+					currentdate = year + seperator + month + seperator1
+				} else if (type == 2) {
+					currentdate = month + seperator1
+				} else if (type == 3) {
+					currentdate = year + seperator + month + seperator1 + strDate + seperator2
+				};
+				return currentdate
 			},
 			
 			// 格式化时间
@@ -543,8 +949,38 @@
 				return currentdate
 			},
 			
+			// 判断周几
+			judgeWeek (currentDate) {
+				let date = new Date(currentDate);
+				let day = date.getDay();
+				switch (day) {
+					case 0:
+						return "周日"
+						break;
+					case 1:
+						return "周一"
+						break;
+					case 2:
+						return "周二"
+						break;
+					case 3:
+						return "周三"
+						break;
+					case 4:
+						return "周四"
+						break;
+					case 5:
+						return "周五"
+						break;
+					case 6:
+						return "周六"
+						break
+					}
+			},
+			
 			// 顶部导航返回事件
 			backTo () {
+				this.clearTimer();
 				uni.navigateBack()
 			}
 		}
@@ -624,6 +1060,29 @@
 					font-size: 14px;
 					color: rgba(0, 0, 0, 0.65);
 					margin-left: 20px
+				};
+				.date-case-week {
+					display: flex;
+					align-items: center;
+					padding: 0 6px;
+					box-sizing: border-box;
+					width: 320px;
+					height: 40px;
+					border-radius: 4px;
+					font-size: 14px;
+					color: rgba(0, 0, 0, 0.65);
+					margin-left: 4px;
+					>text {
+						display: inline-block;
+						height: 40px;
+						flex: 1;
+						text-align: center;
+						line-height: 40px;
+						margin: 0 4px;
+						&:nth-of-type(1) {
+							border: 1px solid #D9D9D9;
+						}
+					}
 				};
 				.statistical-type-cut {
 					height: 50px;
@@ -767,6 +1226,14 @@
 				};
 				.doughnut-chart {
 					margin: 20px 0;
+					min-height: 260px;
+					position: relative;
+					::v-deep .u-empty {
+					 	position: absolute;
+					 	top: 40%;
+					 	left: 50%;
+					 	transform: translate(-50%,-50%)
+					}
 				};
 				.order-type-box {
 					display: flex;
