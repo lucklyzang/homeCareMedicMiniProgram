@@ -120,13 +120,17 @@
 		</view>
 		<view class="order-form-tabs">
 			<u-tabs :list="list" :current="current" @change="change"
-				lineWidth="50"
-				lineColor="#5064EB"
+				lineWidth="30"
+				lineColor="#5064EB "
 				:activeStyle="{
-					color: '#5064EB'
+					color: '#333333',
+					fontWeight: 500,
+					fontSize: '15px'
 				}"
 				:inactiveStyle="{
-					color: '#444444'
+					color: '#666666',
+					fontWeight: 400,
+					fontSize: '15px'
 				}"
 			></u-tabs>
 		</view>
@@ -135,10 +139,11 @@
 			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
 				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">
 					<view class="order-form-top">
-						<view class="order-form-title">
-							<text>{{ item.items[0]['spuName'] }}</text>
+						<view class="applay-time">
+							<text>申请时间:</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
-						<view class="order-form-status">
+						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50,'completeStyle' : item.status == 60}">
 							<text>{{ transitionOrderStatusText(item) }}</text>
 						</view>
 					</view>
@@ -151,29 +156,29 @@
 							</u-image>
 						</view>
 						<view class="order-form-center-right">
-							<view class="brotected-person">
-								<text>被护人</text>
-								<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+							<view class="order-form-title">
+								<text>{{ item.items[0]['spuName'] }}</text>
 							</view>
-							<view class="service-address">
-								<text>服务地址</text>
-								<text>{{ item.receiverDetailAddress }}</text>
-							</view>
-							<view class="expectation-date">
-								<text>期望时间</text>
-								<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+							<view class="order-form-other-message">
+								<view class="brotected-person">
+									<text>被护人</text>
+									<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+								</view>
+								<view class="service-address">
+									<text>服务地址</text>
+									<text>{{ item.receiverDetailAddress }}</text>
+								</view>
+								<view class="expectation-date">
+									<text>期望时间</text>
+									<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+								</view>
 							</view>
 						</view>
 					</view>
 					<view class="consumption-rental">
-						<view class="consumption-rental-left">
-							<text>申请时间:</text>
-							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
-						</view>
-						<view class="consumption-rental-right">
-							<text>￥:</text>
-							<text>{{ `${item.payPrice}` }}</text>
-						</view>
+						<text>订单总额</text>
+						<text>￥</text>
+						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
 						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
@@ -193,10 +198,11 @@
 			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
 				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">
 					<view class="order-form-top">
-						<view class="order-form-title">
-							<text>{{ item.items[0]['spuName'] }}</text>
+						<view class="applay-time">
+							<text>申请时间:</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
-						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50}">
+						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50,'completeStyle' : item.status == 60}">
 							<text>{{ transitionOrderStatusText(item) }}</text>
 						</view>
 					</view>
@@ -209,29 +215,29 @@
 							</u-image>
 						</view>
 						<view class="order-form-center-right">
-							<view class="brotected-person">
-								<text>被护人</text>
-								<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+							<view class="order-form-title">
+								<text>{{ item.items[0]['spuName'] }}</text>
 							</view>
-							<view class="service-address">
-								<text>服务地址</text>
-								<text>{{ item.receiverDetailAddress }}</text>
-							</view>
-							<view class="expectation-date">
-								<text>期望时间</text>
-								<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+							<view class="order-form-other-message">
+								<view class="brotected-person">
+									<text>被护人</text>
+									<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+								</view>
+								<view class="service-address">
+									<text>服务地址</text>
+									<text>{{ item.receiverDetailAddress }}</text>
+								</view>
+								<view class="expectation-date">
+									<text>期望时间</text>
+									<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+								</view>
 							</view>
 						</view>
 					</view>
 					<view class="consumption-rental">
-						<view class="consumption-rental-left">
-							<text>申请时间:</text>
-							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
-						</view>
-						<view class="consumption-rental-right">
-							<text>￥:</text>
-							<text>{{ `${item.payPrice}` }}</text>
-						</view>
+						<text>订单总额</text>
+						<text>￥</text>
+						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
 						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
@@ -252,8 +258,9 @@
 			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolower">
 				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">
 					<view class="order-form-top">
-						<view class="order-form-title">
-							<text>{{ item.items[0]['spuName'] }}</text>
+						<view class="applay-time">
+							<text>申请时间:</text>
+							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
 						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50,'completeStyle' : item.status == 60}">
 							<text>{{ transitionOrderStatusText(item) }}</text>
@@ -268,29 +275,29 @@
 							</u-image>
 						</view>
 						<view class="order-form-center-right">
-							<view class="brotected-person">
-								<text>被护人</text>
-								<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+							<view class="order-form-title">
+								<text>{{ item.items[0]['spuName'] }}</text>
 							</view>
-							<view class="service-address">
-								<text>服务地址</text>
-								<text>{{ item.receiverDetailAddress }}</text>
-							</view>
-							<view class="expectation-date">
-								<text>期望时间</text>
-								<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+							<view class="order-form-other-message">
+								<view class="brotected-person">
+									<text>被护人</text>
+									<text>{{ `${item.servicePerson.name} ${item.servicePerson.age}岁` }}</text>
+								</view>
+								<view class="service-address">
+									<text>服务地址</text>
+									<text>{{ item.receiverDetailAddress }}</text>
+								</view>
+								<view class="expectation-date">
+									<text>期望时间</text>
+									<text>{{ `${getNowFormatDateText(item.serviceDate)} (${judgeWeek(item.serviceDate)}) ${item.serviceTime}` }}</text>
+								</view>
 							</view>
 						</view>
 					</view>
 					<view class="consumption-rental">
-						<view class="consumption-rental-left">
-							<text>申请时间:</text>
-							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
-						</view>
-						<view class="consumption-rental-right">
-							<text>￥:</text>
-							<text>{{ `${item.payPrice}` }}</text>
-						</view>
+						<text>订单总额</text>
+						<text>￥</text>
+						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
 						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
@@ -369,7 +376,7 @@
 						name: '服务中',
 					},
 					{
-						name: '全部',
+						name: '全部订单',
 					}
 				],
 				current: 0
@@ -1174,8 +1181,7 @@
 			}
 		};
 		.order-form-tabs {
-			box-shadow: 0 2px 6px 0 rgba(202, 200, 200, 0.4);
-			z-index: 1;
+			border-bottom: 10px solid #f5f5f5;
 			::v-deep .u-tabs {
 				.u-tabs__wrapper__scroll-view {
 					.u-tabs__wrapper__nav__item {
@@ -1190,8 +1196,6 @@
 			background: #f5f5f5;
 			overflow: auto;
 			width: 100%;
-			padding: 10px 6px;
-			box-sizing: border-box;
 			position: relative;
 			.scroll-view {
 				height: 100%
@@ -1203,27 +1207,27 @@
 				transform: translate(-50%,-50%)
 			};
 			.order-form-list {
-				border-radius: 7px;
-				padding: 0px 4px 8px 4px;
 				background: #fff;
 				box-sizing: border-box;
 				margin-bottom: 10px;
-				box-shadow: 0px 1px 4px 0px rgba(137, 140, 140, 0.24);
 				.order-form-top {
 					display: flex;
 					align-items: center;
 					height: 50px;
-					@include bottom-border-1px(#BBBBBB);
+					@include bottom-border-1px(#DCDCDC);
 					justify-content: space-between;
 					padding: 0 8px 0 10px;
 					box-sizing: border-box;
-					.order-form-title {
+					.applay-time {
 						flex: 1;
 						@include no-wrap();
 						>text {
-							font-size: 16px;
-							color: #444444;
-							font-weight: bold
+							&:nth-child(1) {
+								margin-right: 4px;
+							};
+							font-size: 12px;
+							color: #999999;
+							font-weight: 400;
 						}
 					};
 					.order-form-status {
@@ -1232,8 +1236,8 @@
 							padding: 0 0 0 4px;
 							box-sizing: border-box;
 							font-size: 14px;
-							color: #E86F50;
-							font-weight: bold
+							color: #FF7800;
+							font-weight: 400;
 						};
 						.serviceStyle {
 							color: #289E8E !important
@@ -1246,7 +1250,7 @@
 				.order-form-center {
 					display: flex;
 					justify-content: space-between;
-					padding: 8px;
+					padding: 16px 8px 8px 8px;
 					box-sizing: border-box;
 					.order-form-center-left {
 						margin-right: 10px;
@@ -1254,110 +1258,101 @@
 						}
 					};
 					.order-form-center-right {
-						padding-top: 10px;
-						box-sizing: border-box;
-						.brotected-person {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
-								}
-							}
+						.order-form-title {
+							font-size: 16px;
+							color: #000000;
+							font-weight: 400;
 						};
-						.service-address {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
+						.order-form-other-message {
+							margin-top: 6px;
+							background: #FAFAFA;
+							padding: 4px;
+							box-sizing: border;
+							.brotected-person {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
 								}
-							}
-						};
-						.expectation-date {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
+							};
+							.service-address {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
+								}
+							};
+							.expectation-date {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
 								}
 							}
 						}
 					}
 				};
 				.consumption-rental {
-					padding: 0 8px 20px 8px;
+					padding: 8px 8px 16px 8px;
 					box-sizing: border-box;
 					display: flex;
 					align-items: center;
-					justify-content: space-between;
-					.consumption-rental-left {
-						>text {
-							display: inline-block;
-							font-size: 13px;
-							color: #505050;
-							&:nth-child(1) {
-								margin-right: 4px
-							};
-							&:nth-child(2) {
-							}
-						}
-					};
-					.consumption-rental-right {
-						flex: 1;
-						display: flex;
-						width: 0;
-						justify-content: flex-end;
-						>text {
-							display: inline-block;
+					justify-content: flex-end;
+					@include bottom-border-1px(#DCDCDC);
+					>text {
+						display: inline-block;
+						font-size: 14px;
+						color: #000000;
+						&:nth-child(1) {
+							font-weight: 600;
+						};
+						&:nth-child(2) {
 							font-size: 12px;
-							color: #505050;
-							&:nth-child(1) {
-								color: #5C5C5C;
-								margin-right: 4px;
-							};
-							&:nth-child(2) {
-								color: #E82050;
-								font-weight: bold;
-								word-break: break-all
-							}
+							font-weight: 600;
+							margin-top: 3px;
+						};
+						&:nth-child(3) {
+							font-size: 17px;
+							font-weight: 700;
 						}
 					}
 				};
 				.order-form-bottom {
-					height: 30px;
 					display: flex;
-					padding: 0 8px;
+					padding: 10px 8px;
 					box-sizing: border-box;
 					justify-content: space-between;
 					align-items: center;
@@ -1366,15 +1361,18 @@
 						>text {
 							min-width: 78px;
 							display: inline-block;
-							height: 26px;
+							height: 30px;
 							padding: 0 12px;
 							box-sizing: border-box;
 							text-align: center;
-							line-height: 26px;
-							font-size: 13px;
-							color: #fff;
+							line-height: 30px;
+							border-radius: 6px;
+							font-size: 14px;
+							color: #FFFFFF;
+							font-weight: 500;
 							background: #289E8E;
-							border-radius: 22px
+							border: none !important;
+							margin-right: 0 !important;
 						}
 					};
 					.btn-area-right {
@@ -1384,23 +1382,26 @@
 						>text {
 							min-width: 78px;
 							display: inline-block;
-							height: 26px;
+							height: 30px;
 							padding: 0 12px;
 							box-sizing: border-box;
 							text-align: center;
-							line-height: 26px;
-							font-size: 13px;
-							color: #5E5E5E;
-							border: 1px solid #BBBBBB;
-							border-radius: 22px;
+							line-height: 30px;
+							font-size: 14px;
+							color: #666666;
+							font-weight: 400;
+							border: 1px solid rgba(153,153,153,1);
+							border-radius: 6px;
 							margin-right: 10px;
 							&:last-child {
 								margin-right: 0
 							}
 						};
 						.accept-payment {
-							color: #fff;
-							background: #1983FD;
+							font-size: 14px;
+							color: #FFFFFF;
+							font-weight: 500;
+							background: #5064EB;
 							border: none !important;
 							margin-right: 0 !important;
 						}

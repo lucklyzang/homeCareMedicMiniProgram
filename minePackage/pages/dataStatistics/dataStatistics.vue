@@ -405,14 +405,42 @@
 			
 			// 公共定时器(设定时间后执行一次)
 			commonOneTimerMethods (fn,time) {
-				clearInterval(this.timer);
+				if (this.timer) {
+					clearInterval(this.timer);
+				};
 				this.timer = null;
-				this.timerTwo = setTimeout(this.commonTimerMethods(fn,time),1000*60*time);
+				this.timerTwo = setTimeout(() => { return this.commonTimerMethods(fn,time) },time*1000*60);
 			},
 			
 			// 公共定时器(设定时间循环执行)
 			commonTimerMethods (fn,time) {
-				this.timer = setInterval(fn,1000*60*time);
+				fn();
+				this.timer = setInterval(() => { return fn() }, time*1000*60);
+			},
+			
+			// 请求日数据
+			getDayData () {
+				this.getDayOrderStatisticsEvent({
+					day: this.getNowFormatDate(new Date(this.dayDateValue),2),
+					careId: this.userInfo.careId
+				})
+			},
+			
+			// 请求周数据
+			getWeekData () {
+				this.getWeekOrderStatisticsEvent({
+					careId: this.userInfo.careId,
+					startDate: this.currentStartWeekDate,
+					endDate: this.currentEndWeekDate
+				})
+			},
+			
+			// 请求月数据
+			getMonthData () {
+				this.getMonthOrderStatisticsEvent({
+					day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					careId: this.userInfo.careId
+				})
 			},
 			
 			// 月日期选择框显示隐藏切换事件
@@ -520,12 +548,11 @@
 				};
 				getDayOrderStatistics(data).then((res) => {
 					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getDayOrderStatisticsEvent({
-					// 	day: this.getNowFormatDate(new Date(this.dayDateValue),2),
-					// 	careId: this.userInfo.careId
-					// }),5);
+					if (this.timerTwo) {
+						clearInterval(this.timerTwo);
+					};
+					this.timerTwo = null;
+					this.commonOneTimerMethods(this.getDayData,5);
 					if ( res && res.data.code == 0) {
 						this.dayProceeds =  res.data.data.totalAmount;
 						this.dayOrderCount = res.data.data.orderAmount;
@@ -567,13 +594,6 @@
 					};
 				})
 				.catch((err) => {
-					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getDayOrderStatisticsEvent({
-					// 	day: this.getNowFormatDate(new Date(this.dayDateValue),2),
-					// 	careId: this.userInfo.careId
-					// }),5);
 					this.dayChartOrderTypeData = {
 						isShow: false,
 						noData: false,
@@ -601,13 +621,11 @@
 				};
 				getWeekOrderStatistics(data).then((res) => {
 					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getWeekOrderStatisticsEvent({
-					// 	careId: this.userInfo.careId,
-					// 	startDate: this.currentStartWeekDate,
-					// 	endDate: this.currentEndWeekDate
-					// }),5);
+					if (this.timerTwo) {
+						clearInterval(this.timerTwo);
+					};
+					this.timerTwo = null;
+					this.commonOneTimerMethods(this.getWeekData,5);
 					if ( res && res.data.code == 0) {
 						this.weekProceeds = res.data.data.totalAmount;
 						this.weekOrderCount = res.data.data.orderAmount;
@@ -679,14 +697,6 @@
 					}
 				})
 				.catch((err) => {
-					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getWeekOrderStatisticsEvent({
-					// 	careId: this.userInfo.careId,
-					// 	startDate: this.currentStartWeekDate,
-					// 	endDate: this.currentEndWeekDate
-					// }),5);
 					this.weekChartData = {
 						isShow: false,
 						noData: false,
@@ -719,12 +729,11 @@
 				};
 				getMonthOrderStatistics(data).then((res) => {
 					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getMonthOrderStatisticsEvent({
-					// 	day: this.getNowFormatDate(new Date(this.monthDateValue),3),
-					// 	careId: this.userInfo.careId
-					// }),5);
+					if (this.timerTwo) {
+						clearInterval(this.timerTwo);
+					};
+					this.timerTwo = null;
+					this.commonOneTimerMethods(this.getMonthData,5);
 					if ( res && res.data.code == 0) {
 						this.monthProceeds = res.data.data.totalAmount;
 						this.monthOrderCount = res.data.data.orderAmount;
@@ -796,13 +805,6 @@
 					};
 				})
 				.catch((err) => {
-					// 设定时间后执行一次
-					// clearInterval(this.timerTwo);
-					// this.timerTwo = null;
-					// this.commonOneTimerMethods(this.getMonthOrderStatisticsEvent({
-					// 	day: this.getNowFormatDate(new Date(this.monthDateValue),3),
-					// 	careId: this.userInfo.careId
-					// }),5);
 					this.monthChartData = {
 						isShow: false,
 						noData: false,
