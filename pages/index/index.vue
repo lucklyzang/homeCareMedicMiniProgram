@@ -1418,12 +1418,12 @@
 		};
 		.call-police-box {
 			position: fixed;
+			left: -18px;;
 			z-index: 100;
-			left: 0;
 			bottom: 4vh;
 			image {
-				width: 73px;
-				height: 43px
+				width: 55px;
+				height: 55px
 			}
 		};
 		// padding-bottom: constant(safe-area-inset-bottom);
@@ -1707,7 +1707,7 @@
 							image {
 								width: 6px;
 								height: 6px;
-								margin-right: 3px;
+								margin-right: 4px;
 							};
 							text {
 								font-size: 13px;
@@ -1724,7 +1724,7 @@
 							image {
 								width: 6px;
 								height: 6px;
-								margin-right: 3px;
+								margin-right: 4px;
 							};
 							text {
 								font-size: 13px;

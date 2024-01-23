@@ -69,30 +69,30 @@
 				<view class="classified-statistic">
 					<view>
 						<view>
-							<text>接单总数</text>
-						</view>
-						<view>
+							<image src="@/static/img/total-order-icon.png"></image>
 							<text>{{ tradeStatistics.orderCount }}</text>
-							<text>单</text>
+						</view>
+						<view>
+							<text>接单总数 (单)</text>
 						</view>
 					</view>
 					<view>
 						<view>
-							<text>累计收益</text>
-						</view>
-						<view>
+							<image src="@/static/img/accumulated-income-icon.png"></image>
 							<text>{{ tradeStatistics.totalAmount }}</text>
-							<text>元</text>
+						</view>
+						<view>
+							<text>累计收益 (元)</text>
 						</view>
 					</view>
 					<view>
 						<view>
-							<text>可提现额度</text>
+							<image src="@/static/img/withdrawal-limit-icon.png"></image>
+							<text>{{ tradeStatistics.canCash }}</text>
+							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 						<view>
-							<text>{{ tradeStatistics.canCash }}</text>
-							<text>元</text>
-							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
+							<text>可提现额度 (元)</text>
 						</view>
 					</view>
 				</view>
@@ -114,7 +114,7 @@
 					<text>{{ item.name }}</text>
 				</view>
 				<view class="function-item-right">
-					<u-icon name="arrow-right" color="#737373" size="20"></u-icon>
+					<u-icon name="arrow-right" color="#CCCCCC" size="20"></u-icon>
 				</view>
 			</view>
 		</view>
@@ -297,6 +297,7 @@
 						temporaryData.totalAmount = temporaryData.totalAmount === 'NaN' || !temporaryData.totalAmount ? 0 : temporaryData.totalAmount;
 						temporaryData.todayAmount = fenToYuan(temporaryData.todayAmount);
 						temporaryData.totalAmount = fenToYuan(temporaryData.totalAmount);
+						temporaryData.canCash = fenToYuan(temporaryData.canCash);
 						this.storeTradeStatisticsMessage(temporaryData);
 						this.tradeStatistics = this.tradeStatisticsMessage;
 					} else {
@@ -591,12 +592,12 @@
 		};
 		.call-police-box {
 			position: fixed;
-			left: 0;
+			left: -18px;;
 			z-index: 100;
 			bottom: 4vh;
 			image {
-				width: 73px;
-				height: 43px
+				width: 55px;
+				height: 55px
 			}
 		};
 		::v-deep .u-popup {
@@ -669,7 +670,7 @@
 		.top-area-box {
 			position: relative;
 			width: 100%;
-			height: 330px;
+			height: 320px;
 			::v-deep .nav {
 				width: 100%;
 				background: #fff;
@@ -691,24 +692,23 @@
 				height: 230px
 			};
 			.user-info {
-				width: 100%;
-				height: 230px;
+				width: 94%;
+				height: 250px;
 				display: flex;
 				align-items: center;
 				color: #fff;
 				font-size: 20px;
-				padding: 0 10px;
-				box-sizing: border-box;
+				margin: 0 auto;
 				.user-photo {
-					width: 63px;
-					height: 63px;
+					width: 70px;
+					height: 70px;
 					background: #fff;
-					margin-right: 15px;
+					margin: 0 15px 0 15px;
 					border-radius: 50%;
 					z-index:1;
 					image {
-						width: 63px;
-						height: 63px;
+						width: 70px;
+						height: 70px;
 						border-radius: 50%;
 					}
 				}
@@ -728,16 +728,17 @@
 						width: 100%;
 						display: inline-block;
 						@include no-wrap;
-						font-size: 12px;
-						color: #fff
+						font-size: 16px;
+						color: #FFFFFF;
+						font-weight: 400;
 					}
 				};
 				.has-auth {
 					width: 75px;
 					height: 22px;
-					background: #E8CB51;
-					border-radius: 20px;
-					margin-top: 10px;
+					background: #edc101;
+					border-radius: 3px;
+					margin-top: 4px;
 					display: flex;
 					align-items: center;
 					justify-content: center;
@@ -755,7 +756,7 @@
 					width: 70px;
 					height: 22px;
 					background: #6486ff;
-					border-radius: 20px;
+					border-radius: 3px;
 					margin-top: 10px;
 					display: flex;
 					align-items: center;
@@ -767,90 +768,105 @@
 				}
 			};
 			.qr-code {
+				height: 50px;
 				z-index: 100;
 				image {
-					width: 42px;
-					height: 42px
+					width: 24px;
+					height: 24px
 				}
 			};
 			.data-area-box {
 				width: 94%;
 				position: absolute;
 				left: 3%;
-				top: 190px;
-				max-height: 130px;
+				top: 180px;
+				height: 130px;
 				overflow: auto;
 				background: #fff;
 				margin: 0 auto;
 				border-radius: 10px;
-				display: flex;
-				flex-direction: column;
-				padding: 14px 0;
+				padding: 14px 4px 14px 14px;
 				box-sizing: border-box;
-				box-shadow: 0px 2px 6px 0 rgba(92, 133, 136, 0.29);
+				box-shadow: 0px 4px 20px 0px rgba(0,0,0,0.08);
 				.today-earnings {
 					display: flex;
 					align-items: center;
-					justify-content: center;
+					padding-left: 14px;
+					box-sizing: border-box;
+					height: 44px;
+					background-image: linear-gradient(90deg, #F5F5F5 0%, #FFFFFF 100%);
 					text {
 						font-weight: bold;
 						&:nth-child(1) {
-							font-size: 14px;
-							color: #2C2C2C;
+							font-size: 13px;
+							color: #333333;
+							font-weight: 400;
 							margin-right: 6px
 						};
 						&:nth-child(2) {
-							font-size: 20px;
-							color: #E86F50
+							font-size: 17px;
+							color: #F92C20;
+							font-weight: 600;
 						}
 					}
 				};
 				.classified-statistic {
-					margin-top: 14px;
-					flex: 1;
+					margin-top: 10px;
 					display: flex;
-					align-items: center;
 					>view {
 						flex: 1;
 						display: flex;
 						flex-direction: column;
-						justify-content: center;
-						align-items: center;
 						&:nth-child(3) {
 							>view {
-								&:nth-child(2) {
+								&:nth-child(1) {
+									>image {
+										width: 15px;
+										height: 15px;
+										vertical-align: middle;
+										margin-right: 4px;
+									};
 									>text {
 										&:nth-child(3) {
-											margin-left: 10px;
-											font-size: 14px;
-											color: #5064EB
+											margin-left: 4px;
+											font-size: 13px;
+											color: #5064EB;
+											vertical-align: bottom;
 										}
 									}
+								};
+								&:nth-child(2) {
+									// padding-left: 10px;
 								}
 							}
 						};
 						>view {
 							width: 100%;
-							text-align: center;
-							padding: 0 4px;
-							box-sizing: border-box;
 							word-break: break-all;
 							&:nth-child(1) {
-								margin-bottom: 10px;
-								font-size: 12px;
-								color: #898C8C
-							};
-							&:nth-child(2) {
+								margin-bottom: 2px;
+								>image {
+									width: 15px;
+									height: 15px;
+									vertical-align: middle;
+									margin-right: 4px;
+								};
 								>text {
-									color: #898C8C;
-									font-size: 12px;
-									&:nth-child(1) {
-										font-size: 14px;
-										font-weight: bold;
-										color: #101010
-									}
+									vertical-align: middle;
+									font-size: 16px;
+									color: #000000;
+									font-weight: 400;
 								}
 							};
+							&:nth-child(2) {
+								padding-left: 19px;
+								box-sizing: border-box;
+								>text {
+									font-size: 13px;
+									color: #999999;
+									font-weight: 400;
+								}
+							}
 						}
 					}
 				}
@@ -865,24 +881,24 @@
 		.switch-box {
 			display: flex;
 			align-items: center;
-			width: 90%;
+			width: 94%;
 			margin: 0 auto;
-			padding: 0 4px;
+			height: 50px;
 			box-sizing: border-box;
+			@include bottom-border-1px(#DCDCDC);
 			>text {
 				flex: 1;
 				text-align: left;
 				font-size: 14px;
-				color: #101010
+				color: #333333;
+				font-weight: 400;
 			};
 			::v-deep .u-switch{
 			}
 		};
 		.bottom-area-box {
-			width: 90%;
+			width: 94%;
 			margin: 0 auto;
-			padding: 0 2px;
-			box-sizing: border-box;
 			margin-top: 6px;
 			display: flex;
 			flex-direction: column;
@@ -892,18 +908,19 @@
 				display: flex;
 				justify-content: space-between;
 				align-items: center;
-				height: 40px;
-				margin-bottom: 16px;
+				height: 50px;
+				@include bottom-border-1px(#DCDCDC);
 				.function-item-left {
 					>image {
-						width: 24px;
-						height: 24px;
+						width: 20px;
+						height: 20px;
 						margin-right: 6px;
 						vertical-align: middle
 					};
 					>text {
-						color: #101010;
 						font-size: 14px;
+						color: #333333;
+						font-weight: 400;
 						vertical-align: middle
 					}
 				};

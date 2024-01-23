@@ -259,7 +259,7 @@
 				<view class="order-form-list" v-for="(item,index) in fullTradeList" :key="index" @click="enterOrderDetailsEvent(item)">
 					<view class="order-form-top">
 						<view class="applay-time">
-							<text>申请时间:</text>
+							<text>申请时间 :</text>
 							<text>{{ getNowFormatDate(new Date(item.createTime),4) }}</text>
 						</view>
 						<view class="order-form-status" :class="{'serviceStyle' : item.status == 50,'completeStyle' : item.status == 60}">
@@ -1258,6 +1258,7 @@
 						}
 					};
 					.order-form-center-right {
+						flex: 1;
 						.order-form-title {
 							font-size: 16px;
 							color: #000000;

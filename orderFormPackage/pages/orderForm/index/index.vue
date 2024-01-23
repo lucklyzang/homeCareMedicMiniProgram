@@ -124,27 +124,15 @@
 				</nav-bar> 
 		  </view>
 		</view>
-		<view class="top-view-details">
-			<view class="service-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
-				<text>{{ transitionOrderStatusText(serviceMessage.status, serviceMessage) }}</text>
-			</view>
-			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80">
-				<text class="refuse-btn" v-if="serviceMessage.status == 20" @click="refuseOrderFormEvent(serviceMessage)">拒绝订单</text>
-				<text v-if="serviceMessage.status == 20" @click="acceptOrderFormEvent(serviceMessage)">接受订单</text>
-				<text v-if="serviceMessage.status == 30" @click="departEvent(serviceMessage)">立即出发</text>
-				<text v-if="serviceMessage.status == 40" @click="startEvent(serviceMessage)">开始服务</text>
-				<text v-if="serviceMessage.status == 50" @click="completeEvent(serviceMessage)">完成服务</text>
-				<text v-if="serviceMessage.status == 60" @click="clickDetailsEvent">点击详情</text>
-			</view>
-			<view class="refuse-reason" v-if="serviceMessage.status == 80">
-				{{ serviceMessage.reason }}
-			</view>
-		</view>
 		<view class="order-form-list-wrapper">
 			<view class="order-form-list">
 				<view class="order-form-top">
-					<view class="order-form-title">
-						<text>{{ serviceMessage.items[0]['spuName'] }}</text>
+					<view class="applay-time">
+						<text>申请时间 :</text>
+						<text>{{ getNowFormatDate(new Date(serviceMessage.createTime),4) }}</text>
+					</view>
+					<view class="order-form-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
+						<text>{{ transitionOrderStatusTextOther(serviceMessage) }}</text>
 					</view>
 				</view>
 				<view class="order-form-center">
@@ -156,21 +144,25 @@
 						</u-image>
 					</view>
 					<view class="order-form-center-right">
-						<view class="brotected-person">
-							<text>被护人</text>
-							<text>{{ `${serviceMessage.serverPerson.name} ${serviceMessage.serverPerson.age}岁` }}</text>
+						<view class="order-form-title">
+							<text>{{ serviceMessage.items[0]['spuName'] }}</text>
 						</view>
-						<view class="service-address">
-							<text>服务地址</text>
-							<text>{{ serviceMessage.receiverDetailAddress }}</text>
-						</view>
-						<view class="expectation-date">
-							<text>期望时间</text>
-							<text v-if="serviceMessage.serviceDate">{{ `${getNowFormatDateText(serviceMessage.serviceDate)} (${judgeWeek(serviceMessage.serviceDate)}) ${serviceMessage.serviceTime}` }}</text>
+						<view class="order-form-other-message">
+							<view class="brotected-person">
+								<text>被护人</text>
+								<text>{{ `${serviceMessage.serverPerson.name} ${serviceMessage.serverPerson.age}岁` }}</text>
+							</view>
+							<view class="service-address">
+								<text>服务地址</text>
+								<text>{{ serviceMessage.receiverDetailAddress }}</text>
+							</view>
+							<view class="expectation-date">
+								<text>期望时间</text>
+								<text v-if="serviceMessage.serviceDate">{{ `${getNowFormatDateText(serviceMessage.serviceDate)} (${judgeWeek(serviceMessage.serviceDate)}) ${serviceMessage.serviceTime}` }}</text>
+							</view>
 						</view>
 						<view class="evaluation-form">
 							<text>初步评估单</text>
-							<text>点击查看</text>
 						</view>
 					</view>
 				</view>
@@ -181,61 +173,87 @@
 						<text>订单价格清单</text>
 					</view>
 				</view>
-				<view class="price-list-content">
-					<view class="price-list-one">
-						<text>婴儿全身按摩</text>
-						<text>{{`￥${serviceMessage.payPrice}`}}</text>
-					</view>
-					<view class="price-list-one price-list-two">
-						<text>路程费用</text>
-						<text>￥0</text>
-					</view>
-					<view class="price-list-one price-list-three">
-						<text>超时费用</text>
-						<text>￥0</text>
-					</view>
-					<view class="price-list-one price-list-four">
-						<text>材料费用</text>
-						<text>￥0</text>
-					</view>
-					<view class="price-list-one price-list-five">
-						<text>优惠</text>
-						<text>￥0</text>
-					</view>
-					<view class="price-list-one price-list-last">
-						<text>实付款</text>
-						<text>{{`￥${serviceMessage.payPrice}`}}</text>
-					</view>
-				</view>
-			</view>
-			<view class="patient-data">
-				<view class="patient-data-title">
-					<text>患者资料</text>
-				</view>
-				<view class="patient-data-image">
-					<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images" @click="magnifyImgEvent(item,index)">
-						<u-image :src="item" width="100" mode="widthFix">
-							 <template v-slot:loading>
-									<u-loading-icon color="red"></u-loading-icon>
-								</template>
-						</u-image>
+				<view class="price-list-content-wrapper">
+					<view class="price-list-content">
+						<view class="price-list-one">
+							<text>婴儿全身按摩</text>
+							<text>{{`￥${serviceMessage.payPrice}`}}</text>
+						</view>
+						<view class="price-list-one price-list-two">
+							<text>路程费用</text>
+							<text>￥0</text>
+						</view>
+						<view class="price-list-one price-list-three">
+							<text>超时费用</text>
+							<text>￥0</text>
+						</view>
+						<view class="price-list-one price-list-four">
+							<text>材料费用</text>
+							<text>￥0</text>
+						</view>
+						<view class="price-list-one price-list-five">
+							<text>优惠</text>
+							<text>￥0</text>
+						</view>
+						<view class="price-list-one price-list-last">
+							<text>实付款</text>
+							<text>{{`￥${serviceMessage.payPrice}`}}</text>
+						</view>
 					</view>
 				</view>
 			</view>
-			<view class="service-site">
-				<view class="service-site-title">
-					<text>服务地点</text>
-					<text>{{ serviceMessage.receiverDetailAddress }}</text>
-					<text>11.2km</text>
+			<view class="patient-data-title-outer">
+				<text>患者信息</text>
+			</view>
+			<view class="patient-data-wrapper">
+				<view class="patient-data">
+					<view class="patient-data-title">
+						<text>患者资料</text>
+					</view>
+					<view class="patient-data-image">
+						<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images" @click="magnifyImgEvent(item,index)">
+							<u-image :src="item" width="100" mode="widthFix">
+								 <template v-slot:loading>
+										<u-loading-icon color="red"></u-loading-icon>
+									</template>
+							</u-image>
+						</view>
+					</view>
 				</view>
-				<view class="service-site-map-area">
-					<map id="map" @tap="clickMapEvent" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
+				<view class="service-site">
+					<view class="service-site-title">
+						<view>
+							<text>服务地点</text>
+						</view>
+						<view>
+							<text>{{ serviceMessage.receiverDetailAddress }}</text>
+							<text>(11.2km)</text>
+						</view>
+					</view>
+					<view class="service-site-map-area">
+						<map id="map" @tap="clickMapEvent" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
+					</view>
 				</view>
+				<view class="contact-patient">
+					<view class="contact-patient-title">
+						<text>联系患者</text>
+					</view>
+					<view class="contact-patient-content">
+						<view class="phone-box">
+							<image src="@/static/img/order-form-phone.png"></image>
+							<text>拨打电话</text>
+						</view>
+						<view class="message-box">
+							<image src="@/static/img/order-form-message.png"></image>
+							<text>发送消息</text>
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="order-flow-title">
+				<text>订单流程</text>
 			</view>
 			<view class="order-flow">
-				<view class="order-flow-title">
-					<text>订单流程</text>
-				</view>
 				<view class="order-flow-content">
 					<u-steps :current="currentFlow" dot inactiveColor="rgba(255, 255, 255, 0.5)" activeColor="#fff">
 						<u-steps-item title="已支付"></u-steps-item>
@@ -247,47 +265,32 @@
 					</u-steps>
 				</view>
 			</view>
-			<view class="contact-patient">
-				<view class="contact-patient-title">
-					<text>联系患者</text>
-				</view>
-				<view class="contact-patient-content">
-					<view class="phone-box">
-						<image src="@/static/img/order-form-phone.png"></image>
-						<text>拨打电话</text>
+			<view class="notice-title-outer">
+				<text>须知</text>
+			</view>
+			<view class="notice-box">
+				<view class="notice-content">
+					<view class="notice-list">
+						1.啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
 					</view>
-					<view class="message-box">
-						<image src="@/static/img/order-form-message.png"></image>
-						<text>发送消息</text>
+					<view class="notice-list">
+						2.啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
+					</view>
+					<view class="notice-list">
+						3.啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
 					</view>
 				</view>
 			</view>
-			<view class="notice-box">
-				<view class="notice-title">
-					<text>须知</text>
-				</view>
-				<view class="notice-content">
-					<view class="notice-list">
-						1、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
-					</view>
-					<view class="notice-list">
-						2、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
-					</view>
-					<view class="notice-list">
-						3、啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
-					</view>
+			<view class="order-message-top">
+				<view class="order-message-title">
+					<text>订单信息</text>
 				</view>
 			</view>
 			<view class="order-message">
-				<view class="order-message-top">
-					<view class="order-message-title">
-						<text>订单信息</text>
-					</view>
-				</view>
 				<view class="order-message-content">
 					<view class="order-message-one-special">
 						<view class="order-message-one-special-left">
-							<text>订单编号:</text>
+							<text>订单编号</text>
 						</view>
 						<view class="order-message-one-special-right">
 							<text>{{ serviceMessage.no }}</text>
@@ -295,26 +298,47 @@
 						</view>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.payNo">
-						<text>交易号:</text>
+						<text>交易号</text>
 						<text>{{ serviceMessage.payNo }}</text>
 					</view>
 					<view class="order-message-one">
-						<text>创建时间:</text>
+						<text>创建时间</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.createTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.workerStatus != 0 && serviceMessage.payTime">
-						<text>付款时间:</text>
+						<text>付款时间</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.payTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.status >= 30 && serviceMessage.status != 70 && serviceMessage.status != 80">
-						<text>派单时间:</text>
+						<text>派单时间</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.assignTime),4) }}</text>
 					</view>
 					<view class="order-message-one" v-if="serviceMessage.status == 60">
-						<text>完成服务时间:</text>
+						<text>完成服务时间</text>
 						<text>{{ getNowFormatDate(new Date(serviceMessage.completeTime),4) }}</text>
 					</view>
 				</view>
+			</view>
+		</view>
+		<view class="top-view-details">
+			<view class="top-view-details-left">
+				<view class="order-status-text">
+					<text>订单状态</text>
+				</view>
+				<view class="service-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
+					<text>{{ transitionOrderStatusText(serviceMessage.status, serviceMessage) }}</text>
+				</view>
+			</view>
+			<view class="btn-details" v-if="serviceMessage.status != 70 && serviceMessage.status != 80">
+				<text class="refuse-btn" v-if="serviceMessage.status == 20" @click="refuseOrderFormEvent(serviceMessage)">拒绝订单</text>
+				<text v-if="serviceMessage.status == 20" @click="acceptOrderFormEvent(serviceMessage)">接受订单</text>
+				<text v-if="serviceMessage.status == 30" @click="departEvent(serviceMessage)">立即出发</text>
+				<text v-if="serviceMessage.status == 40" @click="startEvent(serviceMessage)">开始服务</text>
+				<text v-if="serviceMessage.status == 50" @click="completeEvent(serviceMessage)">完成服务</text>
+				<text v-if="serviceMessage.status == 60" @click="clickDetailsEvent">点击详情</text>
+			</view>
+			<view class="refuse-reason" v-if="serviceMessage.status == 80">
+				{{ serviceMessage.reason }}
 			</view>
 		</view>
 	</view>
@@ -687,6 +711,56 @@
 							break
 						}
 					}
+				},
+				
+				// 转换订单状态
+				transitionOrderStatusTextOther(item) {
+					let temporaryWorkerStatus = item.status.toString();
+					// 待处理类型的订单下包含2子状态(20-待接单 30-待出发)
+					if (this.current == 0) {
+						switch(temporaryWorkerStatus) {
+							case '20' :
+							return '待接单'
+							break;
+							case '30' :
+							return '待出发'
+							break
+						}	
+					};
+					// 服务中类型的订单下包含2个子状态(40-待服务 50-服务中)
+					if (this.current == 1) {
+						switch(temporaryWorkerStatus) {
+							case '40' :
+							return '待服务'
+							break;
+							case '50' :
+							return '服务中'
+							break;
+						}	
+					};
+					switch(temporaryWorkerStatus) {
+						case '20' :
+						return '待接单'
+						break;
+						case '30' :
+						return '待出发'
+						break;
+						case '40' :
+						return '待服务'
+						break;
+						case '50' :
+						return '服务中'
+						break;
+						case '60' :
+						return '已完成'
+						break;
+						case '70' :
+						return '已取消'
+						break;
+						case '80' :
+						return '已拒绝'
+						break;
+					}	
 				},
 				
 				// 转换订单状态
@@ -1213,34 +1287,52 @@
 		.top-view-details {
 			height: 100px;
 			display: flex;
-			flex-direction: column;
-			justify-content: center;
+			padding: 0 10px;
+			box-sizing: border-box;
+			justify-content: space-between;
 			align-items: center;
-			.service-status {
-				margin-bottom: 16px;
-				>text {
-					font-size: 18px;
-					color: #E86F50;
-					margin-bottom: 10px;
-				};	
-				.serviceStyle {
-					color: #289E8E !important
+			.top-view-details-left {
+				flex: 1;
+				display: flex;
+				align-items: center;
+				.order-status-text {
+					font-size: 13px;
+					color: #333333;
+					font-weight: 400;
+					margin-right: 4px;
 				};
-				.completeStyle {
-					color: #020202 !important
-				}
+				.service-status {
+					margin-top: -1px;
+					>text {
+						font-size: 13px;
+						color: #E86F50;
+						font-weight: 500;
+					};	
+					.serviceStyle {
+						color: #289E8E !important
+					};
+					.completeStyle {
+						color: #020202 !important
+					}
+				};
 			};
 			.btn-details {
+				flex: 1;
+				display: flex;
+				justify-content: flex-end;
 				>text {
 					display: inline-block;
-					width: 130px;
-					height: 36px;
+					width: 104px;
+					height: 40px;
 					text-align: center;
-					line-height: 36px;
-					background: #1983FD;
-					border-radius: 18px;
+					line-height: 40px;
 					font-size: 14px;
-					color: #fff;
+					color: #FFFFFF;
+					text-align: center;
+					font-weight: 400;
+					background-image: linear-gradient(270deg, #5064EB 0%, #1A83FD 100%);
+					box-shadow: 0px 4px 20px 0px rgba(0,0,0,0.05);
+					border-radius: 5px;
 				};
 				.refuse-btn {
 					margin-right: 20px;
@@ -1250,261 +1342,419 @@
 				}	
 			};
 			.refuse-reason {
-				font-size: 12px;
-				color: #020202
-			};
+				flex: 1;
+				font-size: 13px;
+				color: #999999;
+				font-weight: 400;
+				text-align: right;
+				word-break: break-all;
+				max-height: 60px;
+				overflow: auto;
+			}
 		};
 		.order-form-list-wrapper {
 			flex: 1;
-			background: #f5f5f5;
+			background: #FAFAFA;
 			overflow: auto;
 			width: 100%;
 			padding: 10px 0;
 			box-sizing: border-box;
 			position: relative;
 			.order-form-list {
-				padding: 0px 4px 8px 4px;
 				background: #fff;
-				box-sizing: border-box;
-				margin-bottom: 10px;
 				.order-form-top {
 					display: flex;
 					align-items: center;
 					height: 50px;
-					@include bottom-border-1px(#BBBBBB);
+					@include bottom-border-1px(#DCDCDC);
 					justify-content: space-between;
 					padding: 0 8px 0 10px;
 					box-sizing: border-box;
-					.order-form-title {
+					.applay-time {
 						flex: 1;
 						@include no-wrap();
 						>text {
-							font-size: 16px;
-							color: #444444;
-							font-weight: bold
+							&:nth-child(1) {
+								margin-right: 4px;
+							};
+							font-size: 12px;
+							color: #999999;
+							font-weight: 400;
+						}
+					};
+					.order-form-status {
+						>text {
+							display: inline-block;
+							padding: 0 0 0 4px;
+							box-sizing: border-box;
+							font-size: 14px;
+							color: #FF7800;
+							font-weight: 400;
+						};
+						.serviceStyle {
+							color: #289E8E !important
+						};
+						.completeStyle {
+							color: #020202 !important
 						}
 					}
 				};
 				.order-form-center {
 					display: flex;
 					justify-content: space-between;
-					padding: 8px;
+					padding: 16px 8px 8px 8px;
 					box-sizing: border-box;
 					.order-form-center-left {
 						margin-right: 10px;
 						::v-deep .u-image {
-							// width: 88px !important;
-							// height: 88px !important
 						}
 					};
 					.order-form-center-right {
-						padding-top: 10px;
-						box-sizing: border-box;
-						.brotected-person {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
-								}
-							}
+						flex: 1;
+						.order-form-title {
+							font-size: 16px;
+							color: #000000;
+							font-weight: 400;
 						};
-						.service-address {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
+						.order-form-other-message {
+							margin-top: 6px;
+							background: #FAFAFA;
+							padding: 4px;
+							box-sizing: border;
+							.brotected-person {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
 								}
-							}
-						};
-						.expectation-date {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 60px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #5064EB;
-									word-break: break-all
+							};
+							.service-address {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
+								}
+							};
+							.expectation-date {
+								margin-bottom: 6px;
+								display: flex;
+								justify-content: space-between;
+								>text {
+									display: inline-block;
+									font-size: 13px;
+									color: #333333;
+									&:nth-child(1) {
+										width: 60px;
+										margin-right: 6px;
+									};
+									&:nth-child(2) {
+										flex: 1;
+										word-break: break-all
+									}
 								}
 							}
 						};
 						.evaluation-form {
-							margin-bottom: 6px;
-							display: flex;
-							justify-content: space-between;
-							>text {
-								display: inline-block;
-								font-size: 12px;
-								&:nth-child(1) {
-									width: 66px;
-									color: #777777;
-									margin-right: 6px;
-								};
-								&:nth-child(2) {
-									flex: 1;
-									color: #3388FF;
-									word-break: break-all
-								}
-							}
+							margin-top: 10px;
+							width: 98px;
+							height: 30px;
+							text-align: center;
+							line-height: 30px;
+							background: #5064EB;
+							border-radius: 6px;
+							font-size: 14px;
+							color: #FFFFFF;
+							font-weight: 500;
 						}
 					}
 				}
 			}
 		};
 		.price-list {
-			background: #fff;
-			margin-bottom: 10px;
 			.price-list-top {
 				display: flex;
 				align-items: center;
 				height: 50px;
-				@include bottom-border-1px(#BBBBBB);
 				justify-content: space-between;
-				padding: 0 12px;
+				padding: 0 10px;
 				box-sizing: border-box;
 				.price-list-title {
 					flex: 1;
 					@include no-wrap();
 					>text {
-						font-size: 16px;
-						color: #444444;
-						font-weight: bold
+						font-size: 17px;
+						color: #000000;
+						font-weight: 500;
 					}
 				}
 			};
-			.price-list-content {
+			.price-list-content-wrapper {
+				padding: 0 10px;
+				box-sizing: border-box;
+				.price-list-content {
+					background: #fff;
+					padding-top: 10px;
+					box-sizing: border-box;
+					.price-list-one {
+						padding: 0 10px;
+						box-sizing: border-box;
+						display: flex;
+						justify-content: space-between;
+						margin-bottom: 10px;
+						>text {
+							display: inline-block;
+							font-size: 14px;
+							&:first-child {
+								color: #666666;
+								font-weight: 400;
+								flex: 1;
+								word-break: break-all
+							};
+							&:last-child {
+								color: #333333;
+								font-weight: 400;
+							}
+						}
+					};
+					.price-list-last {
+						height: 40px;
+						line-height: 40px;
+						margin-bottom: 0 !important;
+						@include top-border-1px(#DCDCDC);
+						>text {
+							&:last-child {
+								font-size: 17px;
+								color: #000000;
+								font-weight: 700;
+							}
+						}
+					}
+				}
+			}	
+		};
+		.patient-data-title-outer {
+			height: 50px;
+			display: flex;
+			align-items: center;
+			font-size: 17px;
+			color: #000000;
+			font-weight: 500;
+			padding: 0 10px;
+			box-sizing: border-box;
+		};
+		.patient-data-wrapper {
+			padding: 0 10px;
+			box-sizing: border-box;
+			.patient-data {
+				background: #fff;
 				padding: 6px 16px;
 				box-sizing: border-box;
-				.price-list-one {
+				.patient-data-title {
+					position: relative;
+					border: none;
+					&:after {
+					  content: '';
+					  position: absolute;
+					  left: 0;
+					  top: 50%;
+						transform: translateY(-50%);
+					  width: 3px;
+					  height: 11px;
+					  background-color: #5064EB;
+					};
+					padding-left: 8px;
+					box-sizing: border;
+					font-size: 14px;
+					color: #666666;
+					font-weight: 400;
+					margin-bottom: 10px
+				};
+				.patient-data-image {
 					display: flex;
-					justify-content: space-between;
-					margin-bottom: 6px;
-					>text {
-						display: inline-block;
-						font-size: 14px;
-						color: #3E4248;
-						font-weight: bold;
-						&:first-child {
-							flex: 1;
-							word-break: break-all
+					flex-wrap: wrap;
+					.patient-data-image-list {
+						width: 32%;
+						margin-right: 2%;
+						margin-bottom: 10px;
+						&:nth-child(3n) {
+							margin-right: 0 !important
 						};
-						&:last-child {
-							
+						::v-deep .u-image {
+							height: auto !important
+						}
+					}
+				}
+			};
+			.service-site {
+				background: #fff;
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.service-site-title {
+					padding-left: 8px;
+					box-sizing: border-box;
+					display: flex;
+					font-size: 14px;
+					color: #3E4248;
+					font-weight: bold;
+					margin-bottom: 10px;
+					>view {
+						&:nth-child(1) {
+							position: relative;
+							border: none;
+							&:after {
+							  content: '';
+							  position: absolute;
+							  left: -8px;
+							  top: 50%;
+								transform: translateY(-50%);
+							  width: 3px;
+							  height: 11px;
+							  background-color: #5064EB;
+							};
+							>text {
+								display: inline-block;
+								font-size: 14px;
+								color: #666666;
+								font-weight: 400;
+							}
+						};
+						&:nth-child(2) {
+							flex: 1;
+							word-break: break-all;
+							>text {
+								&:nth-child(1) {
+									margin: 0 6px;
+									font-size: 14px;
+									color: #000000;
+									font-weight: 400;
+								};
+								&:nth-child(2) {
+									font-size: 14px;
+									color: #000000;
+									font-weight: 400;
+								}
+							}
 						}
 					}
 				};
-				.price-list-last {
-					>text {
-						&:last-child {
-							color: #E82050;
-							font-size: 16px;
-							font-weight: bold;
+				.service-site-map-area {
+				}
+			};
+			.contact-patient {
+				background: #fff;
+				padding: 6px 16px 20px 16px;
+				box-sizing: border-box;
+				.contact-patient-title {
+					padding-left: 8px;
+					box-sizing: border-box;
+					display: flex;
+					font-size: 14px;
+					color: #666666;
+					font-weight: 400;
+					font-weight: bold;
+					margin-bottom: 14px;
+					position: relative;
+					border: none;
+					&:after {
+					  content: '';
+					  position: absolute;
+					  left: 0;
+					  top: 50%;
+						transform: translateY(-50%);
+					  width: 3px;
+					  height: 11px;
+					  background-color: #5064EB;
+					}
+				};
+				.contact-patient-content {
+					display: flex;
+					.phone-box {
+						margin-right: 10px;
+						width: 105px;
+						height: 30px;
+						text-align: center;
+						line-height: 30px;
+						border-radius: 6px;
+						border: 1px solid #5064EB;
+						image {
+							width: 15px;
+							height: 15px;
+							margin-right: 6px;
+							vertical-align: middle
+						};
+						text {
+							color: #5064EB;
+							font-weight: 400;
+							font-size: 14px;
+							vertical-align: middle
+						}
+					};
+					.message-box {
+						width: 105px;
+						height: 30px;
+						text-align: center;
+						line-height: 30px;
+						border-radius: 6px;
+						border: 1px solid #5064EB;
+						image {
+							width: 15px;
+							height: 15px;
+							margin-right: 6px;
+							vertical-align: middle
+						};
+						text {
+							color: #5064EB;
+							font-weight: 400;
+							font-size: 14px;
+							vertical-align: middle
 						}
 					}
 				}
 			}
-		};
-		.patient-data {
-			background: #fff;
-			margin: 10px 0;
-			padding: 6px 16px;
+		};	
+		.order-flow-title {
+			height: 50px;
+			display: flex;
+			align-items: center;
+			padding-left: 4px;
 			box-sizing: border-box;
-			.patient-data-title {
-				font-size: 14px;
-				font-weight: bold;
-				color: #3E4248;
-				margin-bottom: 10px
-			};
-			.patient-data-image {
-				display: flex;
-				flex-wrap: wrap;
-				.patient-data-image-list {
-					width: 32%;
-					margin-right: 2%;
-					margin-bottom: 10px;
-					&:nth-child(3n) {
-						margin-right: 0 !important
-					};
-					::v-deep .u-image {
-						height: auto !important
-					}
-				}
-			}
-		};
-		.service-site {
-			background: #fff;
-			margin-bottom: 10px;
-			padding: 6px 16px;
+			font-size: 17px;
+			color: #000000;
+			font-weight: 500;
+			padding: 0 10px;
 			box-sizing: border-box;
-			.service-site-title {
-				display: flex;
-				font-size: 14px;
-				color: #3E4248;
-				font-weight: bold;
-				margin-bottom: 10px;
-				>text {
-					display: inline-block;
-					&:nth-child(2) {
-						flex: 1;
-						margin: 0 10px;
-						font-size: 12px;
-						margin-top: 2px;
-						color: #000000;
-						word-break: break-all
-					};
-					&:nth-child(3) {
-						font-size: 12px;
-						margin-top: 2px;
-						color: #000000
-					}
-				}
-			};
-			.service-site-map-area {
-			}
 		};
 		.order-flow {
-			height: 113px;
-			background: #5064EB;
-			margin-bottom: 10px;
-			padding: 6px 16px 10px 16px;
+			height: 60px;
+			padding: 0 10px;
 			box-sizing: border-box;
-			.order-flow-title {
-				padding-left: 4px;
-				box-sizing: border-box;
-				font-size: 14px;
-				color: #fff;
-				margin-bottom: 20px
-			};
 			.order-flow-content {
+				display: flex;
+				align-items: center;
+				height: 60px;
+				background: #5064EB;
 				::v-deep .u-steps {
 					.u-steps-item {
 						.u-steps-item__wrapper {
@@ -1513,7 +1763,9 @@
 						.u-steps-item__content {
 							.u-text {
 								.u-text__value {
-									color: #fff !important
+									font-size: 11px !important;
+									color: #FFFFFF !important;
+									font-weight: 400 !important;
 								}
 							}
 						}
@@ -1521,95 +1773,53 @@
 				}
 			}
 		};
-		.contact-patient {
-			background: #fff;
-			margin-bottom: 10px;
-			padding: 6px 16px;
+		.notice-title-outer {
+			height: 50px;
+			display: flex;
+			align-items: center;
+			font-size: 17px;
+			color: #000000;
+			font-weight: 500;
+			padding: 0 10px;
 			box-sizing: border-box;
-			.contact-patient-title {
-				display: flex;
-				font-size: 14px;
-				font-weight: bold;
-				color: #3E4248;
-				margin-bottom: 20px;
-			};
-			.contact-patient-content {
-				display: flex;
-				.phone-box {
-					flex: 1;
-					image {
-						width: 24px;
-						height: 24px;
-						margin-right: 10px;
-						vertical-align: middle
-					};
-					text {
-						color: #5064EB;
-						font-size: 16px;
-						vertical-align: middle
-					}
-				};
-				.message-box {
-					flex: 1;
-					image {
-						width: 24px;
-						height: 24px;
-						margin-right: 10px;
-						vertical-align: middle
-					};
-					text {
-						color: #5064EB;
-						font-size: 16px;
-						vertical-align: middle
-					}
-				};
-			}
 		};
 		.notice-box {
-			background: #fff;
-			padding: 6px 16px;
+			padding: 0 10px;
 			box-sizing: border-box;
-			.notice-title {
-				font-size: 14px;
-				font-weight: bold;
-				color: #3E4248;
-				margin-bottom: 10px;
-				padding: 10px 0;
-				box-sizing: border-box;
-				@include bottom-border-1px(#BBBBBB);
-			};
 			.notice-content {
+				background: #fff;
+				padding: 10px;
+				box-sizing: border-box;
 				.notice-list {
-					font-size: 12px;
-					color: #222222;
+					font-size: 13px;
+					color: #999999;
+					letter-spacing: 0;
+					text-align: justify;
+					line-height: 18px;
+					font-weight: 400;
 					word-break: break-all;
 					margin-bottom: 4px;
 				}
 			}
 		};
-		.order-message {
-			background: #fff;
-			margin-top: 10px;
-			.order-message-top {
+		.order-message-top {
+			.order-message-title {
+				height: 50px;
 				display: flex;
 				align-items: center;
-				height: 50px;
-				@include bottom-border-1px(#BBBBBB);
-				justify-content: space-between;
-				padding: 0 12px;
+				font-size: 17px;
+				color: #000000;
+				font-weight: 500;
+				padding: 0 10px;
 				box-sizing: border-box;
-				.order-message-title {
-					flex: 1;
-					@include no-wrap();
-					>text {
-						font-size: 16px;
-						color: #444444;
-						font-weight: bold
-					}
-				}
-			};
+			}
+		};
+		.order-message {
+			padding: 0 10px;
+			box-sizing: border-box;
 			.order-message-content {
-				padding: 6px 16px;
+				background: #fff;
+				padding: 10px;
 				box-sizing: border-box;
 				.order-message-one-special {
 					display: flex;
@@ -1617,8 +1827,8 @@
 					margin-bottom: 10px;
 					.order-message-one-special-left {
 						font-size: 14px;
-						font-weight: bold;
-						color: #3E4248;
+						color: #666666;
+						font-weight: 400;
 					};
 					.order-message-one-special-right {
 						display: flex;
@@ -1627,17 +1837,25 @@
 						>text {
 							display: inline-block;
 							font-size: 14px;
-							color: #3E4248;
-							font-weight: bold;
+							color: #999999;
+							text-align: right;
+							font-weight: 400;
 							&:first-child {
 								flex: 1;
-								color: #B7B6B6;
 								margin-right: 4px;
 								text-align: right;
 								word-break: break-all
 							};
 							&:last-child {
-								color: #3E4248
+								width: 40px;
+								height: 18px;
+								text-align: center;
+								line-height: 18px;
+								color: #666666;
+								font-size: 12px;
+								background: #F9F9F9;
+								border: 1px solid rgba(204,204,204,1);
+								border-radius: 4px;
 							}
 						}
 					}
@@ -1648,15 +1866,18 @@
 					margin-bottom: 10px;
 					>text {
 						display: inline-block;
-						font-size: 14px;
-						color: #3E4248;
-						font-weight: bold;
 						&:first-child {
+							font-size: 14px;
+							color: #666666;
+							font-weight: 400;
 							flex: 1;
 							word-break: break-all
 						};
 						&:last-child {
-							color: #B7B6B6
+							font-size: 14px;
+							color: #999999;
+							text-align: right;
+							font-weight: 400;
 						}
 					}
 				}
