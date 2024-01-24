@@ -11,7 +11,7 @@
 		</view>
 		<!-- 订单相关服务操作弹框 -->
 		<view class="order-form-details-dialog-box">
-			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="true" :safeAreaInsetBottom="true">
 				<view class="accept-order-date">
 					<view class="accept-order-date-title">
 						<text>接受服务订单时间</text>
@@ -714,8 +714,9 @@
 				},
 				
 				// 转换订单状态
-				transitionOrderStatusTextOther(item) {
-					let temporaryWorkerStatus = item.status.toString();
+				transitionOrderStatusTextOther(serviceMessage) {
+					if (serviceMessage.status === null) { return };
+					let temporaryWorkerStatus = serviceMessage.status.toString();
 					// 待处理类型的订单下包含2子状态(20-待接单 30-待出发)
 					if (this.current == 0) {
 						switch(temporaryWorkerStatus) {
@@ -806,7 +807,11 @@
 						return '服务中'
 						break;
 						case '60' :
-						return '服务完成'
+						if (!item.commentStatus) {
+							return '服务完成'
+						} else {
+							return '订单完成'
+						}
 						break;
 						case '70' :
 						return '已取消'
