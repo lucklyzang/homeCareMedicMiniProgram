@@ -197,7 +197,8 @@
 	} from 'vuex'
 	import {
 		setCache,
-		removeAllLocalStorage
+		removeAllLocalStorage,
+		fenToYuan
 	} from '@/common/js/utils'
 	import { getDayOrderStatistics, getWeekOrderStatistics, getMonthOrderStatistics} from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
@@ -554,7 +555,7 @@
 					this.timerTwo = null;
 					this.commonOneTimerMethods(this.getDayData,5);
 					if ( res && res.data.code == 0) {
-						this.dayProceeds =  res.data.data.totalAmount;
+						this.dayProceeds =  fenToYuan(res.data.data.totalAmount);
 						this.dayOrderCount = res.data.data.orderAmount;
 						if (res.data.data.orderTypeReport.length > 0) {
 							this.dayChartOrderTypeData['isShow'] = true;
@@ -627,7 +628,7 @@
 					this.timerTwo = null;
 					this.commonOneTimerMethods(this.getWeekData,5);
 					if ( res && res.data.code == 0) {
-						this.weekProceeds = res.data.data.totalAmount;
+						this.weekProceeds = fenToYuan(res.data.data.totalAmount);
 						this.weekOrderCount = res.data.data.orderAmount;
 						this.weekProceedsIncrease =  res.data.data.hasOwnProperty("cashGrow") ? res.data.data.cashGrow : '';
 						this.weekOrderCountIncrease = res.data.data.hasOwnProperty("orderGrow") ? res.data.data.orderGrow : '';
@@ -735,7 +736,7 @@
 					this.timerTwo = null;
 					this.commonOneTimerMethods(this.getMonthData,5);
 					if ( res && res.data.code == 0) {
-						this.monthProceeds = res.data.data.totalAmount;
+						this.monthProceeds = fenToYuan(res.data.data.totalAmount);
 						this.monthOrderCount = res.data.data.orderAmount;
 						this.monthProceedsIncrease = res.data.data.hasOwnProperty("cashGrow") ? res.data.data.cashGrow : '';
 						this.monthOrderCountIncrease = res.data.data.hasOwnProperty("orderGrow") ? res.data.data.orderGrow : '';

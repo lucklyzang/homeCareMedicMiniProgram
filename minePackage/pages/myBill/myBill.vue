@@ -31,7 +31,7 @@
 					<text>今日收益</text>
 					<text>{{ tradeStatistics.todayAmount }}</text>
 				</view>
-				<view class="today-earnings-right" @click="withdrawalMethodDialogShow = true">
+				<view class="today-earnings-right" v-if="!tradeStatistics.canCash == true" @click="withdrawalMethodDialogShow = true">
 					<text>去提现</text>
 					<u-icon name="arrow-right" color="#fff" size="28"></u-icon>
 				</view>
@@ -60,7 +60,7 @@
 						<text>可提现额度</text>
 					</view>
 					<view>
-						<text>{{ tradeStatistics.canCash }}</text>
+						<text>{{ !tradeStatistics.canCash ? 0 : tradeStatistics.canCash }}</text>
 						<text>元</text>
 					</view>
 				</view>

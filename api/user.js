@@ -331,3 +331,12 @@ export function getMonthOrderStatistics(data) {
 		params: data
   })
 };
+
+// 获取资讯详情
+export function getNewsDetails(data) {
+  return request({
+    url: '/app-api/promotion/information/getDetails',
+    method: 'get',
+		params: data
+  })
+}

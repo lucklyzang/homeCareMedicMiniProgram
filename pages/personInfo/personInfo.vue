@@ -64,7 +64,7 @@
 			<view class="data-area-box" @click="enterDataStatisticsEvent">
 				<view class="today-earnings">
 					<text>今日收益</text>
-					<text>{{ tradeStatistics.todayAmount }}</text>
+					<text>{{ `${tradeStatistics.todayAmount}元` }}</text>
 				</view>
 				<view class="classified-statistic">
 					<view>
@@ -88,8 +88,8 @@
 					<view>
 						<view>
 							<image src="@/static/img/withdrawal-limit-icon.png"></image>
-							<text>{{ tradeStatistics.canCash }}</text>
-							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
+							<text>{{ !tradeStatistics.canCash ? 0 : tradeStatistics.canCash }}</text>
+							<text v-if="!tradeStatistics.canCash == true" @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 						<view>
 							<text>可提现额度 (元)</text>

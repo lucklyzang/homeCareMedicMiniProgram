@@ -341,7 +341,7 @@
 				infoText: '加载中···',
 				showLoadingHint: false,
 				currentPageNum: 1,
-				pageSize: 20,
+				pageSize: 5,
 				totalCount: 0,
 				status: 'nomore',
 				tradeList: [],

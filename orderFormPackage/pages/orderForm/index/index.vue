@@ -196,8 +196,13 @@
 							<text>￥0</text>
 						</view>
 						<view class="price-list-one price-list-last">
-							<text>实付款</text>
-							<text>{{`￥${serviceMessage.payPrice}`}}</text>
+							<view class="price-list-last-left">
+								<text>实付款</text>
+							</view>
+							<view class="price-list-last-right">
+								<text>￥</text>
+								<text>{{`${serviceMessage.payPrice}`}}</text>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -1548,11 +1553,23 @@
 						line-height: 40px;
 						margin-bottom: 0 !important;
 						@include top-border-1px(#DCDCDC);
-						>text {
-							&:last-child {
-								font-size: 17px;
-								color: #000000;
-								font-weight: 700;
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						.price-list-last-left {
+						};
+						.price-list-last-right {
+							>text {
+								&:first-child {
+									font-size: 14px;
+									color: #000000;
+									font-weight: 400;
+								}
+								&:last-child {
+									font-size: 17px;
+									color: #000000;
+									font-weight: 700;
+								}
 							}
 						}
 					}

@@ -1,6 +1,8 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-overlay :show="showLoadingHint"></u-overlay>
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='3000' bgColor="none" title="最新资讯" @backClick="backTo">
@@ -24,6 +26,7 @@
 		removeAllLocalStorage
 	} from '@/common/js/utils'
 	import navBar from "@/components/zhouWei-navBar"
+	import { getNewsDetails } from '@/api/user.js'
 	export default {
 		components: {
 			navBar
@@ -31,7 +34,7 @@
 		data() {
 			return {
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
-				infoText: '',
+				infoText: '加载中···',
 				showLoadingHint: false,
 				status: 'nomore',
 				isShowNoData: false,
@@ -53,11 +56,7 @@
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(decodeURIComponent(options.transmitData));
 			this.detailsMessage = temporaryAddress;
-			if (this.detailsMessage.hasOwnProperty('description')) {
-				this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
-				this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"');
-				this.detailsMessage.description = this.detailsMessage.description.replace(/\<div/gi, '<div class="dstyle"')
-			}
+			this.getNewsDetailsEvent(this.detailsMessage.id)
 		},	
 		methods: {
 			...mapMutations([
@@ -66,6 +65,37 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 获取资讯详情
+			getNewsDetailsEvent(id) {
+				this.showLoadingHint = true
+				this.infoText = '';
+				getNewsDetails({id}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.detailsMessage = res.data.data;
+						if (this.detailsMessage.hasOwnProperty('description')) {
+							this.detailsMessage.description = this.detailsMessage.description.replace(/\<img/gi, '<img class="mystyle"');
+							this.detailsMessage.description = this.detailsMessage.description.replace(/\<p/gi, '<p class="pstyle"');
+							this.detailsMessage.description = this.detailsMessage.description.replace(/\<div/gi, '<div class="dstyle"')
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			}
 		}
 	}
@@ -79,6 +109,17 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		position: relative;
+		::v-deep .u-popup {
+			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
+		};
 		.top-area-box {
 			position: relative;
 			width: 100%;
