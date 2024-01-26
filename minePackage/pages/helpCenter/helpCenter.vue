@@ -8,48 +8,53 @@
 		  </view>
 			<image :src="loginBackgroundPng"></image>
 		</view>
+		<u-transition :show="showLoadingHint" mode="fade-down">
+			<view class="loading-box" v-if="showLoadingHint">
+				<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
+			</view>
+		</u-transition>
 		<view class="top-cut-area">
 			<view class="top-cut-list" :class="{'topCutListStyle': topCutIndex == index}" v-for="(item,index) in topCutList" :key="index" @click="topCutEvent(item,index)">
 				<text>{{ item }}</text>
 			</view>
 		</view>
-		<view class="common-problem-box">
-		 <u-collapse
-				@change="change"
-				@close="close"
-				@open="open"
-			>
-				<u-collapse-item
-					title="怎么申请发票"
-					name="Docs guide"
-				>
-					<text class="u-collapse-content">购买后可以在「我的账户」-「购买订单」中直接填写开票信息申请发票。</text>
-				</u-collapse-item>
-				<u-collapse-item
-					title="用不来"
-					name="Docs guide"
-				>
-					<text class="u-collapse-content">购买后可以在「我的账户」-「购买订单」中直接填写开票信息申请发票。</text>
-				</u-collapse-item>
-				<u-collapse-item
-					title="如何联系人工客服"
-					name="Docs guide"
-				>
-					<text class="u-collapse-content">购买后可以在「我的账户」-「购买订单」中直接填写开票信息申请发票。</text>
-				</u-collapse-item>
-				<u-collapse-item
-					title="怎么绑定手机号"
-					name="Docs guide"
-				>
-					<text class="u-collapse-content">购买后可以在「我的账户」-「购买订单」中直接填写开票信息申请发票。</text>
-				</u-collapse-item>
-				<u-collapse-item
-					title="第三方登录"
-					name="Docs guide"
-				>
-					<text class="u-collapse-content">购买后可以在「我的账户」-「购买订单」中直接填写开票信息申请发票。</text>
-				</u-collapse-item>
-			</u-collapse>
+		<view class="common-problem-box" v-if="topCutIndex === 0">
+			<u-empty text="暂无数据" v-if="isShowNoHomeNoData"></u-empty>
+			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolowerIssue">
+				<u-collapse
+						@change="change"
+						@close="close"
+						@open="open"
+					>
+						<u-collapse-item
+							v-for="(item,index) in fullIssueList" :key="index"
+							:title="item.title"
+							name="Docs guide"
+						>
+							<text class="u-collapse-content">{{ item.description }}</text>
+						</u-collapse-item>
+				</u-collapse>
+				<u-loadmore :status="status"  v-if="fullIssueList.length > 0" />
+			</scroll-view>
+		</view>
+		<view class="common-problem-box" v-else>
+			<u-empty text="暂无数据" v-if="isShowNoHomeNoData"></u-empty>
+			<scroll-view class="scroll-view" scroll-y="true"  @scrolltolower="scrolltolowerUseSkill">
+				<u-collapse
+						@change="change"
+						@close="close"
+						@open="open"
+					>
+						<u-collapse-item
+							v-for="(item,index) in fullUserSkillList" :key="index"
+							:title="item.title"
+							name="Docs guide"
+						>
+							<text class="u-collapse-content">{{ item.description }}</text>
+						</u-collapse-item>
+				</u-collapse>
+				<u-loadmore :status="status"  v-if="fullUserSkillList.length > 0" />
+			</scroll-view>
 		</view>
 		<view class="feedback-btn-box">
 			<view class="feedback-btn" @click="feedbackEvent">
@@ -68,6 +73,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import { getsystemHelpCenter } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -76,7 +82,16 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '加载中···',
+				currentPageNum: 1,
+				pageSize: 20,
+				totalCount: 0,
+				isShowNoHomeNoData: false,
+				status: 'nomore',
+				issueList: [],
+				fullIssueList: [],
+				userSkillList: [],
+				fullUserSkillList: [],
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				topCutList: ['常见问题','使用技巧'],
 				topCutIndex: 0
@@ -92,6 +107,12 @@
 			}
 		},
 		onShow() {
+			this.queryIssueListEvent({
+				pageNo: this.currentPageNum,
+				pageSize: this.pageSize,
+				type: 0,
+				status: 0
+			},true)
 		},
 		methods: {
 			...mapMutations([
@@ -99,7 +120,23 @@
 			
 			// 顶部tab切换事件
 			topCutEvent (item,index) {
-				this.topCutIndex = index
+				this.topCutIndex = index;
+				this.currentPageNum = 1;
+				if (this.topCutIndex === 0) {
+					this.queryIssueListEvent({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						type: 0,
+						status: 0
+					},true)
+				} else if (this.topCutIndex === 1) {
+					this.queryIssueListEvent({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						type: 1,
+						status: 0
+					},true)
+				}
 			},
 			
 			open(e) {
@@ -112,6 +149,112 @@
 			
 			change(e) {
 				// console.log('change', e)
+			},
+			
+			// 监听常见问题列表滚动
+			scrolltolowerIssue () {
+				let totalPage = Math.ceil(this.totalCount/this.pageSize);
+				if (this.currentPageNum >= totalPage) {
+					this.status = 'nomore'
+				} else {
+					this.status = 'loadmore';
+					this.currentPageNum = this.currentPageNum + 1;
+					this.queryIssueListEvent({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						type: 0,
+						status: 0
+					},false)
+				}
+			},
+			
+			// 监听使用技巧列表滚动
+			scrolltolowerUseSkill () {
+				let totalPage = Math.ceil(this.totalCount/this.pageSize);
+				if (this.currentPageNum >= totalPage) {
+					this.status = 'nomore'
+				} else {
+					this.status = 'loadmore';
+					this.currentPageNum = this.currentPageNum + 1;
+					this.queryIssueListEvent({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						type: 1,
+						status: 0
+					},false)
+				}
+			},
+			
+			// 查询问题列表和使用技巧
+			queryIssueListEvent(data,flag) {
+				this.isShowNoHomeNoData = false;
+				if (this.topCutIndex === 0) {
+					this.issueList = [];
+				} else if (this.topCutIndex === 1) {
+					this.userSkillList = [];
+				}; 
+				if (flag) {
+					if (this.topCutIndex === 0) {
+						this.fullIssueList = [];
+					} else if (this.topCutIndex === 1) {
+						this.fullUserSkillList = [];
+					};
+					this.showLoadingHint = true
+				} else {
+					this.showLoadingHint = false;
+					this.infoText = '';
+					this.status = 'loading';
+				};
+				getsystemHelpCenter(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.totalCount = res.data.data.total;
+						if (this.topCutIndex === 0) {
+							this.issueList = res.data.data.list;
+							this.fullIssueList = this.fullIssueList.concat(this.issueList);
+							if (this.fullIssueList.length == 0) {
+								this.isShowNoHomeNoData = true
+							} else {
+								this.isShowNoHomeNoData = false
+							}
+						} else if (this.topCutIndex === 1) {
+							this.userSkillList = res.data.data.list;
+							this.fullUserSkillList = this.fullUserSkillList.concat(this.userSkillList);
+							if (this.fullUserSkillList.length == 0) {
+								this.isShowNoHomeNoData = true
+							} else {
+								this.isShowNoHomeNoData = false
+							}
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						let totalPage = Math.ceil(this.totalCount/this.pageSize);
+						if (this.currentPage >= totalPage) {
+							this.status = 'nomore'
+						} else {
+							this.status = 'loadmore';
+						}	
+					}
+				})
+				.catch((err) => {
+					if (flag) {
+						this.showLoadingHint = false;
+					} else {
+						this.status = 'loadmore'
+					};
+					this.$refs.uToast.show({
+						title: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			},
 			
 			//意见反馈事件
@@ -164,6 +307,12 @@
 				height: 100px
 			}
 		};
+		.loading-box {
+			height: 35px;
+			display: flex;
+			align-items: center;
+			justify-content: center
+		};
 		.top-cut-area {
 			height: 70px;
 			background: #fff;
@@ -198,6 +347,15 @@
 		.common-problem-box {
 			flex: 1;
 			overflow: auto;
+			.scroll-view {
+				height: 100%
+			};
+			::v-deep .u-empty {
+			 	position: absolute;
+			 	top: 50%;
+			 	left: 50%;
+			 	transform: translate(-50%,-50%)
+			 };
 			::v-deep .u-collapse {
 				.u-collapse-item {
 					background: #fff;

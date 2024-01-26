@@ -21,9 +21,18 @@
 					width: 40,
 					height: 40,
 					iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
-					title: "提示"
+					title: "服务地址"
 				}]
 			}
+		},
+		
+		onLoad(options) {
+			if (options.transmitData == '{}') { return };
+			let temporaryAddress = JSON.parse(options.transmitData);
+			this.latitude = temporaryAddress['latitude'];
+			this.longitude = temporaryAddress['longitude'];
+			this.markers[0]['latitude'] = temporaryAddress['latitude'];
+			this.markers[0]['longitude'] = temporaryAddress['longitude'];
 		},
 		
 		methods: {

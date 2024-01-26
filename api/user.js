@@ -340,3 +340,12 @@ export function getNewsDetails(data) {
 		params: data
   })
 }
+
+// 获取帮助中心列表
+export function getsystemHelpCenter(data) {
+  return request({
+    url: '/app-api/system/help-center/page',
+    method: 'get',
+		params: data
+  })
+}

@@ -480,17 +480,19 @@
 						content: ''
 					}
 				},
-				latitude: 39.909,
-				longitude: 116.39742,
-				markers: [{
-					id: 123,
-					latitude: 39.909,
-					longitude: 116.39742,
-					width: 40,
-					height: 40,
-					iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
-					title: "提示"
-				}]
+				latitude: 39.909,// 默认纬度
+				longitude: 116.39742,// 默认经度(北京天安门)
+				markers: [
+					{
+						id: 123,
+						latitude: 39.909,
+						longitude: 116.39742,
+						width: 40,
+						height: 40,
+						iconPath: 'https://hellouniapp.dcloud.net.cn/static/location.png',
+						title: "服务地址"
+					}
+				]
 			}
 		},
 		computed: {
@@ -538,10 +540,14 @@
 			
 			// 点击地图事件
 			clickMapEvent (address) {
-				uni.navigateTo({
-					url: '/orderFormPackage/pages/orderForm/orderFormMapEnlarge/orderFormMapEnlarge'
+				// 传递服务地址经纬度信息
+				let mynavData = JSON.stringify({
+					latitude: this.latitude,
+					longitude: this.longitude,
 				});
-				console.log('点击地图了',address)
+				uni.navigateTo({
+					url: '/orderFormPackage/pages/orderForm/orderFormMapEnlarge/orderFormMapEnlarge?transmitData='+mynavData
+				})
 			},
 			
 			// 格式化时间(带中文)
@@ -643,6 +649,7 @@
 						if ( res && res.data.code == 0) {
 							if (res.data.data) {
 								this.serviceMessage = res.data.data;
+								this.getLocationDetail(this.serviceMessage.receiverDetailAddress);
 								this.serviceMessage.payPrice = fenToYuan(this.serviceMessage.payPrice);
 								this.currentFlow = this.transitionOrderFlowStatusText(this.serviceMessage.workerStatus,this.serviceMessage);
 							}
@@ -827,6 +834,38 @@
 					}	
 				},
 				
+				//根据详细的地址获取经纬度
+				getLocationDetail (address) {
+					uni.request({
+						header: {
+							"Content-Type": "application/text"
+						},
+						url: 'https://apis.map.qq.com/ws/geocoder/v1/?address=' + address +
+														'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+						success:(res)=> {
+							//成功获取到经纬度
+							if (res.statusCode == 200) {
+								this.latitude = res.data.result.location.lat;
+								this.longitude = res.data.result.location.lng;
+								this.markers[0]['latitude'] = res.data.result.location.lat;
+								this.markers[0]['longitude'] = res.data.result.location.lng;
+							} else {
+								uni.showToast({
+									title: '获取经纬度失败，请重试',
+									icon: "none"
+								})
+							}
+						},
+						fail: (err) => {
+							this.$refs.uToast.show({
+								message: `${err.errMsg}`,
+								type: 'error',
+								position: 'center'
+							})
+						}
+					})
+				},
+				
 				// 点击详情事件
 				clickDetailsEvent () {
 					this.orderFormDetailsDialogShow = true
@@ -839,7 +878,7 @@
 					acceptTradeOrder(item.id).then((res) => {
 						if ( res && res.data.code == 0) {
 							this.acceptOrderFormSuccessDialogShow = true;
-							this.queryOrderDetail({id:this.serviceMessage.id});
+							this.queryOrderDetail({id:this.serviceMessage.id,type: 2});
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -866,7 +905,7 @@
 					refuseTradeOrder(id,reason).then((res) => {
 						if ( res && res.data.code == 0) {
 							this.refuseOrderFormSuccessDialogShow = true;
-							this.queryOrderDetail({id:this.serviceMessage.id});
+							this.queryOrderDetail({id:this.serviceMessage.id, type: 2});
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -913,7 +952,7 @@
 					this.showLoadingHint = true;
 					nurseDepart(this.serviceMessage.id).then((res) => {
 						if ( res && res.data.code == 0) {
-							this.queryOrderDetail({id:this.serviceMessage.id});
+							this.queryOrderDetail({id:this.serviceMessage.id, type: 2});
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -946,7 +985,7 @@
 					this.showLoadingHint = true;
 					startServer(this.serviceMessage.id).then((res) => {
 						if ( res && res.data.code == 0) {
-							this.queryOrderDetail({id:this.serviceMessage.id});
+							this.queryOrderDetail({id:this.serviceMessage.id,type: 2});
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -979,7 +1018,7 @@
 					this.showLoadingHint = true;
 					completeServer(this.serviceMessage.id).then((res) => {
 						if ( res && res.data.code == 0) {
-							this.queryOrderDetail({id:this.serviceMessage.id});
+							this.queryOrderDetail({id:this.serviceMessage.id,type: 2});
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
@@ -1640,11 +1679,13 @@
 					font-size: 14px;
 					color: #3E4248;
 					font-weight: bold;
+					align-items: center;
 					margin-bottom: 10px;
 					>view {
 						&:nth-child(1) {
 							position: relative;
 							border: none;
+							margin-right: 4px;
 							&:after {
 							  content: '';
 							  position: absolute;
@@ -1664,6 +1705,7 @@
 						};
 						&:nth-child(2) {
 							flex: 1;
+							text-align: right;
 							word-break: break-all;
 							>text {
 								&:nth-child(1) {
