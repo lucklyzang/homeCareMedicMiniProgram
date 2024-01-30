@@ -336,8 +336,8 @@
 				pageSize: this.pageSize,
 				categories: this.temporaryCategoriesArr,
 				spuIds: this.temporarySpuIdsArr,
-				minPrice: this.minPriceValue,
-				maxPrice: this.maxPriceValue
+				minPrice: !this.minPriceValue ? '' : Math.floor((this.minPriceValue*100)),
+				maxPrice: !this.maxPriceValue ? '' : Math.floor((this.maxPriceValue*100))
 			},true);
 			// 获取当前所在位置
 			try {
@@ -639,8 +639,8 @@
 					pageSize: this.pageSize,
 					categories: this.temporaryCategoriesArr,
 					spuIds: this.temporarySpuIdsArr,
-					minPrice: this.minPriceValue,
-					maxPrice: this.maxPriceValue
+					minPrice: !this.minPriceValue ? '' : Math.floor((this.minPriceValue*100)),
+					maxPrice: !this.maxPriceValue ? '' : Math.floor((this.maxPriceValue*100))
 				},true)
 			},
 			
@@ -679,8 +679,8 @@
 					pageSize: this.pageSize,
 					categories: this.temporaryCategoriesArr,
 					spuIds: this.temporarySpuIdsArr,
-					minPrice: this.minPriceValue,
-					maxPrice: this.maxPriceValue
+					minPrice: !this.minPriceValue ? '' : Math.floor((this.minPriceValue*100)),
+					maxPrice: !this.maxPriceValue ? '' : Math.floor((this.maxPriceValue*100))
 				},true)
 			},
 			
@@ -824,8 +824,8 @@
 					pageSize: this.pageSize,
 					categories: this.temporaryCategoriesArr,
 					spuIds: this.temporarySpuIdsArr,
-					minPrice: this.minPriceValue,
-					maxPrice: this.maxPriceValue
+					minPrice: !this.minPriceValue ? '' : Math.floor((this.minPriceValue*100)),
+					maxPrice: !this.maxPriceValue ? '' : Math.floor((this.maxPriceValue*100))
 				},true)
 			},
 			
@@ -902,8 +902,8 @@
 						pageSize: this.pageSize,
 						categories: this.temporaryCategoriesArr,
 						spuIds: this.temporarySpuIdsArr,
-						minPrice: this.minPriceValue,
-						maxPrice: this.maxPriceValue
+						minPrice: !this.minPriceValue ? '' : Math.floor((this.minPriceValue*100)),
+						maxPrice: !this.maxPriceValue ? '' : Math.floor((this.maxPriceValue*100))
 					},false)
 				}
 			},

@@ -153,7 +153,8 @@
 <script>
 	import { mapGetters, mapMutations } from 'vuex'
 	import {logIn, getUserDictData, logInByCode, weixinMiniAppLogin, sendPhoneCode, resetPassword, setPassword } from '@/api/login.js'
-	import { setCache, getCache, removeCache } from '@/common/js/utils'
+	import { setCache, getCache, removeCache, removeAllLocalStorage } from '@/common/js/utils'
+	import store from '@/store'
 	export default {
 	components: {
 	 },
@@ -196,6 +197,10 @@
 		},
 		
 		onShow () {
+			// 清空store和localStorage
+			removeAllLocalStorage();
+			store.dispatch('resetServiceState');
+			store.dispatch('resetLoginState');
 		},
 		
 		onHide () {

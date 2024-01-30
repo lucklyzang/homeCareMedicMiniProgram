@@ -203,7 +203,7 @@
 				let that = this;
 				uni.chooseImage({
 					count: 1,
-					sizeType: ['original', 'compressed'],
+					sizeType: ['compressed'],
 					sourceType: ['album', 'camera'],
 					success: function(res) {
 						uni.previewImage({
