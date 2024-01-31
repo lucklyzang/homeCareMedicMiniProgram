@@ -243,7 +243,7 @@
 		formatMsgTime
 	} from '@/common/js/utils'
 	import { getSubscribeTemplateList, createSubscribe } from '@/api/login.js'
-	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getHomeProductCategory } from '@/api/user.js'
+	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getServiceProductCategory, getServiceProductSimpleList } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
@@ -295,32 +295,10 @@
 				],
 				isShowServiceCategory: true,
 				serviceCategoryValue: [],
-				serviceCategoryList: [
-				],
+				serviceCategoryList: [],
 				isShowServiceProject: true,
 				serviceProjectValue: [],
-				serviceProjectList: [
-					{
-						id: 1,
-						content: '打针',
-						selected: false
-					}, 
-					{
-						id: 2,
-						content: '喂奶',
-						selected: false
-					},
-					{
-						id: 3,
-						content: '通乳',
-						selected: false
-					}, 
-					{
-						id: 4,
-						content: '洗澡',
-						selected: false
-					}
-				],
+				serviceProjectList: [],
 				temporaryCategoriesArr: [],
 				temporarySpuIdsArr: [],
 				currentAddress: '获取位置中···',
@@ -330,6 +308,7 @@
 		onShow() {
 			this.queryUserBannerList({position: 2});
 			this.queryHomeProductCategory();
+			this.queryServiceProductSimpleList();
 			this.queryMedicalCareHasAuth();
 			this.queryTradeOrderPage({
 				pageNo: this.currentPageNum,
@@ -553,14 +532,49 @@
 			queryHomeProductCategory() {
 				this.showLoadingHint = true;
 				this.serviceCategoryList = [];
-				getHomeProductCategory().then((res) => {
+				getServiceProductCategory().then((res) => {
 					if ( res && res.data.code == 0) {
-						let productTypeList = res.data.data;
+						let productTypeList = res.data.data.filter((item) => { return item.parentId == 0 });
 						for (let item of productTypeList) {
 							this.serviceCategoryList.push({
 								id: item.id,
 								content: item.name,
 								parentId: item.parentId,
+								selected: false
+							})
+						};
+						if (res.data.data.length == 0) {
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 查询首页服务项目
+			queryServiceProductSimpleList() {
+				this.showLoadingHint = true;
+				this.serviceProjectList = [];
+				getServiceProductSimpleList().then((res) => {
+					if ( res && res.data.code == 0) {
+						let productTypeList = res.data.data;
+						for (let item of productTypeList) {
+							this.serviceProjectList.push({
+								id: item.id,
+								content: item.name,
 								selected: false
 							})
 						};

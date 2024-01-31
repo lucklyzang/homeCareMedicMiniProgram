@@ -134,6 +134,7 @@
 			sendCodeEvent () {
 				let loginMessage = {
 				  mobile: this.phoneNumberValue,
+					loginType: 1,
 					scene: 2
 				};
 				this.showLoadingHint = true;

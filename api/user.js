@@ -10,10 +10,19 @@ export function getUserBannerList(data) {
   })
 };
 
-// 获取商品分类(首页筛选)
-export function getHomeProductCategory() {
+
+// 获取商品分类(服务类别首页筛选)
+export function getServiceProductCategory() {
   return request({
-    url: '/app-api/product/category/index',
+    url: '/app-api/product/category/list',
+    method: 'get'
+  })
+}
+
+// 获取商品分类(服务项目首页筛选)
+export function getServiceProductSimpleList() {
+  return request({
+    url: '/app-api/product/spu/get-simple-list',
     method: 'get'
   })
 }
