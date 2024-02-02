@@ -146,6 +146,15 @@
 						"backgroundColorTop": "#fff,",
 						"backgroundColorBottom": "#fff"
 					}
+				},
+				{
+					"path": "pages/serviceTakePhoto/serviceTakePhoto",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
 				}
 			]	
 		},

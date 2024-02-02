@@ -221,7 +221,7 @@
 								<text>￥</text>
 								<text>{{ `${item.payPrice}` }}</text>
 							</view>
-							<view class="btn-box">
+							<view class="btn-box" @click="robOrderEvent">
 								<text>抢单</text>
 							</view>
 						</view>
@@ -322,7 +322,11 @@
 			try {
 				this.isGetLocation()
 			} catch(err) {
-				
+				this.$refs.uToast.show({
+					message: `${err}`,
+					type: 'error',
+					position: 'center'
+				})
 			}
 		},
 		
@@ -349,6 +353,14 @@
 			...mapMutations([
 				'changeSelectBannerMessage'
 			]),
+			
+			// 抢单事件
+			robOrderEvent () {
+				this.$refs.uToast.show({
+					message: '抢单功能暂未开放，敬请期待',
+					position: 'center'
+				})
+			},
 			
 			// 获取用户登录凭证
 			getUserCode () {
@@ -845,7 +857,24 @@
 			
 			// 智能排序下拉框值改变事件
 			smartSortChange(e) {
-				console.log(e)
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				this.status = 'nomore';
+				this.isShowNoData = false;
+				this.fullTradeList = [];
+				if (e.content == '价格优先') {
+					this.queryTradeOrderPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						first: 2
+					},true)
+				} else if (e.content == '距离优先') {
+					this.queryTradeOrderPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize,
+						first: 1
+					},true)
+				}
 			},
 			
 			// 服务类别下拉框值改变事件

@@ -27,6 +27,9 @@
 						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.startTime),4) }}</text>
 					</view>
 				</view>
+				<view class="start-img" v-if="(currentSelectOrderMessage.status == 50 || currentSelectOrderMessage.status == 60) && currentSelectOrderMessage.start">
+					<image :src="currentSelectOrderMessage.start" mode="widthFix"></image>
+				</view>
 				<view class="accept-order-date" v-if="currentSelectOrderMessage.status == 60">
 					<view class="accept-order-date-title">
 						<text>完成服务时间</text>
@@ -35,7 +38,12 @@
 						<text>{{ getNowFormatDate(new Date(currentSelectOrderMessage.completeTime),4) }}</text>
 					</view>
 				</view>
+				<view class="start-img" v-if="currentSelectOrderMessage.status == 60 && currentSelectOrderMessage.complete">
+					<image :src="currentSelectOrderMessage.complete" mode="widthFix"></image>
+				</view>
 				<view class="btn-area" v-if="currentSelectOrderMessage.status <= 50">
+					<u-icon name="camera-fill" color="#fff" size="40" v-if="currentSelectOrderMessage.status == 40" @click="startSureEvent"></u-icon>
+					<u-icon name="camera-fill" color="#fff" size="40" v-if="currentSelectOrderMessage.status == 50" @click="completeSureEvent"></u-icon>
 					<text v-if="currentSelectOrderMessage.status == 30" @click="departSureEvent">立即出发</text>
 					<text v-if="currentSelectOrderMessage.status == 40" @click="startSureEvent">开始服务</text>
 					<text v-if="currentSelectOrderMessage.status == 50" @click="completeSureEvent">完成服务</text>
@@ -45,7 +53,7 @@
 					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
 					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
 					<text>已进入服务范围</text>
-					<text>重新定位</text>
+					<text @click="realTimeGetLocation">{{ locationText }}</text>
 				</view>
 			</u-popup>
 		</view>
@@ -110,7 +118,7 @@
 			</u-popup>
 		</view>
 		<u-toast ref="uToast" />
-		<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
+		<u-loading-icon :show="showLoadingHint" color="#afafaf" textColor="#afafaf" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='2000' bgColor="none" title="我的订单">
@@ -379,7 +387,11 @@
 						name: '全部订单',
 					}
 				],
-				current: 0
+				current: 0,
+				longitude: '',
+				latitude: '',
+				currentAddress: '',
+				locationText: '重新定位'
 			}
 		},
 		computed: {
@@ -412,6 +424,105 @@
 			...mapMutations([
 				'storeEditServiceOrderFormSureChooseMessage'
 			]),
+			
+			// 实时获取地理位置
+			realTimeGetLocation () {
+				try {
+					this.isGetLocation()
+				} catch(err) {
+					this.$refs.uToast.show({
+						message: `${err}`,
+						type: 'error',
+						position: 'center'
+					})
+				}
+			},
+			
+			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+				let _this = this;
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
+							_this.getAuthorizeInfo()
+						} else {
+							_this.getLocation()
+						}
+					}
+				})
+			},
+			
+			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+				let _this = this;
+				uni.authorize({
+					scope: a,
+					success() { //允许授权
+						_this.getLocation()
+					}
+				})
+			},
+			
+			//获取当前所在位置的经纬度
+			getLocation() {
+				this.locationText = '定位中···';
+				uni.getLocation({
+					type: 'gcj02',
+					isHighAccuracy: true,
+					success: (res) => {
+						this.longitude = res.longitude;
+						this.latitude = res.latitude;
+						this.getLocationDetail()
+					},
+					fail: (err) => {
+						this.locationText = '重新定位';
+						this.currentAddress = '无法获取位置信息！无法使用位置功能';
+						this.$refs.uToast.show({
+							message: '无法获取位置信息！无法使用位置功能',
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+			},
+			
+			//根据经纬度获取详细的地址
+			getLocationDetail () {
+				uni.request({
+					header: {
+						"Content-Type": "application/text"
+					},
+					url: 'https://apis.map.qq.com/ws/geocoder/v1/?location=' + this.latitude + ',' + this.longitude +
+						'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+					success:(res)=> {
+						//成功获取到经纬度
+						this.locationText = '重新定位';
+						if (res.statusCode == 200) {
+							this.currentAddress = res.data.result.address;
+							this.showLoadingHint = false;
+							this.$refs.uToast.show({
+								message: '已获取最新位置',
+								type: 'success',
+								position: 'bottom'
+							})
+						} else {
+							this.currentAddress = '获取地理位置失败';
+							this.$refs.uToast.show({
+								message: '获取地理位置失败',
+								type: 'error',
+								position: 'center'
+							})
+						}
+					},
+					fail: (err) => {
+						this.locationText = '重新定位';
+						this.currentAddress = '获取地理位置失败';
+						this.$refs.uToast.show({
+							message: `${err.errMsg}`,
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+			},
 			
 			// 格式化时间(带中文)
 			getNowFormatDateText(currentDate,type) {
@@ -525,6 +636,7 @@
 				this.isShowNoData = false;
 				if (flag) {
 					this.fullTradeList = [];
+					this.infoText = '加载中···';
 					this.showLoadingHint = true
 				} else {
 					this.showLoadingHint = false;
@@ -811,38 +923,18 @@
 			
 			// 开始服务确定事件
 			startSureEvent () {
-				this.infoText = '开始服务中···';
-				this.showLoadingHint = true;
-				startServer(this.currentSelectOrderMessage.id).then((res) => {
-					if ( res && res.data.code == 0) {
-						this.currentPageNum = 1;
-						this.totalCount = 0;
-						this.status = 'nomore';
-						this.isShowNoData = false;
-						this.fullTradeList = [];
-						this.queryTradeOrderPage({
-							pageNo: this.currentPageNum,
-							pageSize: this.pageSize,
-							status: this.transitionOrderStatus(this.current)
-						},true)
-					} else {
-						this.$refs.uToast.show({
-							message: res.data.msg,
-							type: 'error',
-							position: 'center'
-						})
-					};
-					this.orderFormDetailsDialogShow = false;
-					this.showLoadingHint = false
-				})
-				.catch((err) => {
-					this.orderFormDetailsDialogShow = false;
-					this.showLoadingHint = false;
-					this.$refs.uToast.show({
-						message: err.message,
-						type: 'error',
-						position: 'center'
-					})
+				this.orderFormDetailsDialogShow = false;
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				// 传递该订单详情及当前切换的订单类型的信息
+				let temporaryEditServiceOrderFormSureChooseMessage = this.editServiceOrderFormSureChooseMessage;
+				temporaryEditServiceOrderFormSureChooseMessage['current'] = this.current;
+				this.storeEditServiceOrderFormSureChooseMessage(temporaryEditServiceOrderFormSureChooseMessage);
+				let temporaryMessage = this.currentSelectOrderMessage;
+				temporaryMessage['typeText'] = 'start';
+				temporaryMessage = JSON.stringify(this.currentSelectOrderMessage);
+				uni.navigateTo({
+					url: '/orderFormPackage/pages/serviceTakePhoto/serviceTakePhoto?transmitData='+temporaryMessage
 				})
 			},
 			
@@ -854,38 +946,18 @@
 			
 			// 完成服务确定事件
 			completeSureEvent () {
-				this.infoText = '完成服务中···';
-				this.showLoadingHint = true;
-				completeServer(this.currentSelectOrderMessage.id).then((res) => {
-					if ( res && res.data.code == 0) {
-						this.currentPageNum = 1;
-						this.totalCount = 0;
-						this.status = 'nomore';
-						this.isShowNoData = false;
-						this.fullTradeList = [];
-						this.queryTradeOrderPage({
-							pageNo: this.currentPageNum,
-							pageSize: this.pageSize,
-							status: this.transitionOrderStatus(this.current)
-						},true)
-					} else {
-						this.$refs.uToast.show({
-							message: res.data.msg,
-							type: 'error',
-							position: 'center'
-						})
-					};
-					this.orderFormDetailsDialogShow = false;
-					this.showLoadingHint = false
-				})
-				.catch((err) => {
-					this.orderFormDetailsDialogShow = false;
-					this.showLoadingHint = false;
-					this.$refs.uToast.show({
-						message: err.message,
-						type: 'error',
-						position: 'center'
-					})
+				this.orderFormDetailsDialogShow = false;
+				this.currentPageNum = 1;
+				this.totalCount = 0;
+				// 传递该订单详情及当前切换的订单类型的信息
+				let temporaryEditServiceOrderFormSureChooseMessage = this.editServiceOrderFormSureChooseMessage;
+				temporaryEditServiceOrderFormSureChooseMessage['current'] = this.current;
+				this.storeEditServiceOrderFormSureChooseMessage(temporaryEditServiceOrderFormSureChooseMessage);
+				let temporaryMessage = this.currentSelectOrderMessage;
+				temporaryMessage['typeText'] = 'end';
+				temporaryMessage = JSON.stringify(this.currentSelectOrderMessage);
+				uni.navigateTo({
+					url: '/orderFormPackage/pages/serviceTakePhoto/serviceTakePhoto?transmitData='+temporaryMessage
 				})
 			},
 			
@@ -922,7 +994,7 @@
 			top: 50%;
 			left: 50%;
 			transform: translate(-50%,-50%);
-			z-index: 20000;
+			z-index: 200000;
 		};
 		::v-deep .u-transition {
 			z-index: 100000 !important;
@@ -955,9 +1027,17 @@
 									color: #101010
 								}
 							};
+							.start-img {
+								padding-left: 20px;
+								box-sizing: border-box;
+								width: 100px;
+								>image {
+									width: 100px;
+								}
+							};
 							.btn-area {
 								width: 118px;
-								height: 108px;
+								height: 118px;
 								margin: 0 auto;
 								margin-top: 10px;
 								margin-bottom: 20px;
@@ -968,10 +1048,10 @@
 								align-items: center;
 								justify-content: center;
 								color: #fff;
-								font-size: 18px;
+								font-size: 14px;
 								>text {
-									&:nth-child(2) {
-										margin-top: 6px;
+									&:last-child {
+										margin-top: 2px;
 										font-size: 12px;
 									}
 								}

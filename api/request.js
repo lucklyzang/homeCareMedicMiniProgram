@@ -51,7 +51,7 @@ function addSubscriber(callback) {
 // 添加请求拦截器
 instance.interceptors.request.use(function (config) {
 	config.headers['tenant-id'] = 1;
-  if (config['url'] == 'auth/login') {
+  if (config['url'] == 'auth/login' || config['url'] == '/app-api/trade/order/start' || config['url'] == '/app-api/trade/order/complete') {
   	config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
   };
 	// 请求头添加token

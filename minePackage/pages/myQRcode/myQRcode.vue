@@ -200,7 +200,161 @@
 						position: 'bottom'
 					})
 				})
+			},
+			
+			//保存图片到相册按钮的点击事件函数
+			saveQRcodeFn() {
+				let that = this;
+				uni.getSetting({
+					success(res) {
+						console.log(res);
+						if (!res.authSetting['scope.writePhotosAlbum']) {
+							uni.authorize({
+								scope: 'scope.writePhotosAlbum',
+								success(res) {
+									that.saveBase64ImageToPhotosAlbum()
+								},
+								fail() {
+									uni.showModal({
+										content: '请允许相册权限,拒绝将无法正常保存图片',
+										showCancel: false,
+										success() {
+											uni.openSetting({
+												success(settingdata) {
+													if (settingdata.authSetting['scope.writePhotosAlbum']) {} else {
+														console.log('获取权限失败')
+														that.$refs.uToast.show({
+															type: 'error',
+															message: `获取权限失败`,
+															duration: 1200,
+														})
+													}
+												}
+											})
+										}
+									})
+								}
+							})
+						} else {
+							that.saveBase64ImageToPhotosAlbum()
+						}
+					}
+				})
+			},
+			
+			//保存图片到相册
+			saveBase64ImageToPhotosAlbum() {
+				let that = this;
+				var timestamp = new Date().getTime();
+				let base64 = this.userInfo.jumpAddFriendQr.replace(/^data:image\/\w+;base64,/, ""); //去掉data:image/png;base64,
+				let filePath = wx.env.USER_DATA_PATH + `/addFriends_${timestamp}_qrcode.png`;
+				uni.showLoading({
+					title: '保存中',
+					mask: true
+				})
+				uni.getFileSystemManager().writeFile({
+					filePath: filePath, //创建一个临时文件名
+					data: base64, //写入的文本或二进制数据
+					encoding: 'base64', //写入当前文件的字符编码
+					success: res => {
+						uni.saveImageToPhotosAlbum({
+							filePath: filePath,
+							success: function(res2) {
+								uni.hideLoading();
+								that.$refs.uToast.show({
+									type: 'success',
+									message: "保存成功~",
+									duration: 1200,
+								})
+							},
+							fail: function(err) {
+								uni.hideLoading();
+								console.log(err.errMsg);
+								that.$refs.uToast.show({
+									type: 'error',
+									message: `保存失败`,
+									duration: 1200,
+								})
+							}
+						})
+					},
+					fail: err => {
+						uni.hideLoading();
+						that.$refs.uToast.show({
+							type: 'error',
+							message: `创建文件失败`,
+							duration: 1200,
+						})
+					}
+				})
+			},
+			
+			//分享图片给好友按钮的点击事件函数
+			sharePic() {
+				let that = this
+				this.base64ToFilePath(this.userInfo.jumpAddFriendQr, (filePath) => {
+					console.log(filePath);
+					wx.showShareImageMenu({ //分享给朋友
+						path: filePath,
+						success: (res) => {
+							console.log("分享成功：", res);
+						},
+						fail: (err) => {
+							console.log("分享取消：", err);
+						},
+					})
+				})
+			},
+			
+			//封装的base64转换成临时文件路径的函数
+			base64ToFilePath(base64data, fun) {
+				const base64 = base64data; //base64格式图片
+				const time = new Date().getTime();
+				const imgPath = wx.env.USER_DATA_PATH + "/addFriends" + time + "share_qrcode" + ".png"; //去掉data:image/png;base64,如果图片字符串不含要清空的前缀,可以不执行下行代码.
+				const imageData = base64.replace(/^data:image\/\w+;base64,/, "");
+				const file = wx.getFileSystemManager();
+				file.writeFileSync(imgPath, imageData, "base64");
+				fun(imgPath);
+			},
+			
+			getAuth(fn) {
+				let that = this
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting['scope.writePhotosAlbum']) {
+							uni.authorize({
+								scope: 'scope.writePhotosAlbum',
+								success(res) {
+									fn()
+								},
+								fail() {
+									uni.showModal({
+										content: '请允许相册权限,拒绝将无法正常保存图片',
+										showCancel: false,
+										success() {
+											uni.openSetting({
+												success(settingdata) {
+													if (settingdata.authSetting['scope.writePhotosAlbum']) {} else {
+														console.log('获取权限失败')
+														that.$refs.uToast.show({
+															type: 'error',
+															message: `获取权限失败`,
+															duration: 1200,
+														})
+													}
+												}
+											})
+										}
+									})
+								}
+							})
+						} else {
+							fn()
+						}
+					}
+				})
 			}
+	
 		}
 	}
 </script>

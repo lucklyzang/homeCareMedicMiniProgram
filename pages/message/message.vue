@@ -19,8 +19,8 @@
 			</view>
 		</u-transition>
 		<view class="message-list-wrapper" v-if="tabIndex === 0">
-			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
-			<view class="message-list" @click="enterMessageListEvent('消息')">
+			<u-empty text="暂无聊天消息" mode="list" v-if="true"></u-empty>
+			<!-- <view class="message-list" @click="enterMessageListEvent('消息')">
 				<view class="message-photo">
 					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
 						 <template v-slot:loading>
@@ -48,7 +48,7 @@
 						</view>
 					</view>
 				</view>
-			</view>
+			</view> -->
 		</view>
 		<view class="message-list-wrapper" v-else>
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>

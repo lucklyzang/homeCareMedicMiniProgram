@@ -40,18 +40,20 @@ export function nurseDepart(id) {
 };
 
 // 开始服务
-export function startServer(id) {
+export function startServer(data) {
   return request({
-    url: `/app-api/trade/order/start?id=${id}`,
-    method: 'put'
+    url: '/app-api/trade/order/start',
+    method: 'put',
+		data
   })
 };
 
 // 完成服务
-export function completeServer(id) {
+export function completeServer(data) {
   return request({
-    url: `/app-api/trade/order/complete?id=${id}`,
-    method: 'put'
+    url: '/app-api/trade/order/complete',
+    method: 'put',
+		data
   })
 };
 

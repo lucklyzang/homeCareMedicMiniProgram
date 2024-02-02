@@ -89,6 +89,33 @@ export function createCallPolice(data) {
   })
 };
 
+// 创建资讯收藏
+export function createInformationFavorite(data) {
+  return request({
+    url: '/app-api/promotion/information/add/collect',
+    method: 'post',
+		data
+  })
+}
+
+// 取消资讯收藏
+export function deleteInformationFavorite(data) {
+  return request({
+    url: '/app-api/promotion/information/delete/collect',
+    method: 'post',
+		data
+  })
+}
+
+// 获取我的收藏列表
+export function myCollectInformationList(data) {
+  return request({
+    url: '/app-api/promotion/information/page/favorites',
+    method: 'get',
+		params: data
+  })
+}
+
 // 医护实名认证
 export function medicalCareRealName(data) {
   return request({

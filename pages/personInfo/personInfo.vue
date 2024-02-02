@@ -89,7 +89,7 @@
 						<view>
 							<image src="@/static/img/withdrawal-limit-icon.png"></image>
 							<text>{{ !tradeStatistics.canCash ? 0 : tradeStatistics.canCash }}</text>
-							<text v-if="!tradeStatistics.canCash == true" @click.stop="withdrawalMethodDialogShow = true">提现</text>
+							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 						<view>
 							<text>可提现额度 (元)</text>

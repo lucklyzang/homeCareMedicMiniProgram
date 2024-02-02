@@ -439,7 +439,7 @@
 			// 请求月数据
 			getMonthData () {
 				this.getMonthOrderStatisticsEvent({
-					day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					month: this.getNowFormatDate(new Date(this.monthDateValue),3),
 					careId: this.userInfo.careId
 				})
 			},
@@ -454,7 +454,7 @@
 				this.monthDateValue = value['value'];
 				this.monthDateShow = false;
 				this.getMonthOrderStatisticsEvent({
-					day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+					month: this.getNowFormatDate(new Date(this.monthDateValue),3),
 					careId: this.userInfo.careId
 				})
 			},
@@ -534,7 +534,7 @@
 				} else if (this.statisticalTypeIndex === 2) {
 					// 获取月统计数据
 					this.getMonthOrderStatisticsEvent({
-						day: this.getNowFormatDate(new Date(this.monthDateValue),3),
+						month: this.getNowFormatDate(new Date(this.monthDateValue),3),
 						careId: this.userInfo.careId
 					})
 				}
