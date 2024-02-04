@@ -187,9 +187,11 @@
 				}).then((res) => {
 					if ( res && res.data.code == 0) {
 						let pages = getCurrentPages(); // 当前页页⾯实例
-						let nowPage = pages[pages.length - 1]; //当前页⾯实例
+						let nowPage = pages[pages.length - 1];
 						let prevPage = pages[pages.length - 2]; // 上一页面实例
-						prevPage.$vm.prevDateFun(this.currentSelectOrderMessage.id);
+						if (pages.length == 3) {
+							prevPage.$vm.prevDateFun(this.currentSelectOrderMessage.id);
+						};
 						this.backTo()
 					} else {
 						this.onlineArr = [];
@@ -232,9 +234,11 @@
 				}).then((res) => {
 					if ( res && res.data.code == 0) {
 						let pages = getCurrentPages(); // 当前页页⾯实例
-						let nowPage = pages[pages.length - 1]; //当前页⾯实例
+						let nowPage = pages[pages.length - 1];
 						let prevPage = pages[pages.length - 2]; // 上一页面实例
-						prevPage.$vm.prevDateFun(this.currentSelectOrderMessage.id);
+						if (pages.length == 3) {
+							prevPage.$vm.prevDateFun(this.currentSelectOrderMessage.id);
+						};
 						this.backTo()
 					} else {
 						this.onlineArr = [];

@@ -16,7 +16,7 @@
 				<view class="success-center-top-left">
 					<text>提现金额</text>
 				</view>
-				<view class="success-center-top-right">￥1000</view>
+				<view class="success-center-top-right">{{`￥${canCash}`}}</view>
 			</view>
 			<view class="success-center-bottom">
 				<view class="success-center-bottom-left">
@@ -48,12 +48,14 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中'
+				infoText: '加载中',
+				canCash: ''
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userBasicInfo',
+				'tradeStatisticsMessage'
 			]),
 			userName() {
 			},
@@ -61,6 +63,7 @@
 			}
 		},
 		onShow() {
+			this.canCash = this.tradeStatisticsMessage.canCash
 		},
 		methods: {
 			...mapMutations([

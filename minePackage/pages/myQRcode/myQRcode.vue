@@ -22,18 +22,18 @@
 			</view>
 			<view class="operate-box">
 				<view class="share-box">
-					<view class="image-box">
+					<view class="image-box" @click="sharePic">
 						<image :src="shareWhiteIconPng"></image>
 					</view>
-					<view class="share-text">
+					<view class="share-text" @click="sharePic">
 						<text>分享</text>
 					</view>
 				</view>
 				<view class="administration-box">
-					<view class="image-box">
+					<view class="image-box" @click="saveQRcodeFn">
 						<image :src="saveWhiteIconPng"></image>
 					</view>
-					<view class="save-text">
+					<view class="save-text" @click="saveQRcodeFn">
 						<text>保存相册</text>
 					</view>
 				</view>
@@ -73,7 +73,8 @@
 				organizationList: [],
 				niceNameValue: '',
 				personPhotoSource: '',
-				infoText: '加载中'
+				infoText: '加载中···',
+				base64Data: ''
 			}
 		},
 		computed: {
@@ -153,7 +154,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultOrganizationValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultOrganizationValue = '请选择您挂靠的机构'
+								this.defaultOrganizationValue = ''
 							}
 						}
 					}
@@ -187,7 +188,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultProfessionalTitleValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultProfessionalTitleValue = "请选择您的职称"
+								this.defaultProfessionalTitleValue = ""
 							}
 						}
 					}
@@ -202,7 +203,31 @@
 				})
 			},
 			
-			//保存图片到相册按钮的点击事件函数
+			// 将图片路径转化为base64
+			imgPathTobase64 (filePath) {
+				return new Promise((resolve, reject) => {
+					uni.getFileSystemManager().readFile({
+						filePath: filePath, // 本地图片路径
+						encoding: 'base64', // 编码格式为base64
+						success: res => {
+							// 成功获取图片的base64字符串
+							this.base64Data = res.data;
+							resolve()
+						},
+						fail: err => {
+							// 处理错误情况
+							this.$refs.uToast.show({
+								message: `${err}`,
+								type: 'error',
+								position: 'bottom'
+							});
+							reject()
+						}
+					})
+				})
+			},
+			
+			//保存图片到相册事件处理函数
 			saveQRcodeFn() {
 				let that = this;
 				uni.getSetting({
@@ -243,10 +268,11 @@
 			},
 			
 			//保存图片到相册
-			saveBase64ImageToPhotosAlbum() {
+			async saveBase64ImageToPhotosAlbum() {
+				await this.imgPathTobase64('/static/img/qr-code-black-icon.png');
 				let that = this;
 				var timestamp = new Date().getTime();
-				let base64 = this.userInfo.jumpAddFriendQr.replace(/^data:image\/\w+;base64,/, ""); //去掉data:image/png;base64,
+				let base64 = this.base64Data.replace(/^data:image\/\w+;base64,/, ""); //去掉data:image/png;base64,
 				let filePath = wx.env.USER_DATA_PATH + `/addFriends_${timestamp}_qrcode.png`;
 				uni.showLoading({
 					title: '保存中',
@@ -290,19 +316,21 @@
 			},
 			
 			//分享图片给好友按钮的点击事件函数
-			sharePic() {
-				let that = this
-				this.base64ToFilePath(this.userInfo.jumpAddFriendQr, (filePath) => {
-					console.log(filePath);
-					wx.showShareImageMenu({ //分享给朋友
-						path: filePath,
-						success: (res) => {
-							console.log("分享成功：", res);
-						},
-						fail: (err) => {
-							console.log("分享取消：", err);
-						},
-					})
+			async sharePic() {
+				await this.imgPathTobase64('/static/img/qr-code-black-icon.png');
+				let that = this;
+				this.base64ToFilePath(this.base64Data, (filePath) => {
+					this.getAuth(
+						wx.showShareImageMenu({ //分享给朋友
+							path: filePath,
+							success: (res) => {
+								console.log("分享成功：", res);
+							},
+							fail: (err) => {
+								console.log("分享取消：", err);
+							},
+						})
+					)
 				})
 			},
 			
@@ -318,7 +346,7 @@
 			},
 			
 			getAuth(fn) {
-				let that = this
+				let that = this;
 				uni.getSetting({
 					success(res) {
 						if (!res.authSetting['scope.writePhotosAlbum']) {
@@ -334,8 +362,9 @@
 										success() {
 											uni.openSetting({
 												success(settingdata) {
-													if (settingdata.authSetting['scope.writePhotosAlbum']) {} else {
-														console.log('获取权限失败')
+													if (settingdata.authSetting['scope.writePhotosAlbum']) {
+														
+													} else {
 														that.$refs.uToast.show({
 															type: 'error',
 															message: `获取权限失败`,

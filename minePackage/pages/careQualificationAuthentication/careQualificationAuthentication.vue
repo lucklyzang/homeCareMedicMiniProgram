@@ -64,21 +64,21 @@
 					</view>
 					<view class="real-name-authentication-standard-image">
 						<view class="real-name-authentication-standard-one">
-							<image src="@/static/img/app-logo.png"></image>
+							<image src="@/static/img/standard-img.jpg"></image>
 							<view class="text-explain">
 								<image src="@/static/img/authentication-upload-demonstrate-correct.png"></image>
 								<text>标准照片</text>
 							</view>
 						</view>
 						<view class="real-name-authentication-standard-one real-name-authentication-standard-two">
-							<image src="@/static/img/app-logo.png"></image>
+							<image src="@/static/img/dim-img.jpg"></image>
 							<view class="text-explain">
 								<image src="@/static/img/authentication-upload-demonstrate-wrong.png"></image>
 								<text>模糊照片</text>
 							</view>
 						</view>
 						<view class="real-name-authentication-standard-one real-name-authentication-standard-three">
-							<image src="@/static/img/app-logo.png"></image>
+							<image src="@/static/img/flash-img.jpg"></image>
 							<view class="text-explain">
 								<image src="@/static/img/authentication-upload-demonstrate-wrong.png"></image>
 								<text>闪光照片</text>
@@ -577,7 +577,7 @@
 							width: 0;
 							>image {
 								width: 100%;
-								height: 80px;
+								height: 60px;
 								margin-bottom: 8px
 							};
 							>view {

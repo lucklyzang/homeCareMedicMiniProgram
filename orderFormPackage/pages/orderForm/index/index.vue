@@ -754,6 +754,7 @@
 			
 			// 拍照页面返回后的回调
 			prevDateFun (id) {
+				console.log('毁掉了');
 				this.queryOrderDetail({id, type: 2})
 			},
 				

@@ -244,6 +244,15 @@
 					}
 				},
 				{
+					"path": "pages/bindBankContract/bindBankContract",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/selectBankCard/selectBankCard",
 					"style": {
 						"navigationBarTitleText": "",

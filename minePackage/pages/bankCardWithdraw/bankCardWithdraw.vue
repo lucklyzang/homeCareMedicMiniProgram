@@ -59,9 +59,9 @@
 				</view>
 				<view class="withdraw-money-bottom">
 					<view class="withdraw-money-bottom-left">
-						<text>可提现金额¥10342.00</text>
+						<text>{{ `可提现金额¥${canCash}` }}</text>
 					</view>
-					<view class="withdraw-money-bottom-right">
+					<view class="withdraw-money-bottom-right" @click="allWithdrawEvent">
 						<text>全部提现</text>
 					</view>
 				</view>
@@ -115,14 +115,16 @@
 				showLoadingHint: false,
 				infoText: '加载中',
 				moneyValue: '',
-				cardList: []
+				cardList: [],
+				canCash: ''
 			}
 		},
 		computed: {
 			...mapGetters([
 				'userInfo',
 				'userBasicInfo',
-				'selectedBankMessage'
+				'selectedBankMessage',
+				'tradeStatisticsMessage'
 			]),
 			userName() {
 			},
@@ -130,7 +132,8 @@
 			}
 		},
 		onShow() {
-			this.getCareBankCardListEvent()
+			this.getCareBankCardListEvent();
+			this.canCash = this.tradeStatisticsMessage.canCash
 		},
 		methods: {
 			...mapMutations([
@@ -140,6 +143,11 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 全部提现事件
+			allWithdrawEvent () {
+				this.moneyValue = this.canCash
 			},
 			
 			// 添加银行卡事件
@@ -187,6 +195,23 @@
 			
 			// 确认提现事件
 			sureWithdrawEvent () {
+				if (!this.moneyValue && this.moneyValue !== 0) {
+					this.$refs.uToast.show({
+						message: '请输入提现金额',
+						type: 'error',
+						position: 'bottom'
+					});
+					return
+				} else {
+					if (this.moneyValue <= 0) {
+						this.$refs.uToast.show({
+							message: '提现金额必须大于0',
+							type: 'error',
+							position: 'bottom'
+						});
+						return
+					}
+				};
 				uni.navigateTo({
 					url: '/minePackage/pages/withdrawSuccess/withdrawSuccess'
 				})

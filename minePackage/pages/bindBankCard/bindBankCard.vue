@@ -116,7 +116,7 @@
 						active-color="#1890FF">
 					</u-checkbox>
 				</u-checkbox-group>
-				<text>《服务协议》</text>
+				<text @click="enterServiceContractEvent">《服务协议》</text>
 			</view>
 			<view class="sure-btn" @click="bindSureEvent">
 				<text>确定</text>
@@ -202,8 +202,34 @@
 				uni.navigateBack()
 			},
 			
+			// 校验银行卡号是否符合
+			isValidBankCardNumber(cardNumber) {
+			  // 移除非数字字符
+			  const sanitizedCardNumber = cardNumber.replace(/\D/g, '');
+			  // 对偶数位数字进行乘2处理
+			  let doubled = sanitizedCardNumber.slice(0, sanitizedCardNumber.length - 1).split('').map((digit, index) => {
+					if (index % 2 === 0) {
+						const doubledDigit = parseInt(digit, 10) * 2;
+						return (doubledDigit > 9 ? doubledDigit.toString().split('') : [doubledDigit]).join('');
+					};
+					return digit;
+				}).join('');
+			 
+			  // 计算总和
+			  const sum = doubled.split('').map(Number).reduce((acc, value) => acc + value, 0) + parseInt(sanitizedCardNumber.slice(-1), 10);
+			  // 验证模10
+			  return sum % 10 === 0;
+			},
+			
 			affiliationBankSelect(e) {
 				this.modelBankCard.formInfo.affiliationBank = e.name
+			},
+			
+			// 进入服务协议事件
+			enterServiceContractEvent () {
+				uni.navigateTo({
+					url: '/minePackage/pages/bindBankContract/bindBankContract'
+				})
 			},
 			
 			// 获取验证码事件
@@ -336,7 +362,7 @@
 				if (!this.modelBankCard.formInfo.cardName) {
 					this.$refs.uToast.show({
 						message: '请输入持卡人姓名',
-						type: 'erroe',
+						type: 'error',
 						position: 'center'
 					});
 					return
@@ -344,7 +370,7 @@
 				if (!this.modelBankCard.formInfo.cardNum) {
 					this.$refs.uToast.show({
 						message: '请输入银行卡号',
-						type: 'erroe',
+						type: 'error',
 						position: 'center'
 					});
 					return
@@ -352,7 +378,7 @@
 				if (!this.modelBankCard.formInfo.affiliationBank) {
 					this.$refs.uToast.show({
 						message: '请选择归属银行',
-						type: 'erroe',
+						type: 'error',
 						position: 'center'
 					});
 					return
@@ -360,7 +386,7 @@
 				if (!this.modelBankCard.formInfo.idCardNum) {
 					this.$refs.uToast.show({
 						message: '请输入身份证号码',
-						type: 'erroe',
+						type: 'error',
 						position: 'bottom'
 					});
 					return
@@ -368,7 +394,23 @@
 				if (!this.modelBankCard.formInfo.mobile) {
 					this.$refs.uToast.show({
 						message: '请输入预留手机号',
-						type: 'erroe',
+						type: 'error',
+						position: 'bottom'
+					});
+					return
+				};
+				if (!this.modelBankCard.formInfo.phoneCode) {
+					this.$refs.uToast.show({
+						message: '请输入验证码',
+						type: 'error',
+						position: 'bottom'
+					});
+					return
+				};
+				if (!this.isValidBankCardNumber(this.modelBankCard.formInfo.cardNum)) {
+					this.$refs.uToast.show({
+						message: '请输入正确银行卡号',
+						type: 'error',
 						position: 'bottom'
 					});
 					return

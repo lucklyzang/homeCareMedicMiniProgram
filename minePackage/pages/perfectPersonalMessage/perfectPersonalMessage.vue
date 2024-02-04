@@ -313,7 +313,7 @@
 						this.photoImageOnlinePath = !res.data.data.avatar ? '' : res.data.data.avatar;
 						this.personNameValue = res.data.data.name;
 						this.idCardValue = res.data.data.idCard;
-						this.genderValue = res.data.data.sex == 1 ? '男' : '女';
+						this.genderValue = res.data.data.sex == 1 ? '男' : res.data.data.sex == 2 ? '女' : '';
 						this.birthdayValue = res.data.data.birthday;
 						this.ageValue = res.data.data.age;
 						this.emergencyContactNumberValue = res.data.data.critical;
@@ -577,7 +577,7 @@
 					name: this.personNameValue,
 					idCard: this.idCardValue,
 					birthday: this.birthdayValue,
-					sex: this.genderValue == '男' ? '1' : '2',
+					sex: this.genderValue == '男' ? 1 : 2,
 					critical: this.emergencyContactNumberValue,
 					title: this.professionalTitleValue,
 					organization: this.organizationValue,
