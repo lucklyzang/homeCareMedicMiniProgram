@@ -31,30 +31,33 @@
 							labelWidth="120px"
 							borderBottom
 						>
-							<u--input
-								type="number"
+							<u-input
+								type="idcard"
 								v-model="modelBankCard.formInfo.cardNum"
 								placeholder="请输入卡号"
 								border="none"
-							></u--input>
+								@blur="cardNumInputBlurEvent">
+									<template slot="suffix">
+										<u-icon @click="scanEvent" name="scan" size="26" color="#1890FF"></u-icon>
+									</template>
+								</u-input>
 						</u-form-item>
 						<u-form-item
 							label="归属银行"
 							labelWidth="120px"
 							borderBottom
-							@click="showAffiliationBankDialog = true"
 						>
 							<u--input
 								v-model="modelBankCard.formInfo.affiliationBank"
 								disabled
 								disabledColor="#ffffff"
-								placeholder="请选择归属银行"
+								placeholder="归属银行"
 								border="none"
 							></u--input>
-							<u-icon
+							<!-- <u-icon
 								slot="right"
 								name="arrow-right"
-							></u-icon>
+							></u-icon> -->
 						</u-form-item>
 						<u-form-item
 							label="身份证号码"
@@ -89,6 +92,7 @@
 								v-model="modelBankCard.formInfo.phoneCode"
 								placeholder="请输入验证码"
 								border="none"
+								@blur="phoneCodeBlurEvent"
 								type="number"
 							></u--input>
 							<template slot="right">
@@ -134,6 +138,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import BIN from 'bankcardinfo'
 	import { createCareBankCard } from '@/api/user.js'
 	import { sendPhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
@@ -202,27 +207,73 @@
 				uni.navigateBack()
 			},
 			
+			// 银行卡输入框失去焦点事件
+			cardNumInputBlurEvent () {
+				if (!this.modelBankCard.formInfo.cardNum) {
+					this.$refs.uToast.show({
+						message: '请输入银行卡号',
+						type: 'error',
+						position: 'center'
+					});
+					this.modelBankCard.formInfo.affiliationBank = '';
+					return
+				};
+				if (!this.isValidBankCardNumber(this.modelBankCard.formInfo.cardNum)) {
+					this.$refs.uToast.show({
+						message: '请输入正确银行卡号',
+						type: 'error',
+						position: 'center'
+					});
+					this.modelBankCard.formInfo.affiliationBank = '';
+					return
+				};
+				this.getBankBinEvent(this.modelBankCard.formInfo.cardNum)
+			},
+			
+			// 验证码输入框失焦事件
+			phoneCodeBlurEvent () {
+				let reg = /(^\d{4}$)|(^\d{6}$)/;
+				if (!this.modelBankCard.formInfo.phoneCode.match(reg)) {
+					this.$refs.uToast.show({
+						message: '验证码错误',
+						type: 'error',
+						position: 'center'
+					})
+				}	
+			},
+			
+			// 根据卡号获取银行信息
+			getBankBinEvent (cardNumber) {
+				const self = this;
+				BIN.getBankBin(cardNumber)
+				.then(function(res) {
+					console.log('sa',res);
+					self.modelBankCard.formInfo.affiliationBank = res.bankName
+				})
+				.catch(function(err) {
+					console.log('作物',err);
+					self.modelBankCard.formInfo.affiliationBank = '';
+					self.$refs.uToast.show({
+						message: '暂时无法识别此卡所属银行类型',
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},	
+			
 			// 校验银行卡号是否符合
 			isValidBankCardNumber(cardNumber) {
-			  // 移除非数字字符
-			  const sanitizedCardNumber = cardNumber.replace(/\D/g, '');
-			  // 对偶数位数字进行乘2处理
-			  let doubled = sanitizedCardNumber.slice(0, sanitizedCardNumber.length - 1).split('').map((digit, index) => {
-					if (index % 2 === 0) {
-						const doubledDigit = parseInt(digit, 10) * 2;
-						return (doubledDigit > 9 ? doubledDigit.toString().split('') : [doubledDigit]).join('');
-					};
-					return digit;
-				}).join('');
-			 
-			  // 计算总和
-			  const sum = doubled.split('').map(Number).reduce((acc, value) => acc + value, 0) + parseInt(sanitizedCardNumber.slice(-1), 10);
-			  // 验证模10
-			  return sum % 10 === 0;
+			  let reg=/^([1-9]{1})(\d{14}|\d{15}|\d{17}|\d{18})$/;
+				return cardNumber.match(reg)
 			},
 			
 			affiliationBankSelect(e) {
 				this.modelBankCard.formInfo.affiliationBank = e.name
+			},
+			
+			// 扫描银行卡事件
+			scanEvent () {
+				console.log('扫描了');
 			},
 			
 			// 进入服务协议事件
@@ -238,7 +289,7 @@
 					this.$refs.uToast.show({
 						message: '请输入手机号码!',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -247,7 +298,7 @@
 					this.$refs.uToast.show({
 						message: '手机号格式有误,请重新输入!',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -275,7 +326,7 @@
 					this.$refs.uToast.show({
 						message: '请输入手机号',
 						type: 'erroe',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -288,22 +339,22 @@
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {
 							this.$refs.uToast.show({
-								message: '发送成功!',
+								message: '验证码已发送至您的手机,请查收',
 								type: 'success',
-								position: 'bottom'
+								position: 'center'
 							})
 						} else {
 							this.$refs.uToast.show({
 								message: res.data.msg,
 								type: 'error',
-								position: 'bottom'
+								position: 'center'
 							})
 						}
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
 							type: 'error',
-							position: 'bottom'
+							position: 'center'
 						})
 					};
 					this.showLoadingHint = false;
@@ -313,7 +364,7 @@
 					this.$refs.uToast.show({
 						message: `${err}`,
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					})
 				})
 			},
@@ -387,7 +438,7 @@
 					this.$refs.uToast.show({
 						message: '请输入身份证号码',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -395,7 +446,7 @@
 					this.$refs.uToast.show({
 						message: '请输入预留手机号',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -403,7 +454,7 @@
 					this.$refs.uToast.show({
 						message: '请输入验证码',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -411,7 +462,7 @@
 					this.$refs.uToast.show({
 						message: '请输入正确银行卡号',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};
@@ -431,15 +482,23 @@
 					this.$refs.uToast.show({
 						message: '手机号格式有误,请重新输入!',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
+				};
+				let reg = /(^\d{4}$)|(^\d{6}$)/;
+				if (!this.modelBankCard.formInfo.phoneCode.match(reg)) {
+					this.$refs.uToast.show({
+						message: '验证码错误',
+						type: 'error',
+						position: 'center'
+					})
 				};
 				if (this.isReadAgreeChecked.length == 0) {
 					this.$refs.uToast.show({
 						message: '请勾选阅读并同意《服务协议》!',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				};

@@ -40,7 +40,9 @@
 						<u--input
 							placeholder="请输入提现金额"
 							border="bottom"
+							:color="isbeyondCash ? 'red':''"
 							type="digit"
+							@blur="moneyValueBlurEvent"
 							v-model="moneyValue"
 							clearable
 						></u--input>
@@ -103,7 +105,8 @@
 				showLoadingHint: false,
 				infoText: '加载中',
 				moneyValue: '',
-				canCash: ''
+				canCash: '',
+				isbeyondCash: false
 			}
 		},
 		computed: {
@@ -114,6 +117,23 @@
 			userName() {
 			},
 			proId() {
+			}
+		},
+		watch: {
+			moneyValue: {
+				handler(newName, oldName) {
+					if (!newName) {
+						this.isbeyondCash = false;
+						return;
+					};
+					if (newName > parseInt(this.canCash)) {
+						this.isbeyondCash = true
+					} else {
+						this.isbeyondCash = false
+					}
+				},
+				immediate: true,
+				deep: true
 			}
 		},
 		onShow() {
@@ -137,11 +157,28 @@
 			
 			// 全部提现事件
 			allWithdrawEvent () {
-				this.moneyValue = this.canCash
+				this.isbeyondCash = false;
+				this.moneyValue = parseInt(this.canCash)
 			},
 			
 			// 支付宝授权事件
 			alipayAuthorizationEvent () {},
+			
+			// 提现金额输入框失焦事件
+			moneyValueBlurEvent () {
+				if (!this.moneyValue && this.moneyValue !== 0) {
+					return
+				} else {
+					if (this.moneyValue[0] == '.') {
+						return
+					};
+					if (this.moneyValue > parseInt(this.canCash)) {
+						this.isbeyondCash = true
+					} else {
+						this.isbeyondCash = false
+					}
+				}	
+			},
 			
 			// 确认提现事件
 			sureWithdrawEvent () {
@@ -149,15 +186,23 @@
 					this.$refs.uToast.show({
 						message: '请输入提现金额',
 						type: 'error',
-						position: 'bottom'
+						position: 'center'
 					});
 					return
 				} else {
-					if (this.moneyValue <= 0) {
+					if (this.moneyValue[0] == '.') {
 						this.$refs.uToast.show({
-							message: '提现金额必须大于0',
+							message: '请输入正确的提现金额',
 							type: 'error',
-							position: 'bottom'
+							position: 'center'
+						});
+						return
+					};
+					if (this.moneyValue > parseInt(this.canCash)) {
+						this.$refs.uToast.show({
+							message: '超出可提现金额上限,请修改提现金额',
+							type: 'error',
+							position: 'center'
 						});
 						return
 					}
