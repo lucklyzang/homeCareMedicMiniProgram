@@ -326,7 +326,11 @@
 			// 时间选择重置事件
 			resetEvent () {
 				if (this.currentTypeIndex == 0) {
-					this.initValue = 0
+					this.initValue = new Date().getMonth();
+					let practicalMonth = this.initValue + 1;
+					let temporaryMonth = practicalMonth > 9 ? practicalMonth : `0${practicalMonth}`;
+					let temporaryDate = `${new Date().getFullYear()}-${temporaryMonth}`;
+					this.currentSelectDate = this.getNowFormatDate(new Date (temporaryDate),3)
 				} else if (this.currentTypeIndex == 1) {
 					this.endDateShow = false;
 					this.endDateValue = Number(new Date())

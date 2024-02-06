@@ -43,7 +43,7 @@
 					<div>{{item.value}}</div>
 					<image :src="item.iconPath" v-if="item.isClickNoEffect"></image>
 				</div>
-				<div v-show="innerList.length==0" class="data-state item">无数据</div>
+				<div v-if="innerList.length==0" class="data-state item">无数据</div>
 				<!-- <slot></slot> -->
 			</scroll-view>
 		</div>

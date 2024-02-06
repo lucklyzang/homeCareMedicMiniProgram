@@ -134,7 +134,7 @@
 			</view>
 		</u-transition>
 		<view class="banner-area-box">
-			<u-swiper @click="swiperClickEvent" keyName="image"  indicator :list="bannerList"></u-swiper>
+			<u-swiper indicatorMode="dot" @click="swiperClickEvent" keyName="image"  indicator :list="bannerList"></u-swiper>
 		</view>
 		<view class="center-area">
 			<view class="authentication-info-box" v-if="!canAcceptOrder">
@@ -1314,15 +1314,20 @@
 				.u-transition {
 					width: 80%;
 					.u-popup__content {
+						height: 0;
 						padding: 20px;
+						box-sizing: border-box;
+						display: flex;
+						flex-direction: column;
 						.screen-top {
 							flex: 1;
 							overflow: auto;
 							.service-category {
 								margin-bottom: 14px;
 								.service-category-title {
-									font-size: 12px;
-									color: #666666;
+									font-size: 14px;
+									color: #000000;
+									font-weight: 600;
 									margin-bottom: 10px;
 								};
 								.service-category-content {
@@ -1361,8 +1366,9 @@
 							.distance-section {
 								margin-bottom: 20px;
 								.distance-section-title {
-									font-size: 12px;
-									color: #666666;
+									font-size: 14px;
+									color: #000000;
+									font-weight: 600;
 									margin-bottom: 10px;
 								};
 								.distance-section-content {
@@ -1390,7 +1396,7 @@
 						};
 						.screen-bottom {
 							width: 100%;
-							height: 80px;
+							height: 60px;
 							display: flex;
 							align-items: flex-end;
 							justify-content: flex-end;

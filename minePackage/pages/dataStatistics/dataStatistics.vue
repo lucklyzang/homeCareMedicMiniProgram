@@ -667,7 +667,9 @@
 									}
 								]
 							};
-							for (let item of res.data.data.weekOrderReport) {
+							// 对周报订单数据进行升序排列
+							let temporaryWeekOrderReport = res.data.data.weekOrderReport.sort((a, b) => a.createTime - b.createTime);
+							for (let item of temporaryWeekOrderReport) {
 								temporaryData.categories.push(this.judgeWeek(item.createTime));
 								temporaryData.series[0]['data'].push(item.count)
 							};
