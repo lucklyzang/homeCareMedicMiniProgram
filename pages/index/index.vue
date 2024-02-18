@@ -148,7 +148,6 @@
 			<view class="select-box">
 				<view class="smart-sort">
 					<w-select
-							style="margin-left:10px;" 
 							v-model='smartSortValue'
 							defaultValue="智能排序"
 							:list='smartSortList'
@@ -160,7 +159,7 @@
 				</view>
 				<view class="service-category" v-if="isShowServiceCategory">
 					<w-select
-							style="margin-left:10px;"
+							style="padding-left: 10px;box-sizing: border-box;"
 							:multiple="true"
 							v-model='serviceCategoryValue'
 							defaultValue="服务类别"
@@ -174,7 +173,7 @@
 				</view>
 				<view class="service-project" v-if="isShowServiceProject">
 					<w-select
-							style="margin-left:10px;" 
+							style="padding-left: 10px;box-sizing: border-box;"
 							:multiple="true"
 							v-model='serviceProjectValue'
 							defaultValue="服务项目"
@@ -187,8 +186,8 @@
 					</w-select>
 				</view>
 				<view class="screen-box" @click="screenEvent">
-					<text>筛选</text>
 					<image src="@/static/img/screen-icon.png"></image>
+					<text>筛选</text>
 				</view>
 			</view>
 			<view class="real-time-order-form-title-box">
@@ -1613,14 +1612,37 @@
 					}
 				};
 				.smart-sort {
+					width: 26%;
+					flex: none !important;
 					::v-deep .w-select {
 						margin-left: 0 !important;
 						.select-wrap {
 							justify-content: flex-start !important;
 							input {
 								width: 60px;
+								padding: 0;
 								box-sizing: border-box;
 								flex: none !important
+							};
+							.w-select-arrow {
+								display: inline-block;
+								margin: 3px 4px 0;
+								width: 0;
+								height: 0;
+								border: 5px solid transparent;
+								border-top-color: #60646F;
+								transition: all 0.3s;
+								margin-top: 6px;
+							};
+							.w-select-arrow-up {
+								display: inline-block;
+								margin: 3px 4px 0;
+								width: 0;
+								height: 0;
+								border: 5px solid transparent;
+								border-bottom-color: #60646F;
+								transition: all 0.3s;
+								margin-top: -6px;
 							}
 						}
 					};
@@ -1632,6 +1654,26 @@
 								width: 60px;
 								box-sizing: border-box;
 								flex: none !important
+							};
+							.w-select-arrow {
+								display: inline-block;
+								margin: 3px 4px 0;
+								width: 0;
+								height: 0;
+								border: 5px solid transparent;
+								border-top-color: #60646F;
+								transition: all 0.3s;
+								margin-top: 6px;
+							};
+							.w-select-arrow-up {
+								display: inline-block;
+								margin: 3px 4px 0;
+								width: 0;
+								height: 0;
+								border: 5px solid transparent;
+								border-bottom-color: #60646F;
+								transition: all 0.3s;
+								margin-top: -6px;
 							}
 						}
 					}
@@ -1639,33 +1681,84 @@
 				>view {
 					position: relative;
 					flex: 1;
-					width: 25%;
+					width: 0;
 					display: flex;
 					align-content: center;
 					::v-deep .w-select {
+						width: 100%;
 						.select-wrap {
+							justify-content: center !important;
 							border: none !important;
 							width: 100% !important;
 							input {
-								font-size: 14px;
-								color: #666666;
+								font-size: 14px !important;
+								color: #666666 !important;
 								font-weight: 400;
 							};
 							.input-placeholder {
-								font-size: 14px;
-								color: #666666;
+								font-size: 14px !important;
+								color: #666666 !important;
 							};
 							.uni-input {
-								font-size: 14px;
-								color: #666666;
+								font-size: 14px !important;
+								color: #666666 !important;
 								font-weight: 400;
 							};
 							.select-content {
+								max-width: 70%;
 								.select-content-item-default {
-									font-size: 14px;
-									color: #666666;
+									font-size: 14px !important;
+									color: #666666 !important;
 									font-weight: 400;
-								}	
+									width: 100%;
+									@include no-wrap;
+								};
+								.select-content-item {
+									font-size: 14px !important;
+									color: #666666 !important;
+									font-weight: 400;
+									width: 100%;
+									@include no-wrap;
+								}
+							}
+						}
+					};
+					::v-deep w-select {
+						width: 100%;
+						.select-wrap {
+							justify-content: center !important;
+							border: none !important;
+							width: 100% !important;
+							input {
+								font-size: 14px !important;
+								color: #666666 !important;
+								font-weight: 400;
+							};
+							.input-placeholder {
+								font-size: 14px !important;
+								color: #666666 !important;
+							};
+							.uni-input {
+								font-size: 14px !important;
+								color: #666666 !important;
+								font-weight: 400;
+							};
+							.select-content {
+								max-width: 70%;
+								.select-content-item-default {
+									font-size: 14px !important;
+									color: #666666 !important;
+									font-weight: 400;
+									width: 100%;
+									@include no-wrap;
+								};
+								.select-content-item {
+									font-size: 14px !important;
+									color: #666666 !important;
+									font-weight: 400;
+									width: 100%;
+									@include no-wrap;
+								}
 							}
 						}
 					}
@@ -1681,11 +1774,11 @@
 						font-size: 14px;
 						color: #333333;
 						font-weight: 400;
-						margin-right: 6px;
 					};
 					image {
-						width: 12px;
-						height: 12px;
+						margin-right: 6px;
+						width: 14px;
+						height: 14px;
 						margin-top: -1px;
 					}
 				}
