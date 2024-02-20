@@ -25,7 +25,7 @@
 					<text>新消息通知</text>
 				</view>
 				<view class="new-message-inform-right">
-					<u-switch v-model="isNewMessageInformValue" activeColor="#88BFFF"></u-switch>
+					<u-switch @change="switchChange" v-model="isNewMessageInformValue" activeColor="#88BFFF"></u-switch>
 				</view>
 			</view>
 			<view class="weixin-binding">
@@ -46,12 +46,13 @@
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
 			</view>
-			<view class="weixin-binding">
-				<view class="weixin-binding-left">
+			<view class="clera-storage">
+				<view class="clera-storage-left">
 					<text>清除缓存</text>
 				</view>
-				<view class="weixin-binding-right">
-					<text>5.8M</text>
+				<view class="clera-storage-right">
+					<text>{{ `${currentSize}M` }}</text>
+					<text @click="clearCacheEvent">清除缓存</text>
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
 			</view>
@@ -81,7 +82,9 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
+	import _ from 'lodash'
 	import { userSignOut } from '@/api/login.js'
+	import { medicalCareMessageNotice } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -90,11 +93,12 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '加载中',
+				infoText: '加载中···',
 				isNewMessageInformValue: true,
 				modalShow: false,
 				phoneNumberValue: '',
-				modalContent: ''
+				modalContent: '',
+				currentSize: ''
 			}
 		},
 		computed: {
@@ -107,14 +111,18 @@
 			}
 		},
 		onShow() {
-			this.phoneNumberValue = !this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}' ? '' : this.userBasicInfo.mobile
+			this.getStorageInfoSyncEvent();
+			this.phoneNumberValue = !this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}' ? '' : this.userBasicInfo.mobile;
+			this.isNewMessageInformValue = !this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}' ? true : this.userBasicInfo.notice;
 		},
 		methods: {
 			...mapMutations([
+				'changeUserBasicInfo'
 			]),
 			
 			// 顶部导航返回事件
 			backTo () {
+				this.changeUserBasicInfo({});
 				uni.navigateBack()
 			},
 			
@@ -154,6 +162,57 @@
 					this.showLoadingHint = false;
 					this.modalShow = true;
 					this.modalContent = `${err.message}`
+				})
+			},
+			
+			// 获取应用缓存大小事件
+			getStorageInfoSyncEvent () {
+				this.currentSize = uni.getStorageInfoSync()['currentSize']/1000
+			},
+			
+			// 清除缓存事件
+			clearCacheEvent () {
+				uni.showLoading({
+				  title: '正在清除缓存'
+				});
+				uni.clearStorageSync();
+				uni.hideLoading();
+				uni.showToast({
+				  title: '缓存已清除',
+				  icon: 'success'
+				});
+				this.getStorageInfoSyncEvent()
+			},
+			
+			// 新消息通知开关切换事件
+			switchChange () {
+				if (this.isNewMessageInformValue) {
+					this.infoText = '开启中···'
+				} else {
+					this.infoText = '关闭中···'
+				};
+				medicalCareMessageNotice(!this.isNewMessageInformValue ? 0 : 1).then((res) => {
+					if ( res && res.data.code == 0) {
+						// 修改存储的是否接收新消息值
+						let temporaryUserBasicInfo =  _.cloneDeep(this.userBasicInfo);
+						temporaryUserBasicInfo['notice'] = this.isNewMessageInformValue;
+						this.changeUserBasicInfo(temporaryUserBasicInfo)
+					} else {
+						this.isNewMessageInformValue = !this.isNewMessageInformValue;
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.isNewMessageInformValue = !this.isNewMessageInformValue;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
 				})
 			},
 			
@@ -249,6 +308,41 @@
 					display: flex;
 					justify-content: flex-end;
 					align-items: center
+				}
+			};
+			.clera-storage {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: 73px;
+				@include bottom-border-1px(#BBBBBB);
+				.clera-storage-left {
+					padding-right: 10px;
+					box-sizing: border-box;
+					font-size: 16px;
+					color: #1C222A
+				};
+				.clera-storage-right {
+					flex: 1;
+					display: flex;
+					justify-content: flex-end;
+					align-items: center;
+					>text {
+						font-size: 16px;
+						color: #1C222A;
+						margin-right: 6px;
+						&:nth-child(2) {
+							font-size: 12px;
+							color: #ffffff;
+							display: inline-block;
+							width: 65px;
+							height: 24px;
+							text-align: center;
+							line-height: 24px;
+							background: #88bfff;
+							border-radius: 4px;
+						}
+					}
 				}
 			};
 			.weixin-binding {

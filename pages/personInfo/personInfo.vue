@@ -208,12 +208,13 @@
 		onShow() {
 			// 初次进入该页面时，查询用户基本信息
 			if (!this.userBasicInfo || JSON.stringify(this.userBasicInfo) == '{}') {
-				this.queryUserBasicMessage()
+				this.queryUserBasicMessage(true)
 			} else {
 				this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
 				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
 				this.isSendOrdersValue = this.userBasicInfo.receive;
-				this.isAuth = this.userBasicInfo.auth
+				this.isAuth = this.userBasicInfo.auth;
+				this.queryUserBasicMessage(false)
 			};
 			// 回显交易数据
 			if (JSON.stringify(this.tradeStatisticsMessage) != "{}") {
@@ -364,9 +365,11 @@
 			},
 			
 			// 获取用户基本信息
-			queryUserBasicMessage () {
-				this.showLoadingHint = true;
-				this.infoText = '加载中...';
+			queryUserBasicMessage (flag) {
+				if (flag) {
+					this.showLoadingHint = true;
+					this.infoText = '加载中...';
+				};
 				getUserMessage().then((res) => {
 					if ( res && res.data.code == 0) {
 						this.changeUserBasicInfo(res.data.data);
@@ -381,10 +384,14 @@
 							position: 'bottom'
 						})
 					};
-					this.showLoadingHint = false
+					if (flag) {
+						this.showLoadingHint = false
+					}
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
+					if (flag) {
+						this.showLoadingHint = false
+					};
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',

@@ -72,3 +72,12 @@ export function refuseTradeOrder(id,reason) {
     method: 'put'
   })
 };
+
+// 计算被服务人与医护的距离
+export function tradeOrderDistance(data) {
+  return request({
+    url: '/app-api/trade/order/distance',
+    method: 'get',
+		params: data
+  })
+};

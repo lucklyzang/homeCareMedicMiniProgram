@@ -240,7 +240,7 @@
 						</view>
 						<view>
 							<text>{{ serviceMessage.receiverDetailAddress }}</text>
-							<text>(11.2km)</text>
+							<text v-if="distance">{{ `(${distance})` }}</text>
 						</view>
 					</view>
 					<view class="service-site-map-area">
@@ -367,7 +367,7 @@
 		removeAllLocalStorage,
 		fenToYuan
 	} from '@/common/js/utils'
-	import { getTradeOrderPage, nurseDepart, startServer, completeServer, acceptTradeOrder, refuseTradeOrder, getOrderDetail } from '@/api/orderForm.js'
+	import { getTradeOrderPage, nurseDepart, startServer, completeServer, acceptTradeOrder, refuseTradeOrder, getOrderDetail, tradeOrderDistance } from '@/api/orderForm.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -402,6 +402,7 @@
 						disabled: false
 					}
 				],
+				distance: '',
 				serviceMessage: {
 					id: '',
 					no: '',
@@ -521,6 +522,8 @@
 		onLoad(options) {
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(options.transmitData);
+			this.serviceMessage.id = temporaryAddress.id;
+			this.realTimeGetLocation();
 			this.queryOrderDetail({id:temporaryAddress.id, type: 2})
 		},
 		
@@ -573,6 +576,7 @@
 					success: (res) => {
 						this.longitudeOther = res.longitude;
 						this.latitudeOther = res.latitude;
+						this.tradeOrderDistanceEvent(this.serviceMessage.id,`${this.latitudeOther},${this.longitudeOther}`)
 						this.getLocationDetail()
 					},
 					fail: (err) => {
@@ -608,11 +612,13 @@
 							})
 						} else {
 							this.currentAddress = '获取地理位置失败';
-							this.$refs.uToast.show({
-								message: '获取地理位置失败',
-								type: 'error',
-								position: 'center'
-							})
+							if (flag) {
+								this.$refs.uToast.show({
+									message: '获取地理位置失败',
+									type: 'error',
+									position: 'center'
+								})
+							}
 						}
 					},
 					fail: (err) => {
@@ -951,6 +957,31 @@
 					}	
 				},
 				
+				// 计算距离
+				tradeOrderDistanceEvent (id,center) {
+					tradeOrderDistance({
+						center,
+						id
+					}).then((res) => {
+						if ( res && res.data.code == 0) {
+							this.distance = res.data.data;
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						}
+					})
+					.catch((err) => {
+						this.$refs.uToast.show({
+							message: err.message,
+							type: 'error',
+							position: 'center'
+						})
+					})
+				},
+				
 				//根据详细的地址获取经纬度
 				getLocationDetailOrder (address) {
 					uni.request({
@@ -965,7 +996,7 @@
 								this.latitude = res.data.result.location.lat;
 								this.longitude = res.data.result.location.lng;
 								this.markers[0]['latitude'] = res.data.result.location.lat;
-								this.markers[0]['longitude'] = res.data.result.location.lng;
+								this.markers[0]['longitude'] = res.data.result.location.lng
 							} else {
 								uni.showToast({
 									title: '获取经纬度失败，请重试',

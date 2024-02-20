@@ -193,6 +193,14 @@ export function medicalCareReceive(receive) {
   })
 };
 
+// 是否开启新消息通知
+export function medicalCareMessageNotice(notice) {
+  return request({
+    url: `/app-api/hospital/medical-care/notice?notice=${notice}`,
+    method: 'put'
+  })
+};
+
 // 查询医护是否可以接单
 export function medicalCareHasAuth(receive) {
   return request({
