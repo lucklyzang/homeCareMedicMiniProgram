@@ -89,7 +89,7 @@
 						<view>
 							<image src="@/static/img/withdrawal-limit-icon.png"></image>
 							<text>{{ !tradeStatistics.canCash ? 0 : tradeStatistics.canCash }}</text>
-							<text @click.stop="withdrawalMethodDialogShow = true">提现</text>
+							<text v-if="cashOut === 1" @click.stop="withdrawalMethodDialogShow = true">提现</text>
 						</view>
 						<view>
 							<text>可提现额度 (元)</text>
@@ -150,6 +150,7 @@
 				withdrawalMethodDialogShow: false,
 				callPoliceDialogShow: false,
 				showSupportStaffBox: false,
+				cashOut: '',
 				personPhotoSource: '',
 				niceNameValue: '张三',
 				tradeStatistics: {
@@ -214,6 +215,7 @@
 				this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
 				this.isSendOrdersValue = this.userBasicInfo.receive;
 				this.isAuth = this.userBasicInfo.auth;
+				this.cashOut = this.userBasicInfo.cashOut;
 				this.queryUserBasicMessage(false)
 			};
 			// 回显交易数据
@@ -376,7 +378,8 @@
 						this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
 						this.niceNameValue = !this.userBasicInfo.nickname ? this.niceNameValue : this.userBasicInfo.nickname;
 						this.isSendOrdersValue = this.userBasicInfo.receive;
-						this.isAuth = this.userBasicInfo.auth
+						this.isAuth = this.userBasicInfo.auth;
+						this.cashOut = this.userBasicInfo.cashOut;
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,

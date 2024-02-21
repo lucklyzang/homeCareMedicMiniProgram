@@ -56,7 +56,7 @@
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
 			</view>
-			<view class="weixin-binding">
+			<view class="weixin-binding" @click="examineUpdate">
 				<view class="weixin-binding-left">
 					<text>检查更新</text>
 				</view>
@@ -219,6 +219,47 @@
 			// 是否退出登录弹框取消事件
 			cancelSure () {
 				this.modalShow = false
+			},
+			
+			// 检查更新
+			examineUpdate () {
+				if (uni.canIUse('getUpdateManager')) {
+					const updateManager = uni.getUpdateManager();
+					updateManager.onCheckForUpdate(function (res) {
+						if (res.hasUpdate) {
+							// 下载新版本
+							updateManager.onUpdateReady(function () {
+								uni.showModal({
+									title: '更新提示',
+									content: '新版本已经准备好，是否重启应用?',
+									success(res) {
+										if (res.confirm) {
+											// 重启应用
+											updateManager.applyUpdate()
+										}
+									}
+								})
+							});
+							// 新版本下载失败
+							updateManager.onUpdateFailed(function (res) {
+							  uni.showModal({
+									title: '已经有新版本了',
+									content: '新版本已经上线啦，请您删除当前小程序，重新搜索打开！',
+							  })
+							})
+						} else {
+							uni.showModal({
+								title: '提示',
+								content: '当前已是最新版本，无需更新！',
+							})
+						}
+					})
+				} else {
+					uni.showModal({
+						title: '提示',
+						content: '当前微信版本过低，无法使用该功能，请升级到最新微信版本后重试！',
+					})
+				}
 			},
 			
 			// 更换手机号事件
