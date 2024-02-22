@@ -28,10 +28,15 @@
 		<view class="my-bill-top-box">
 			<view class="today-earnings">
 				<view class="today-earnings-left">
-					<text>今日收益</text>
-					<text>{{ tradeStatistics.todayAmount }}</text>
+					<div class="today-earnings-left-top">
+						<text>今日收益</text>
+					</div>
+					<div class="today-earnings-left-bottom">
+						<text>￥</text>
+						<text>{{ tradeStatistics.todayAmount }}</text>
+					</div>
 				</view>
-				<view class="today-earnings-right" v-if="!tradeStatistics.canCash == true" @click="withdrawalMethodDialogShow = true">
+				<view class="today-earnings-right" v-if="cashOut === 1" @click="withdrawalMethodDialogShow = true">
 					<text>去提现</text>
 					<u-icon name="arrow-right" color="#fff" size="28"></u-icon>
 				</view>
@@ -126,6 +131,7 @@
 				withdrawalMethodDialogShow: false,
 				infoText: '加载中···',
 				isShowNoData: false,
+				cashOut: '',
 				tradeStatistics: {
 					todayAmount: 0,
 					todayCount: 0,
@@ -148,6 +154,7 @@
 		},
 		onLoad() {
 			this.tradeStatistics = this.tradeStatisticsMessage;
+			this.cashOut = this.userBasicInfo.hasOwnProperty('cashOut') ? this.userBasicInfo.cashOut : 0;
 			this.getRecentNurseBill()
 		},
 		methods: {
@@ -406,7 +413,7 @@
 		};
 		.my-bill-top-box {
 			height: 187px;
-			padding: 26px;
+			padding: 26px 26px 16px 26px;
 			box-sizing: border-box;
 			background: #5064EB;
 			display: flex;
@@ -417,25 +424,34 @@
 				align-items: center;
 				justify-content: space-between;
 				.today-earnings-left {
+					flex: 1;
 					display: flex;
 					flex-direction: column;
-					align-items: center;
 					justify-content: center;
-					text {
-						font-weight: bold;
-						&:nth-child(1) {
-							font-size: 13px;
+					.today-earnings-left-top {
+						margin-bottom: 4px;
+						>text {
+							font-weight: bold;
+							font-size: 16px;
 							color: #fff;
-							margin-bottom: 4px
-						};
-						&:nth-child(2) {
-							font-size: 13px;
-							color: #fff
+						}
+					};
+					.today-earnings-left-bottom {
+						font-weight: bold;
+						font-size: 14px;
+						color: #fff;
+						>text {
+							font-weight: bold;
+							&:nth-child(2) {
+								font-size: 18px;
+							}
 						}
 					}
 				};
 				.today-earnings-right	{
 					display: flex;
+					padding-left: 10px;
+					box-sizing: border-box;
 					>text {
 						font-size: 28px;
 						color: #fff;
@@ -446,12 +462,12 @@
 			.classified-statistic {
 				flex: 1;
 				display: flex;
-				align-items: flex-end;
+				margin-top: 30px;
+				overflow: auto;
 				>view {
 					flex: 1;
 					display: flex;
 					flex-direction: column;
-					justify-content: center;
 					align-items: center;
 					>view {
 						width: 100%;

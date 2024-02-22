@@ -27,7 +27,7 @@
 					<text>问题描述(必填)</text>
 				</view>
 				<view class="problem-description-content">
-					<u--textarea  height="100" count maxlength="200" v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
+					<u--textarea  height="100" :formatter="formatter" ref="textarea" count maxlength="200" v-model="problemDescriptionValue" placeholder="请填写15字以上描述，以便我们更好地为您提供帮助~" ></u--textarea>
 				</view>
 			</view>
 			<view class="upload-pictures">
@@ -129,6 +129,9 @@
 		onShow() {
 			this.getUserDictDataEvent()
 		},
+		onReady() {
+			this.$refs.textarea.setFormatter(this.formatter)
+		},
 		methods: {
 			...mapMutations([
 			]),
@@ -137,6 +140,11 @@
 			feedbackCategoryClickEvent (item,index) {
 				this.feedbackCategoryIndex = index;
 				this.feedbackCategory = item
+			},
+			
+			// 反馈内容过滤空格函数
+			formatter(value) {
+				return value.replace(/\s*/g,"")
 			},
 			
 			// 弹框确定按钮
