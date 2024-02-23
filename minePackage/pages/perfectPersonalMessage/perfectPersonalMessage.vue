@@ -212,7 +212,7 @@
 					<text>个人简介</text>
 				</view>
 				<view class="intro-content">
-					<u--textarea v-model="introValue" height="100" border="none" :count="true" maxlength="150" placeholder="个人名片简介（150字），例如：从事产科临床工作二十余年，母乳喂养咨询工作多年，有丰富的母婴护理及母乳喂养实践经验。对母乳喂养问题处理、哺乳期乳房问题、早产儿喂养等均有深入研究。" ></u--textarea>
+					<u--textarea v-model="introValue" height="100" :formatter="formatter" ref="textarea" border="none" :count="true" maxlength="150" placeholder="个人名片简介（150字），例如：从事产科临床工作二十余年，母乳喂养咨询工作多年，有丰富的母婴护理及母乳喂养实践经验。对母乳喂养问题处理、哺乳期乳房问题、早产儿喂养等均有深入研究。" ></u--textarea>
 				</view>
 			</view>
 		</view>
@@ -288,6 +288,9 @@
 			// 查询医护详细信息
 			this.getMedicalCareDetailsEvent()
 		},
+		onReady() {
+			this.$refs.textarea.setFormatter(this.formatter)
+		},
 		methods: {
 			...mapMutations([
 				'changeUserBasicInfo'
@@ -296,6 +299,11 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 个人简介过滤空格函数
+			formatter(value) {
+				return value.replace(/\s*/g,"")
 			},
 			
 			// 获取医护详细信息
