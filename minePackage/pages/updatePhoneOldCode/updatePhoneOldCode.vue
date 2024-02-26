@@ -51,7 +51,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { sendPhoneCode } from '@/api/login.js'
+	import { sendPhoneCode, validatePhoneCode } from '@/api/login.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -60,7 +60,7 @@
 		data() {
 			return {
 				showLoadingHint: false,
-				infoText: '更换中···',
+				infoText: '加载中···',
 				phoneNumberValue: '',
 				noClick: true,
 				verificationCodeValue: '',
@@ -75,7 +75,8 @@
 	        {label: '日本', value: '+81'}
 				],
 				selectCountryCode: {label: '中国大陆', value: '+86'},
-				selectCountryCodeIndex: 0
+				selectCountryCodeIndex: 0,
+				isGetCode: false
 			}
 		},
 		computed: {
@@ -130,6 +131,52 @@
 				}
 			},
 			
+			// 校验手机验证码
+			validateCodeEvent () {
+				let loginMessage = {
+				  mobile: this.phoneNumberValue,
+					code: this.verificationCodeValue,
+					scene: 2
+				};
+				this.showLoadingHint = true;
+				this.infoText = '验证码校验中···';
+				validatePhoneCode(loginMessage).then((res) => {
+					if ( res && res.data.code == 0) {
+						if (res.data.data == true) {
+							// 传递通知详情内容
+							let mynavData = JSON.stringify({
+								oldMobile: this.phoneNumberValue,
+								oldCode: this.verificationCodeValue
+							});
+							uni.navigateTo({
+								url: '/minePackage/pages/updatePhoneNumber/updatePhoneNumber?transmitData='+mynavData
+							})
+						} else {
+							this.$refs.uToast.show({
+								message: res.data.msg,
+								type: 'error',
+								position: 'center'
+							})
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
 			// 发送验证码事件
 			sendCodeEvent () {
 				let loginMessage = {
@@ -138,9 +185,11 @@
 					scene: 2
 				};
 				this.showLoadingHint = true;
+				this.infoText = '验证码获取中···';
 				sendPhoneCode(loginMessage).then((res) => {
 					if ( res && res.data.code == 0) {
 						if (res.data.data == true) {
+							this.isGetCode = true;
 							this.$refs.uToast.show({
 								message: '验证码已发送至您的手机，请查收',
 								type: 'success',
@@ -174,6 +223,14 @@
 			
 			// 确定事件
 			sureEvent () {
+				if (!this.isGetCode) {
+					this.$refs.uToast.show({
+						message: '请先获取验证码',
+						type: 'error',
+						position: 'center'
+					});
+					return
+				};
 				if (!this.verificationCodeValue) {
 					this.$refs.uToast.show({
 						message: '验证码不能为空!',
@@ -182,14 +239,7 @@
 					});
 					return
 				};
-				// 传递通知详情内容
-				let mynavData = JSON.stringify({
-					oldMobile: this.phoneNumberValue,
-					oldCode: this.verificationCodeValue
-				});
-				uni.navigateTo({
-					url: '/minePackage/pages/updatePhoneNumber/updatePhoneNumber?transmitData='+mynavData
-				})
+				this.validateCodeEvent()
 			}
 		}
 	}

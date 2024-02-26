@@ -27,6 +27,15 @@ export function sendPhoneCode(data) {
 	  })
 }
 
+// 校验手机验证码
+export function validatePhoneCode(data) {
+	return request({
+	    url: '/app-api/member/auth/validate-sms-code',
+	    method: 'post',
+	    data
+	  })
+}
+
 // 重置密码
 export function resetPassword(data) {
 	return request({
