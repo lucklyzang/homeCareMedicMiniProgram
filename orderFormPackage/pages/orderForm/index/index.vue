@@ -184,7 +184,7 @@
 				<view class="price-list-content-wrapper">
 					<view class="price-list-content">
 						<view class="price-list-one">
-							<text>婴儿全身按摩</text>
+							<text>{{ serviceMessage.items[0]['spuName'] }}</text>
 							<text>{{`￥${serviceMessage.payPrice}`}}</text>
 						</view>
 						<view class="price-list-one price-list-two">
@@ -224,7 +224,7 @@
 						<text>患者资料</text>
 					</view>
 					<view class="patient-data-image">
-						<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.images" @click="magnifyImgEvent(item,index)">
+						<view class="patient-data-image-list" v-for="(item,index) in serviceMessage.serverPerson.medicalRecord" @click="magnifyImgEvent(item,index)">
 							<u-image :src="item" width="100" mode="widthFix">
 								 <template v-slot:loading>
 										<u-loading-icon color="red"></u-loading-icon>
@@ -1806,12 +1806,12 @@
 					font-size: 14px;
 					color: #3E4248;
 					font-weight: bold;
-					align-items: center;
 					margin-bottom: 10px;
 					>view {
 						&:nth-child(1) {
 							position: relative;
 							border: none;
+							height: 20px;
 							margin-right: 4px;
 							&:after {
 							  content: '';
