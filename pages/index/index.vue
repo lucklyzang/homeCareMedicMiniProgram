@@ -788,7 +788,7 @@
 						return
 					}
 				};
-				if (this.minDistanceValue > this.maxDistanceValue) {
+				if (Number(this.minDistanceValue) > Number(this.maxDistanceValue)) {
 					this.$refs.uToast.show({
 						message: '最近距离不能大于最远距离',
 						type: 'error',
@@ -796,7 +796,7 @@
 					});
 					return
 				};
-				if (this.minPriceValue > this.maxPriceValue) {
+				if (Number(this.minPriceValue) > Number(this.maxPriceValue)) {
 					this.$refs.uToast.show({
 						message: '最低价格不能大于最高价格',
 						type: 'error',
@@ -1312,6 +1312,7 @@
 				flex: none !important;
 				.u-transition {
 					width: 80%;
+					z-index: 1000 !important;
 					.u-popup__content {
 						height: 0;
 						padding: 20px;

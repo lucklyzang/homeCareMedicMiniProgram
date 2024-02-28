@@ -19,10 +19,10 @@
 			</view>
 		</u-transition>
 		<view class="message-list-wrapper" v-if="tabIndex === 0">
-			<u-empty text="暂无聊天消息" mode="list" v-if="true"></u-empty>
-			<!-- <view class="message-list" @click="enterMessageListEvent('消息')">
+			<u-empty text="暂无聊天消息" mode="list" v-if="isNoChat"></u-empty>
+			<view class="message-list" v-for="(item,index) in chatList"  @click="enterChatInterface(item)" :key="index">
 				<view class="message-photo">
-					<u-image src="@/static/img/latest-news-icon.png" width="35" height="35">
+					<u-image :src="item.avatar" width="35" height="35">
 						 <template v-slot:loading>
 						    <u-loading-icon color="red"></u-loading-icon>
 						  </template>
@@ -31,24 +31,24 @@
 				<view class="message-content">
 					<view class="message-content-left">
 						<view class="message-title">
-							<text>护士a</text>
+							<text>{{ item.fromName }}</text>
 						</view>
 						<view class="message-overview">
 							<text>
-								婚纱款式杀杀杀杀杀杀杀杀杀杀杀杀杀杀杀开发了大家附件是解放军封建士大夫
+								{{ item.content }}
 							</text>
 						</view>
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>1小时前</text>
+							<text>{{ getNowFormatDate(new Date(item.lastTime),2) }}</text>
 						</view>
 						<view class="message-number">
-							<text>8</text>
+							<text>{ item.count }}</text>
 						</view>
 					</view>
 				</view>
-			</view> -->
+			</view>
 		</view>
 		<view class="message-list-wrapper" v-else>
 			<u-empty text="暂无消息" mode="list" v-if="isShowNoData"></u-empty>
@@ -152,7 +152,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { notifyMessageSummary, notifySummary, latestNews } from '@/api/user.js'
+	import { notifyMessageSummary, notifySummary, latestNews, getUserChatList, chatMessageRead } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -165,6 +165,8 @@
 				infoText: '',
 				showLoadingHint: false,
 				tabIndex: 0,
+				isNoChat: false,
+				chatList: [],
 				tabList: ['聊天消息','系统消息'],
 				latestNewsSummary: {
 					unReadCount: '',
@@ -197,9 +199,13 @@
 			}
 		},
 		onShow() {
-			this.queryLatestNews({terminal: 'NURSE'});
-			this.queryNotifySummary();
-			this.queryNotifyMessageSummary()
+			if (this.tabIndex == 0) {
+				this.getUserChatListEvent()
+			} else {
+				this.queryLatestNews({terminal: 'NURSE'});
+				this.queryNotifySummary();
+				this.queryNotifyMessageSummary()
+			}
 		},
 		methods: {
 			...mapMutations([
@@ -212,7 +218,73 @@
 					this.queryLatestNews({terminal: 'NURSE'});
 					this.queryNotifySummary();
 					this.queryNotifyMessageSummary();
+				} else if (this.tabIndex == 0) {
+					this.getUserChatListEvent();
+					// uni.navigateTo({
+					// 	url: '/messagePackage/pages/chatInterface/chatInterface'
+					// })
 				}
+			},
+			
+			
+			// 进入聊天界面事件
+			enterChatInterface (item) {
+				this.chatMessageReadEvent({fromId:item.fromId});
+				let transmitParameter = JSON.stringify(item);
+				uni.navigateTo({
+					url: '/messagePackage/pages/chatInterface/chatInterface?transmitData='+transmitParameter
+				})
+			},
+			
+			// 查询聊天列表
+			getUserChatListEvent () {
+				this.showLoadingHint = true;
+				getUserChatList().then((res) => {
+					if ( res && res.data.code == 0) {
+						if (!res.data.data || res.data.data.length == 0) {
+							this.isNoChat = true;
+						} else {
+							this.isNoChat = false;
+							this.chatList = res.data.data;
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
+			// 更新消息为已读
+			chatMessageReadEvent (data) {
+				chatMessageRead(data).then((res) => {
+					if ( res && res.data.code == 0) {
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
 			},
 			
 			// 查询最新一条未读资讯

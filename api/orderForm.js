@@ -81,3 +81,12 @@ export function tradeOrderDistance(data) {
 		params: data
   })
 };
+
+// 查询交易订单用户和医护信息
+export function getTradeOrderUserCareInfo(data) {
+  return request({
+    url: '/app-api/trade/order/get-user-care-info',
+    method: 'get',
+		params: data
+  })
+};

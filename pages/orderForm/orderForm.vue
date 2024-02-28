@@ -79,6 +79,7 @@
 							>
 							</u-radio>
 					</u-radio-group>
+					<u--textarea v-if="showRefuseReasonInput" v-model="refuseReasonValue" :formatter="formatter" ref="textarea" maxlength="150" placeholder="请输入拒绝理由" autoHeight count ></u--textarea>
 				</view>
 				<view class="bottom-btn">
 					<view class="sure-btn" @click="sureRefuseEvent">
@@ -348,6 +349,7 @@
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				infoText: '加载中···',
 				showLoadingHint: false,
+				showRefuseReasonInput: false,
 				currentPageNum: 1,
 				pageSize: 5,
 				totalCount: 0,
@@ -374,6 +376,10 @@
 					{
 						name: '晚上有约会',
 						disabled: false
+					},
+					{
+						name: '其他',
+						disabled: false
 					}
 				],
 				list: [
@@ -391,6 +397,7 @@
 				longitude: '',
 				latitude: '',
 				currentAddress: '',
+				refuseReasonValue: '',
 				locationText: '重新定位'
 			}
 		},
@@ -420,10 +427,18 @@
 				},true)
 			}
 		},
+		onReady() {
+			this.$refs.textarea.setFormatter(this.formatter)
+		},
 		methods: {
 			...mapMutations([
 				'storeEditServiceOrderFormSureChooseMessage'
 			]),
+			
+			// 反馈内容过滤空格函数
+			formatter(value) {
+				return value.replace(/\s*/g,"")
+			},
 			
 			// 实时获取地理位置
 			realTimeGetLocation () {
@@ -857,7 +872,11 @@
 			
 			// 选择原因弹框值变化事件
 			checkboxReasonChange (n) {
-				console.log('change');
+				if (n == '其他') {
+					this.showRefuseReasonInput = true
+				} else {
+					this.showRefuseReasonInput = false
+				}
 			},
 			
 			// 拒绝订单事件
@@ -868,8 +887,21 @@
 			
 			// 确定拒绝事件
 			sureRefuseEvent () {
-				this.refuseOrderFormDialogShow = false;
-				this.refuseTradeOrderEvent(this.currentSelectOrderMessage.id,this.checkReasonValue)
+				if (this.showRefuseReasonInput) {
+					if (this.refuseReasonValue === '') {
+						this.$refs.uToast.show({
+							message: '请输入拒绝理由',
+							type: 'error',
+							position: 'center'
+						})
+					} else {
+						this.refuseOrderFormDialogShow = false;
+						this.refuseTradeOrderEvent(this.currentSelectOrderMessage.id,this.refuseReasonValue)
+					}
+				} else {
+					this.refuseOrderFormDialogShow = false;
+					this.refuseTradeOrderEvent(this.currentSelectOrderMessage.id,this.checkReasonValue)
+				}
 			},
 			
 			// 立即出发事件
