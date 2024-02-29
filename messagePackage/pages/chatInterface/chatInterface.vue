@@ -1,58 +1,63 @@
 <template>
 	<view class="chat">
 		<u-toast ref="uToast" />
-		<u-overlay :show="showLoadingHint"></u-overlay>
-		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
     <!-- 顶部标题 -->
     <view class="topTabbar">
       <!-- 返回图标 -->
       <u-icon class="icon" name="arrow-left" size="20px" color="#000" @click="goback()"></u-icon>
 			<!-- 消息条数 -->
-			<view class="message-count">
+			<view class="message-count" @click="goback()">
 				{{ `消息(${messageCount})` }}
 			</view>
       <!-- 聊天对象名称 -->
       <view class="text">{{ fromName }}</view>
     </view>
+		<u-transition :show="showLoadingHint" mode="fade-down">
+			<view class="loading-box" v-if="showLoadingHint">
+				<u-loading-icon :show="showLoadingHint" text="加载中···" size="18" textSize="16"></u-loading-icon>
+			</view>
+		</u-transition>
 		<scroll-view :style="{height: `${windowHeight-inputHeight - 180}rpx`}"
 			id="scrollview"
-			@scrolltolower="scrolltolower"
+			@scrolltoupper="scrolltoupper"
 			scroll-y="true" 
 			:scroll-top="scrollTop"
 			class="scroll-view"
 		>
 			<!-- 聊天主体 -->
 			<view id="msglistview" class="chat-body">
+				<u-loadmore :status="status" v-if="fullMsgList.length > 0" />
 				<!-- 聊天记录 -->
 				<view v-for="(item,index) in fullMsgList" :key="index">
-					<view class="send-time-box">
-						<view class="send-time" v-if="item.userContent != ''">
-							08:34
+					<view class="send-time-box" v-if="item.me">
+						<view class="send-time">
+							{{ getNowFormatDate(new Date(item.createTime),4) }}
 						</view>
 					</view>
 					<!-- 自己发的消息 -->
-					<view class="item self" v-if="item.userContent != ''">
+					<view class="item self" v-if="item.me">
 						<!-- 文字内容 -->
 						<view class="content right">
-							{{item.userContent}}
+							<text>{{ item.content }}</text>
+							<u-icon name="photo" size="20"></u-icon>
 						</view>
 						<!-- 头像 -->
-						<image class="avatar" :src="item.image">
+						<image class="avatar" :src="item.fromAvatar">
 						</image>
 					</view>
-					<view class="send-time-box">
-						<view class="send-time" v-if="item.botContent != ''">
-							10:34
+					<view class="send-time-box" v-if="!item.me">
+						<view class="send-time">
+							{{ getNowFormatDate(new Date(item.createTime),4) }}
 						</view>
 					</view>
 					<!-- 好友发的消息 -->
-					<view class="item Ai" v-if="item.botContent != ''">
+					<view class="item Ai" v-if="!item.me">
 						<!-- 头像 -->     
-						<image class="avatar" :src="item.image">
+						<image class="avatar" :src="item.toAvatar">
 						</image>
 						<!-- 文字内容 -->
 						<view class="content left">
-							{{item.botContent}}
+							{{item.content}}
 						</view>
 					</view>
 				</view>
@@ -65,14 +70,15 @@
         <view class="uni-textarea">
           <textarea v-model="chatMsg"
             maxlength="300"
+						autoHeight
             confirm-type="send"
             @confirm="handleSend"
             placeholder="快来聊天吧~"
             :show-confirm-bar="false"
             :adjust-position="false"
             @linechange="sendHeight"
-            @focus="focus" @blur="blur"
-           auto-height></textarea>
+            @focus="focus" @blur="blur">
+						</textarea>
         </view>
 				<button @click="handleSend" class="send-btn">发送</button>
 			</view>
@@ -90,6 +96,7 @@
 	export default{
 		data() {
 			return {
+				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				showLoadingHint: false,
 				infoText: '加载中···',
 				messageCount: 12,
@@ -108,28 +115,29 @@
 				timer: null,
 				fromId: '',
 				fromName: '',
+				userAvatar: '',
 				msgList: [],
 				fullMsgList:[
 					{
-					    botContent: "你好啊，很高兴你可以关注我，请问我有什么可以帮助你的吗？",
-					    userContent: "",
-              image:"/static/common/unname1.jpeg"
+						content: "你好",
+						createTime: 1709024061000,
+						toAvatar: "/static/common/unname1.jpeg",
+						fromAvatar: "/static/common/unname1.jpeg",
+						me: true
 					},
 					{
-					    botContent: "",
-					    userContent: "你好呀，非常高兴认识你",
-              image:"/static/common/unname2.jpg"
-					},
-					{
-					    botContent: "你好啊，很高兴你可以关注我，请问我有什么可以帮助你的吗？",
-					    userContent: "",
-					    image:"/static/common/unname1.jpeg"
+						content: "你好呀，非常高兴认识你",
+						createTime: 1709099251000,
+						toAvatar: "/static/common/unname1.jpeg",
+						fromAvatar: "/static/common/unname1.jpeg",
+						me: false
 					}
 				],
 				status: 'nomore',
 				currentPage: 1,
 				pageSize: 15,
-				totalCount: 0
+				totalCount: 0,
+				beforePageRoute: ''
 			}
 		},
 		updated(){
@@ -138,7 +146,8 @@
 		},
 		computed: {
 			...mapGetters([
-				'userInfo'
+				'userInfo',
+				'userBasicInfo'
 			]),
 			windowHeight() {
 			  return this.rpxTopx(uni.getSystemInfoSync().windowHeight)
@@ -150,21 +159,30 @@
 		},
 		
 		onLoad(options) {
-			console.log('token',store.getters.token);
-			this.fromId = JSON.parse(options.transmitData).fromId;
-			this.fromName = JSON.parse(options.transmitData).fromName;
-			// this.queryChatPageList({
-			// 	pageNo: this.currentPage,
-			// 	pageSize: this.pageSize,
-			// 	fromId: this.fromId
-			// },true);
+			this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
+			let pages = getCurrentPages();//当前页
+			this.beforePageRoute = pages[pages.length - 2].route;//上个页面路径
+			console.log('页面路劲',this.beforePageRoute);
+			// 从聊天列表进入时不用查医护信息
+			if (this.beforePageRoute == 'pages/message/message') {
+				this.fromId = JSON.parse(options.transmitData).fromId;
+				this.fromName = JSON.parse(options.transmitData).fromName;
+				this.queryChatPageList({
+					pageNo: this.currentPage,
+					pageSize: this.pageSize,
+					fromId: this.fromId
+				},true)
+			} else {
+				this.getTradeOrderUserCareInfoEvent({orderId: options.transmitData})
+			};
+			
 			// socket初始化
 			this.init();
 	 
 			// 定时器，定时判断socket有没有掉线
 			this.timer = setInterval(() => {
 				this.isSocketConnct()
-			}, 2000),
+			}, 2000);
 
 			uni.onKeyboardHeightChange(res => {
 				//这里正常来讲代码直接写
@@ -174,13 +192,19 @@
 				if(this.keyboardHeight<0)this.keyboardHeight = 0
 			})
 		},
+		
 		onUnload(){
-			uni.offKeyboardHeightChange();
+			uni.offKeyboardHeightChange(() =>{});
+			console.log("卸载了");
 			// 关闭定时器
-			clearInterval(this.timer);
+			if (this.timer) {
+				clearInterval(this.timer);
+				this.timer = null
+			};
 			// 关闭Socket
 			this.closeSocket()
 		},
+		
 		methods: {
 			...mapMutations([
 			]),
@@ -197,10 +221,88 @@
 				this.scrollToBottom()
 			},
 			
+			// 格式化时间
+			getNowFormatDate(currentDate,type) {
+				console.log('日期',currentDate,type);
+				// type:1(只显示小时分钟秒),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟秒)5(显示月日)
+				let currentdate;
+				let strDate = currentDate.getDate();
+				let seperator1 = "-";
+				let seperator2 = ":";
+				let seperator3 = " ";
+				let month = currentDate.getMonth() + 1;
+				let hour = currentDate.getHours();
+				let minutes = currentDate.getMinutes();
+				let seconds = currentDate.getSeconds();
+				if (month >= 1 && month <= 9) {
+					month = "0" + month;
+				};
+				if (hour >= 0 && hour <= 9) {
+					hour = "0" + hour;
+				};
+				if (minutes >= 0 && minutes <= 9) {
+					minutes = "0" + minutes;
+				};
+				if (seconds >= 0 && seconds <= 9) {
+					seconds = "0" + seconds;
+				};
+				if (strDate >= 0 && strDate <= 9) {
+					strDate = "0" + strDate;
+				};
+				if (type == 1) {
+					currentdate = hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 2) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
+				};
+				if (type == 3) {
+					currentdate = currentDate.getFullYear() + seperator1 + month
+				};
+				if (type == 4) {
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes + seperator2 + seconds
+				};
+				if (type == 5) {
+					currentdate = month + seperator1 + strDate
+				};
+				return currentdate
+			},
+			
+			// 查询要联系的患者信息(从订单界面进入此页面)
+			getTradeOrderUserCareInfoEvent (data) {
+				this.showLoadingHint = true;
+				getTradeOrderUserCareInfo(data).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.fromName = res.data.data.userName;
+						this.fromId = res.data.data.userId;
+						this.userAvatar = res.data.data.userAvatar;
+						this.queryChatPageList({
+							pageNo: this.currentPage,
+							pageSize: this.pageSize,
+							fromId: this.fromId
+						},true)
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
+			
 			// px转换成rpx
 			rpxTopx(px){
-				let deviceWidth = uni.getSystemInfoSync().windowWidth
-				let rpx = ( 750 / deviceWidth ) * Number(px)
+				let deviceWidth = uni.getSystemInfoSync().windowWidth;
+				let rpx = ( 750 / deviceWidth ) * Number(px);
 				return Math.floor(rpx)
 			},
 			
@@ -208,7 +310,7 @@
 			sendHeight(){
 				setTimeout(()=>{
 					let query = uni.createSelectorQuery();
-					query.select('.send-msg').boundingClientRect()
+					query.select('.send-msg').boundingClientRect();
 					query.exec(res =>{
 						this.bottomHeight = this.rpxTopx(res[0].height)
 					})
@@ -218,25 +320,30 @@
 			// 发送消息(socket)
 			sendSocketMessage(msg) {
 				let that = this;
-				const messageContent = JSON.stringify({
+				const messageContent = {
 					text: msg, // 消息内容
-					toUserId: this.userInfo.userId, // 接受者用户 ID
+					toUserId: this.fromId, // 接受者用户 ID
 					userType: 1  // 用户类型 发送给APP端用户 为1， 发送给管理的为 2
-				});
+				};
 				const jsonMessage = JSON.stringify({
 					type: 'chat-message-send', // 消息类型 固定
 					content: messageContent,   //  消息内容
 				});
 				if (this.socketOpen) {
 					uni.sendSocketMessage({
-						data: msg,
+						data: jsonMessage,
 						success: (res) => {
 							setTimeout(() => {
-								that.sendMessageHandle(jsonMessage)
+								that.sendMessageHandle(msg)
 							}, 300)
 						},
-						fail(err) {
+						fail: (err) => {
 							// 发送失败处理
+							this.$refs.uToast.show({
+								message: err,
+								type: 'error',
+								position: 'center'
+							})
 						}
 					});
 				} else {
@@ -250,24 +357,30 @@
 	 
 			// 判断是否连接
 			isSocketConnct() {
+				console.log('判断是否连接');
 				if (!this.socketOpen) {
-					console.log("WebSocket 再次连接！");
 					this.init()
 				}
 			},
 	 
 			// 初始化
 			init() {
-				this.connect()
-				this.openSocket()
-				this.onclose()
+				this.connect();
+				this.openSocket();
+				this.onclose();
 				this.onSocketMessage()
 			},
 	 
 			// 建立连接
 			connect() {
 				uni.connectSocket({
-					url: `wss://dev.nurse.blinktech.cn/nurse/infra/ws?token=${store.getters.token}`
+					url: `wss://dev.nurse.blinktech.cn/nurse/infra/ws?token=${store.getters.token}`,
+					success: (res) => {
+						console.log('成功',res)
+					},
+					fail: (err) => {
+						console.log('失败',err)
+					}
 				})
 			},
 	 
@@ -275,44 +388,59 @@
 			onclose() {
 				let that = this
 				uni.onSocketClose((res) => {
-					that.socketOpen = false
-					console.log('WebSocket 已关闭！');
-				});
+					that.socketOpen = false;
+				})
 			},
 	 
 			// 关闭
 			closeSocket() {
-				uni.closeSocket();
+				uni.closeSocket({
+					success:() => {
+						console.log("退出成功")
+					}
+				})
 			},
 	 
 			// 打开Soceket
 			openSocket() {
-				let that = this
+				let that = this;
 				uni.onSocketOpen((res) => {
-					that.socketOpen = true
-					console.log('WebSocket连接已打开！');
-				});
+					that.socketOpen = true;
+					console.log('打开Soceket');
+				})
 			},
 	 
 			// 接收事件
 			onSocketMessage() {
-				let that = this
+				let that = this;
 				uni.onSocketMessage((res) => {
+					console.log('响应消息',obj);
 					let obj = JSON.parse(res.data)
-					console.log("接收事件", obj);
-					this.onMessageHandle(obj)
-				});
+					that.onMessageHandle(obj)
+				})
 			},
 	 
 			// 接收到事件后处理的方法
 			onMessageHandle(obj) {
+				let objMsg = {
+					content: obj.msg,
+					createTime: '1709099251000',
+					toAvatar: this.careAvatar,
+					fromAvatar: this.personPhotoSource,
+					me: true
+				};
+				this.msgList = [objMsg];
+				this.fullMsgList = this.fullMsgList.concat(this.msgList);
+				console.log('接收发送成功后返回的消息',obj);
 			},
 	 
 			// 发送消息后处理的方法
 			sendMessageHandle(msg) {
+				console.log('发送成功了',msg);
 			},
 			
-			scrolltolower () {
+			scrolltoupper () {
+				console.log('到顶了');
 				let totalPage = Math.ceil(this.totalCount/this.pageSize);
 				if (this.currentPage >= totalPage) {
 					this.status = 'nomore'
@@ -344,6 +472,7 @@
 							this.showLoadingHint = false;
 							return
 						};
+						console.log('聊天数据',res.data.data);
 						this.totalCount = res.data.data.total;
 						this.noticeList = res.data.data.list;
 						this.fullMsgList = this.fullMsgList.concat(this.msgList);
@@ -401,12 +530,15 @@
 				//如果消息不为空
 				if(!this.chatMsg||!/^\s+$/.test(this.chatMsg)){
 					let obj = {
-						botContent: "",
-						userContent: this.chatMsg,
-            image:"/static/common/unname2.jpg"
+						content: this.chatMsg,
+						createTime: '1709099251000',
+						toAvatar: this.careAvatar,
+						fromAvatar: this.personPhotoSource,
+						me: true
 					};
 					this.sendSocketMessage(this.chatMsg);
 					this.msgList.push(obj);
+					this.fullMsgList = this.fullMsgList.concat(this.msgList);
 					this.chatMsg = '';
 					this.scrollToBottom();
 				} else {
@@ -421,7 +553,7 @@
 	}
 </script>
 <style lang="scss" scoped>
-	$chatContentbgc: #C2DCFF;
+	$chatContentbgc: #1E86FD;
 	$sendBtnbgc: #4F7DF5;
 	view,button,text,input,textarea {
 		margin: 0;
@@ -442,57 +574,54 @@
 			z-index: 20000;
 		};
     .topTabbar {
-          width: 100%;
-          height: 90rpx;
-          line-height: 90rpx;
-          display: flex;
-          margin-top: 80rpx;
-          justify-content: space-between;
-      
-          .icon {
-            margin: 0 4rpx 0 20rpx;
-          }
-					
-					.message-count {
-						font-size: 14px;
-					}
-      
-          .text {
-            margin: auto;
-						text-align: center;
-						max-width: 200px;
-						padding: 0 10px;
-						box-sizing: border-box;
-            font-size: 16px;
-            font-weight: 700;
-						flex: 1;
-						@include no-wrap;
-          }
-      
-          .button {
-            width: 10%;
-            margin: auto 20rpx auto 0rpx;
-          }
-        }
+			width: 100%;
+			height: 90rpx;
+			line-height: 90rpx;
+			display: flex;
+			margin-top: 80rpx;
+			.icon {
+				margin: 0 4rpx 0 20rpx;
+			};
+			.message-count {
+				font-size: 14px;
+			};
+			.text {
+				text-align: center;
+				max-width: 200px;
+				padding: 0 10px;
+				box-sizing: border-box;
+				font-size: 16px;
+				font-weight: 700;
+				flex: 1;
+				@include no-wrap;
+			};
+			.button {
+				width: 10%;
+				margin: auto 20rpx auto 0rpx;
+			}
+		};
+		.loading-box {
+			height: 35px;
+			display: flex;
+			align-items: center;
+			justify-content: center
+		};
 		.scroll-view {
 			::-webkit-scrollbar {
-					    display: none;
-					    width: 0 !important;
-					    height: 0 !important;
-					    -webkit-appearance: none;
-					    background: transparent;
-					    color: transparent;
-					  }
-			
+				display: none;
+				width: 0 !important;
+				height: 0 !important;
+				-webkit-appearance: none;
+				background: transparent;
+				color: transparent;
+			};
 			// background-color: orange;
 			background-color: #F6F6F6;
-			
 			.chat-body {
 				display: flex;
 				flex-direction: column;
 				padding-top: 23rpx;
 				// background-color:skyblue;
-				
 				.send-time-box {
 					height: 40px;
 					display: flex;
@@ -504,27 +633,27 @@
 						padding: 3px 6px;
 						box-sizing: border-box;
 						color: #fff;
-						font-size: 14px;
+						font-size: 12px;
 						border-radius: 12px;
 						background: #CECECE;
 					}
-				}
-				
+				};
 				.self {
 					justify-content: flex-end;
-				}
+				};
 				.item {
 					display: flex;
 					padding: 23rpx 30rpx;
 					// background-color: greenyellow;
- 
 					.right {
 						background-color: $chatContentbgc;
-					}
+						color: #fff !important;
+					};
 					.left {
 						background-color: #FFFFFF;
-					}
-                    // 聊天消息的三角形
+						color: #101010 !important;
+					};
+          // 聊天消息的三角形
 					.right::after {
 						position: absolute;
 						display: inline-block;
@@ -535,8 +664,7 @@
 						top: 10px;
 						border: 12rpx solid transparent;
 						border-left: 12rpx solid $chatContentbgc;
-					}
- 
+					};
 					.left::after {
 						position: absolute;
 						display: inline-block;
@@ -547,23 +675,27 @@
 						right: 100%;
 						border: 12rpx solid transparent;
 						border-right: 12rpx solid #FFFFFF;
-					}
- 
+					};
 					.content {
 						position: relative;
 						max-width: 486rpx;
 						border-radius: 8rpx;
 						word-wrap: break-word;
-						padding: 24rpx 24rpx;
+						padding: 22rpx 22rpx;
 						margin: 0 24rpx;
 						border-radius: 5px;
-						font-size: 32rpx;
+						font-size: 28rpx;
 						font-family: PingFang SC;
 						font-weight: 500;
 						color: #333333;
 						line-height: 42rpx;
-					}
- 
+						::v-deep .u-icon {
+							position: absolute;
+							top: 50%;
+							left: -44rpx;
+							transform: translateY(-50%)
+						}
+					};
 					.avatar {
 						display: flex;
 						justify-content: center;
@@ -572,26 +704,23 @@
 						background: $sendBtnbgc;
 						border-radius: 50rpx;
 						overflow: hidden;
-						
 						image {
 							align-self: center;
 						}
- 
 					}
 				}
 			}
-		}
- 
+		};
 		/* 底部聊天发送栏 */
 		.chat-bottom {
 			width: 100%;
 			height: 100rpx;
 			background: #F4F5F7;
 			transition: all 0.1s ease;
-			
 			.send-msg {
 				display: flex;
 				align-items: flex-end;
+				justify-content: space-between;
 				padding: 16rpx 30rpx;
 				width: 100%;
 				min-height: 177rpx;
@@ -599,8 +728,7 @@
 				bottom: 0;
 				background: #fff;
 				transition: all 0.1s ease;
-			}
- 
+			};
 			.uni-textarea {
 				padding-bottom: 70rpx;  
 				textarea {
@@ -616,8 +744,7 @@
 					padding: 5rpx 8rpx;
           text-indent: 30rpx;
 				}
-			}
-            
+			};    
 			.send-btn {
 				display: flex;
 				align-items: center;

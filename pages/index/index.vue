@@ -284,6 +284,10 @@
 				latitude: '',
 				smartSortList: [
 					{
+						id: 0,
+						content: '智能排序'
+					}, 
+					{
 						id: 1,
 						content: '距离优先'
 					}, 
@@ -872,6 +876,11 @@
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
 						first: 1
+					},true)
+				} else if (e.content == '智能排序') {
+					this.queryTradeOrderPage({
+						pageNo: this.currentPageNum,
+						pageSize: this.pageSize
 					},true)
 				}
 			},
