@@ -1,13 +1,34 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex'
+import store from '@/store'
 export default {
 	computed: {
 		...mapGetters([
+			'socketOpen'
+		])
+	},
+	methods: {
+		...mapMutations([
+			'changeSocketOpen'
 		])
 	},
 	onLaunch: function() {
 	},
 	onShow: function() {
+		// 建立socket连接
+		uni.connectSocket({
+			url: `wss://dev.nurse.blinktech.cn/nurse/infra/ws?token=${store.getters.token}`,
+			success: (res) => {
+				console.log('成功',res)
+			},
+			fail: (err) => {
+				console.log('失败',err)
+			}
+		});
+		uni.onSocketOpen((res) => {
+			this.changeSocketOpen(true);
+			console.log('打开Soceket');
+		});
 		if (uni.canIUse('getUpdateManager')) {
 			const updateManager = uni.getUpdateManager();
 			updateManager.onCheckForUpdate(function (res) {

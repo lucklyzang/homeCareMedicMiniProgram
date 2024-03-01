@@ -1,5 +1,23 @@
 <template>
 	<view class="content-box">
+		<!-- 报警弹框 -->
+		<view class="call-police-dialog-box">
+			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="help-center-title">
+					<text>求助中心</text>
+				</view>
+				<view class="help-center-content">
+					<text>如遇突发情况，请立即进行报警。</text>
+				</view>
+				<view class="help-bottom-btn" @click="callPoliceEvent">
+					<image src="@/static/img/call-police-dialog.png"></image>
+				</view>
+			</u-popup>
+		</view>
+		<!-- 报警按钮 -->
+		<view class="call-police-box" @click="callPoliceDialogShowEvent">
+			<image src="@/static/img/call-police-btn.png"></image>
+		</view>
 		<!-- 订单服务操作弹框 -->
 		<view class="order-form-details-dialog-box">
 			<u-popup :show="orderFormDetailsDialogShow" @close="orderFormDetailsDialogShow = false" :closeable="true" mode="center" round="20" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
@@ -190,7 +208,7 @@
 						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent(item)">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -249,7 +267,7 @@
 						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent(item)">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -309,7 +327,7 @@
 						<text>{{ `${item.payPrice}` }}</text>
 					</view>
 					<view class="order-form-bottom">
-						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent">
+						<view class="btn-area-left" @click.stop="relationProtectedPersonEvent(item)">
 							<text v-if="item.status > 20 && item.status < 60">联系被护人</text>
 						</view>
 						<view class="btn-area-right">
@@ -338,6 +356,7 @@
 		fenToYuan
 	} from '@/common/js/utils'
 	import { getTradeOrderPage, nurseDepart, startServer, completeServer, acceptTradeOrder, refuseTradeOrder } from '@/api/orderForm.js'
+	import { createCallPolice } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -398,11 +417,13 @@
 				latitude: '',
 				currentAddress: '',
 				refuseReasonValue: '',
-				locationText: '重新定位'
+				locationText: '重新定位',
+				callPoliceDialogShow: false
 			}
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo',
 				'editServiceOrderFormSureChooseMessage'
 			]),
@@ -412,6 +433,16 @@
 			}
 		},
 		onShow() {
+			// 获取当前所在位置
+			try {
+				this.isGetLocation()
+			} catch(err) {
+				this.$refs.uToast.show({
+					message: `${err}`,
+					type: 'error',
+					position: 'center'
+				})
+			};
 			if (this.editServiceOrderFormSureChooseMessage.hasOwnProperty('current')) {
 				this.current = this.editServiceOrderFormSureChooseMessage.current;
 				this.queryTradeOrderPage({
@@ -434,6 +465,91 @@
 			...mapMutations([
 				'storeEditServiceOrderFormSureChooseMessage'
 			]),
+			
+			// 报警弹框弹出事件
+			callPoliceDialogShowEvent () {
+				this.callPoliceDialogShow = true
+			},
+			
+			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+				let _this = this;
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
+							_this.getAuthorizeInfo()
+						} else {
+							_this.getLocation()
+						}
+					}
+				})
+			},
+			
+			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+				let _this = this;
+				uni.authorize({
+					scope: a,
+					success() { //允许授权
+						_this.getLocation()
+					}
+				})
+			},
+			
+			//获取当前所在位置的经纬度
+			getLocation() {
+				uni.getLocation({
+					type: 'gcj02',
+					isHighAccuracy: true,
+					success: (res) => {
+						this.longitude = res.longitude;
+						this.latitude = res.latitude
+					},
+					fail: (err) => {
+						console.log('err',err)
+					}
+				})
+			},
+			
+			// 报警事件
+			callPoliceEvent () {
+				this.showLoadingHint = true;
+				this.infoText = '报警中...';
+				createCallPolice({
+				  userId: this.userInfo.userId,
+					name: this.userBasicInfo.nickname,
+					description: '',
+					mobile: this.userBasicInfo.mobile,
+					coordinate: this.longitude ? `${this.longitude},${this.latitude}` : '',
+					status: 0,
+					processor: 0,
+					handleTime: '',
+					handleResult: ''
+				}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: '报警成功',
+							type: 'success',
+							position: 'center'
+						})
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
 			
 			// 反馈内容过滤空格函数
 			formatter(value) {
@@ -866,8 +982,10 @@
 			},
 			
 			// 联系被护人事件
-			relationProtectedPersonEvent () {
-				
+			relationProtectedPersonEvent (item) {
+				uni.navigateTo({
+					url: '/messagePackage/pages/chatInterface/chatInterface?transmitData='+item.id
+				})
 			},
 			
 			// 选择原因弹框值变化事件
@@ -1020,6 +1138,50 @@
 	.content-box {
 		::v-deep .u-popup {
 			flex: none !important
+		};
+		.call-police-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 100%;
+						border-radius: 0;
+						border-top-left-radius: 20px;
+						border-top-right-radius: 20px;
+						padding: 20px 10px;
+						box-sizing: border-box;
+						.help-center-title {
+							text-align: center;
+							font-size: 20px;
+							color: #101010;
+							margin-bottom: 10px
+						};
+						.help-center-content {
+							text-align: center;
+							font-size: 14px;
+							color: #101010;
+							margin: 20px 0
+						};
+						.help-bottom-btn {
+							text-align: center;
+							image {
+								height: 116px;
+								width: 280px;
+							}
+						}
+					}
+				}
+			}	
+		};
+		.call-police-box {
+			position: fixed;
+			left: -18px;;
+			z-index: 100;
+			bottom: 4vh;
+			image {
+				width: 55px;
+				height: 55px
+			}
 		};
 		::v-deep .u-loading-icon {
 			position: absolute;

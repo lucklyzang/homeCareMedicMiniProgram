@@ -218,6 +218,16 @@
 				this.cashOut = this.userBasicInfo.cashOut;
 				this.queryUserBasicMessage(false)
 			};
+			// 获取当前所在位置
+			try {
+				this.isGetLocation()
+			} catch(err) {
+				this.$refs.uToast.show({
+					message: `${err}`,
+					type: 'error',
+					position: 'center'
+				})
+			};
 			// 回显交易数据
 			if (JSON.stringify(this.tradeStatisticsMessage) != "{}") {
 				this.tradeStatistics = this.tradeStatisticsMessage

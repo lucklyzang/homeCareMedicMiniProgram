@@ -323,11 +323,10 @@ export function getUserChatList() {
 }
 
 // 更新聊天消息为已读
-export function chatMessageRead(data) {
+export function chatMessageRead(fromId) {
   return request({
-    url: '/app-api/infra/chat-message/read',
-    method: 'put',
-		data
+    url: `/app-api/infra/chat-message/read?fromId=${fromId}`,
+    method: 'put'
   })
 }
 

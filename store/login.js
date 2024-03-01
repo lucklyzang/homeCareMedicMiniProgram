@@ -11,6 +11,10 @@ export default {
 			state.isLogin = getCache('isLogin') ? getCache('isLogin') === 'false' ? false : true : false;
 			return state.isLogin
 		},
+		socketOpen: (state) => {
+			state.socketOpen = getCache('socketOpen') ? getCache('socketOpen') === 'false' ? false : true : false;
+			return state.socketOpen
+		},
 		token:(state) => {
 			state.token = getCache('token') ? getCache('token') : null;
 			return state.token
@@ -44,6 +48,13 @@ export default {
 			if (playLoad && playLoad != 'null') {
 				setCache('token', playLoad);
 				state.token = playLoad
+			}
+		},
+		// 修改socken是否打开
+		changeSocketOpen(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('socketOpen', playLoad);
+				state.socketOpen = playLoad
 			}
 		},
 		// 修改是否登录状态

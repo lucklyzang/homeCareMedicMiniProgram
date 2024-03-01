@@ -6,7 +6,8 @@ export function getDefaultLoginState() {
 		isLogin: false,
 		overDueWay: false,
 		userBasicInfo: null,
-		nurseRankDictData: []
+		nurseRankDictData: [],
+		socketOpen: false
 	}	
 };
 

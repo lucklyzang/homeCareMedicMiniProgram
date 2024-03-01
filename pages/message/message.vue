@@ -1,6 +1,24 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<!-- 报警弹框 -->
+		<view class="call-police-dialog-box">
+			<u-popup :show="callPoliceDialogShow" @close="callPoliceDialogShow = false" :closeable="true" mode="bottom" :closeOnClickOverlay="false" :safeAreaInsetBottom="true">
+				<view class="help-center-title">
+					<text>求助中心</text>
+				</view>
+				<view class="help-center-content">
+					<text>如遇突发情况，请立即进行报警。</text>
+				</view>
+				<view class="help-bottom-btn" @click="callPoliceEvent">
+					<image src="@/static/img/call-police-dialog.png"></image>
+				</view>
+			</u-popup>
+		</view>
+		<!-- 报警按钮 -->
+		<view class="call-police-box" @click="callPoliceDialogShowEvent">
+			<image src="@/static/img/call-police-btn.png"></image>
+		</view>
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='2000' bgColor="none" title="消息">
@@ -41,10 +59,10 @@
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(item.lastTime),2) }}</text>
+							<text>{{ getNowFormatDate(new Date(item.lastTime),4) }}</text>
 						</view>
-						<view class="message-number">
-							<text>{ item.count }}</text>
+						<view class="message-number" v-if="item.count > 0">
+							<text>{{ item.count }}</text>
 						</view>
 					</view>
 				</view>
@@ -152,7 +170,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { notifyMessageSummary, notifySummary, latestNews, getUserChatList, chatMessageRead } from '@/api/user.js'
+	import { notifyMessageSummary, notifySummary, latestNews, getUserChatList, chatMessageRead, createCallPolice } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -186,11 +204,15 @@
 					title: '',
 					time: ''
 				},
-				isShowNoData: false
+				isShowNoData: false,
+				callPoliceDialogShow: false,
+				latitude: '',
+				longitude: ''
 			}
 		},
 		computed: {
 			...mapGetters([
+				'userInfo',
 				'userBasicInfo'
 			]),
 			userName() {
@@ -205,11 +227,107 @@
 				this.queryLatestNews({terminal: 'NURSE'});
 				this.queryNotifySummary();
 				this.queryNotifyMessageSummary()
+			};
+			// 获取当前所在位置
+			try {
+				this.isGetLocation()
+			} catch(err) {
+				this.$refs.uToast.show({
+					message: `${err}`,
+					type: 'error',
+					position: 'center'
+				})
 			}
 		},
 		methods: {
 			...mapMutations([
 			]),
+			
+			// 报警弹框弹出事件
+			callPoliceDialogShowEvent () {
+				this.isGetLocation();
+				this.callPoliceDialogShow = true
+			},
+			
+			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+				let _this = this;
+				uni.getSetting({
+					success(res) {
+						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
+							_this.getAuthorizeInfo()
+						} else {
+							_this.getLocation()
+						}
+					}
+				})
+			},
+			
+			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+				let _this = this;
+				uni.authorize({
+					scope: a,
+					success() { //允许授权
+						_this.getLocation()
+					}
+				})
+			},
+			
+			//获取当前所在位置的经纬度
+			getLocation() {
+				uni.getLocation({
+					type: 'gcj02',
+					isHighAccuracy: true,
+					success: (res) => {
+						this.longitude = res.longitude;
+						this.latitude = res.latitude
+					},
+					fail: (err) => {
+						console.log('err',err)
+					}
+				})
+			},
+			
+			// 报警事件
+			callPoliceEvent () {
+				this.showLoadingHint = true;
+				this.infoText = '报警中...';
+				createCallPolice({
+				  userId: this.userInfo.userId,
+					name: this.userBasicInfo.nickname,
+					description: '',
+					mobile: this.userBasicInfo.mobile,
+					coordinate: this.longitude ? `${this.longitude},${this.latitude}` : '',
+					status: 0,
+					processor: 0,
+					handleTime: '',
+					handleResult: ''
+				}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.$refs.uToast.show({
+							message: '报警成功',
+							type: 'success',
+							position: 'center'
+						})
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					};
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.callPoliceDialogShow = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
+			},
 			
 			// tab切换事件
 			tabCutEvent (item,index) {
@@ -229,7 +347,7 @@
 			
 			// 进入聊天界面事件
 			enterChatInterface (item) {
-				this.chatMessageReadEvent({fromId:item.fromId});
+				this.chatMessageReadEvent(item.fromId);
 				let transmitParameter = JSON.stringify(item);
 				uni.navigateTo({
 					url: '/messagePackage/pages/chatInterface/chatInterface?transmitData='+transmitParameter
@@ -449,6 +567,50 @@
 	};
 	.content-box {
 		@include content-wrapper;
+		.call-police-dialog-box {
+			::v-deep .u-popup {
+				flex: none !important;
+				.u-transition {
+					.u-popup__content {
+						width: 100%;
+						border-radius: 0;
+						border-top-left-radius: 20px;
+						border-top-right-radius: 20px;
+						padding: 20px 10px;
+						box-sizing: border-box;
+						.help-center-title {
+							text-align: center;
+							font-size: 20px;
+							color: #101010;
+							margin-bottom: 10px
+						};
+						.help-center-content {
+							text-align: center;
+							font-size: 14px;
+							color: #101010;
+							margin: 20px 0
+						};
+						.help-bottom-btn {
+							text-align: center;
+							image {
+								height: 116px;
+								width: 280px;
+							}
+						}
+					}
+				}
+			}	
+		};
+		.call-police-box {
+			position: fixed;
+			left: -18px;;
+			z-index: 100;
+			bottom: 4vh;
+			image {
+				width: 55px;
+				height: 55px
+			}
+		};
 		.top-area-box {
 			position: relative;
 			width: 100%;
