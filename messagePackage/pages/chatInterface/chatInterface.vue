@@ -6,9 +6,9 @@
       <!-- 返回图标 -->
       <u-icon class="icon" name="arrow-left" size="20px" color="#000" @click="goback()"></u-icon>
 			<!-- 消息条数 -->
-			<view class="message-count" @click="goback()">
+		<!-- 	<view class="message-count" @click="goback()">
 				{{ `消息(${messageCount})` }}
-			</view>
+			</view> -->
       <!-- 聊天对象名称 -->
       <view class="text">{{ fromName }}</view>
     </view>
@@ -20,13 +20,15 @@
 		<scroll-view :style="{height: `${windowHeight-inputHeight - 180}rpx`}"
 			id="scrollview"
 			@scrolltoupper="scrolltoupper"
+			upper-threshold="0"
 			scroll-y="true" 
 			:scroll-top="scrollTop"
+			:scroll-anchoring="true"
 			class="scroll-view"
 		>
 			<!-- 聊天主体 -->
 			<view id="msglistview" class="chat-body">
-				<u-loadmore :status="status" v-if="fullMsgList.length > 0" />
+				<u-loadmore :status="status"  :loading-text="loadingText"  :loadmore-text="loadmoreText" :nomore-text="nomoreText"  v-if="fullMsgList.length > 0" />
 				<!-- 聊天记录 -->
 				<view v-for="(item,index) in fullMsgList" :key="index">
 					<view class="send-time-box" v-if="item.me">
@@ -39,7 +41,7 @@
 						<!-- 文字内容 -->
 						<view class="content right">
 							<text>{{ item.content }}</text>
-							<u-icon name="photo" size="20"></u-icon>
+							<u-icon name="error-circle-fill" size="20" color="red" v-if="item.status == 'fail'"></u-icon>
 						</view>
 						<!-- 头像 -->
 						<image class="avatar" :src="item.fromAvatar">
@@ -90,7 +92,7 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
-	import { getUserChatPage } from '@/api/user.js'
+	import { getUserChatPage, getUserMessage } from '@/api/user.js'
 	import { getTradeOrderUserCareInfo } from '@/api/orderForm.js'
 	import store from '@/store'
 	export default{
@@ -99,11 +101,16 @@
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png"),
 				showLoadingHint: false,
 				infoText: '加载中···',
+				loadingText: '加载中···',
+				loadmoreText: '下拉加载更多',
+				nomoreText: '没有更多聊天记录了',
 				messageCount: 12,
 				//键盘高度
 				keyboardHeight:0,
 				//底部消息发送高度
 				bottomHeight: 0,
+				// 列表高度
+				scrollHeight: 0,
 				//滚动距离
 				scrollTop: 0,
 				userId:'',
@@ -120,13 +127,11 @@
 				currentPage: 1,
 				pageSize: 15,
 				totalCount: 0,
-				beforePageRoute: ''
+				beforePageRoute: '',
+				personPhotoSource: ''
 			}
 		},
-		updated(){
-			//页面更新时调用聊天消息定位到最底部
-			this.scrollToBottom();
-		},
+		updated(){},
 		computed: {
 			...mapGetters([
 				'userInfo',
@@ -142,11 +147,33 @@
 			}
 		},
 		
+		onShow() {
+			// 获取用户基本信息
+			getUserMessage().then((res) => {
+				if ( res && res.data.code == 0) {
+					this.changeUserBasicInfo(res.data.data);
+					this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng :  this.userBasicInfo.avatar;
+				} else {
+					this.$refs.uToast.show({
+						title: res.data.msg,
+						type: 'error',
+						position: 'bottom'
+					})
+				}
+			})
+			.catch((err) => {
+				this.$refs.uToast.show({
+					title: err.message,
+					type: 'error',
+					position: 'bottom'
+				})
+			})
+		},
+		
 		onLoad(options) {
 			this.personPhotoSource = !this.userBasicInfo.avatar ? this.defaultPersonPhotoIconPng : this.userBasicInfo.avatar;
 			let pages = getCurrentPages();//当前页
 			this.beforePageRoute = pages[pages.length - 2].route;//上个页面路径
-			console.log('页面路劲',this.beforePageRoute);
 			// 从聊天列表进入时不用查医护信息
 			if (this.beforePageRoute == 'pages/message/message') {
 				this.fromId = JSON.parse(options.transmitData).fromId;
@@ -180,7 +207,6 @@
 		
 		onUnload(){
 			uni.offKeyboardHeightChange(() =>{});
-			console.log("卸载了");
 			// 关闭定时器
 			if (this.timer) {
 				clearInterval(this.timer);
@@ -192,7 +218,8 @@
 		
 		methods: {
 			...mapMutations([
-				'changeSocketOpen'
+				'changeSocketOpen',
+				'changeUserBasicInfo'
 			]),
 			
       goback() {
@@ -209,7 +236,6 @@
 			
 			// 格式化时间
 			getNowFormatDate(currentDate,type) {
-				console.log('日期',currentDate,type);
 				// type:1(只显示小时分钟秒),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟秒)5(显示月日)
 				let currentdate;
 				let strDate = currentDate.getDate();
@@ -409,7 +435,6 @@
 			onSocketMessage() {
 				let that = this;
 				uni.onSocketMessage((res) => {
-					console.log('医护端响应消息',res);
 					let obj = JSON.parse(res.data)
 					that.onMessageHandle(obj)
 				})
@@ -417,16 +442,22 @@
 	 
 			// 接收到事件后处理的方法
 			onMessageHandle(obj) {
-				this.fullMsgList.push({
-					content: JSON.parse(obj.content)['text'],
-					createTime: 1709275012000,
-					fromAvatar: this.userAvatar,
-					fromId: JSON.parse(obj.content)['formUserId'],
-					me: false,
-					read: false,
-					toId: this.userInfo.userId
-				})
-				console.log('接收发送成功后返回的消息',obj);
+				if (obj.type == 'chat-message-receive') {
+					if (!obj.hasOwnProperty('content')) {
+						return
+					};
+					this.fullMsgList.push({
+						content: JSON.parse(obj.content)['text'],
+						createTime: new Date().getTime(),
+						fromAvatar: this.userAvatar,
+						fromId: JSON.parse(obj.content)['formUserId'],
+						me: false,
+						status: 'success',
+						read: false,
+						toId: this.userInfo.userId
+					});
+					this.scrollToBottom()
+				}
 			},
 	 
 			// 发送消息后处理的方法
@@ -435,7 +466,6 @@
 			},
 			
 			scrolltoupper () {
-				console.log('到顶了');
 				let totalPage = Math.ceil(this.totalCount/this.pageSize);
 				if (this.currentPage >= totalPage) {
 					this.status = 'nomore'
@@ -451,7 +481,7 @@
 			},
 			
 			// 获取当前消息分页信息
-			queryChatPageList (data,flag) {
+			async queryChatPageList (data,flag) {
 				if (flag) {
 					this.showLoadingHint = true
 				} else {
@@ -467,11 +497,24 @@
 							this.showLoadingHint = false;
 							return
 						};
-						console.log('聊天数据',res.data.data);
 						this.totalCount = res.data.data.total;
 						this.msgList = res.data.data.list;
 						let reverseMsgList = this.msgList.reverse();
-						this.fullMsgList.unshift(...reverseMsgList);
+						this.fullMsgList = [...reverseMsgList,...this.fullMsgList];
+						this.$nextTick(async () => {
+							const query = uni.createSelectorQuery().in(this);
+							query.select('.chat-body')
+							.boundingClientRect(data => {
+								// data.height 为已经渲染的聊天列表内容高度
+								// this.scrollHeight 为上一次聊天列表内容高度, 如果当前为第一次, 那么this.scrollHeight应该为0
+								// 设置滚动条的高度
+								this.scrollTop = data.height - this.scrollHeight;
+								// (注意: 如果在模板中, upper-threshold设置的值不为0, 为50, 那么可以加上该值), 如:
+								// this.scrollTop = data.height - this.scrollHeight + 50
+								// 将本次列表渲染后的内容高度记录下来, 方便下次加载时使用
+								this.scrollHeight = data.height
+							}).exec()
+						});
 						if (this.fullMsgList.length == 0) {
 							this.isShowNoData = true;
 						}
@@ -527,10 +570,10 @@
 				if(!this.chatMsg||!/^\s+$/.test(this.chatMsg)){
 					let obj = {
 						content: this.chatMsg,
-						createTime: 1709099251000,
-						toAvatar: this.careAvatar,
+						createTime: new Date().getTime(),
 						fromAvatar: this.personPhotoSource,
-						me: true
+						me: true,
+						status: 'sending'
 					};
 					this.sendSocketMessage(this.chatMsg);
 					this.msgList.push(obj);
@@ -575,6 +618,8 @@
 			line-height: 90rpx;
 			display: flex;
 			margin-top: 80rpx;
+			padding-right: 190rpx;
+			box-sizing: border-box;
 			.icon {
 				margin: 0 4rpx 0 20rpx;
 			};
@@ -583,7 +628,7 @@
 			};
 			.text {
 				text-align: center;
-				max-width: 200px;
+				width: 200px;
 				padding: 0 10px;
 				box-sizing: border-box;
 				font-size: 16px;

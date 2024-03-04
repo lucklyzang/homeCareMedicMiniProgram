@@ -207,7 +207,8 @@
 				isShowNoData: false,
 				callPoliceDialogShow: false,
 				latitude: '',
-				longitude: ''
+				longitude: '',
+				timer: null
 			}
 		},
 		computed: {
@@ -222,7 +223,11 @@
 		},
 		onShow() {
 			if (this.tabIndex == 0) {
-				this.getUserChatListEvent()
+				this.getUserChatListEvent(true);
+				// 定时器，定时更新聊天列表
+				this.timer = setInterval(() => {
+					this.getUserChatListEvent(false)
+				}, 2000)
 			} else {
 				this.queryLatestNews({terminal: 'NURSE'});
 				this.queryNotifySummary();
@@ -237,6 +242,13 @@
 					type: 'error',
 					position: 'center'
 				})
+			}
+		},
+		onHide() {
+			// 关闭定时器
+			if (this.timer) {
+				clearInterval(this.timer);
+				this.timer = null
 			}
 		},
 		methods: {
@@ -337,10 +349,7 @@
 					this.queryNotifySummary();
 					this.queryNotifyMessageSummary();
 				} else if (this.tabIndex == 0) {
-					this.getUserChatListEvent();
-					// uni.navigateTo({
-					// 	url: '/messagePackage/pages/chatInterface/chatInterface'
-					// })
+					this.getUserChatListEvent(true)
 				}
 			},
 			
@@ -355,8 +364,10 @@
 			},
 			
 			// 查询聊天列表
-			getUserChatListEvent () {
-				this.showLoadingHint = true;
+			getUserChatListEvent (flag) {
+				if (flag) {
+					this.showLoadingHint = true
+				};
 				getUserChatList().then((res) => {
 					if ( res && res.data.code == 0) {
 						if (!res.data.data || res.data.data.length == 0) {
@@ -372,10 +383,14 @@
 							position: 'center'
 						})
 					};
-					this.showLoadingHint = false;
+					if (flag) {
+						this.showLoadingHint = false
+					}
 				})
 				.catch((err) => {
-					this.showLoadingHint = false;
+					if (flag) {
+						this.showLoadingHint = false
+					};
 					this.$refs.uToast.show({
 						message: err.message,
 						type: 'error',
