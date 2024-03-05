@@ -218,7 +218,7 @@
 						<view class="real-time-order-form-list-bottom">
 							<view class="price-box">
 								<text>￥</text>
-								<text>{{ `${item.payPrice}` }}</text>
+								<text>{{ `${item.nursePrice}` }}</text>
 							</view>
 							<view class="btn-box" @click="robOrderEvent">
 								<text>抢单</text>
@@ -981,7 +981,7 @@
 								this.tradeList = this.tradeList.filter((item) => { return item.commentStatus == false })
 							};
 							this.tradeList.forEach((item) => {
-								item.payPrice = fenToYuan(item.payPrice);
+								item.nursePrice = fenToYuan(item.nursePrice);
 								item.realTime = formatMsgTime(this.getNowFormatDate(new Date(item.createTime),4))
 							})
 						};

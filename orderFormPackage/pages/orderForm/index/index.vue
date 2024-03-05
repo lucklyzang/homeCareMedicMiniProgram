@@ -248,7 +248,7 @@
 						<map id="map" @tap="clickMapEvent" :longitude="longitude" :latitude="latitude" :scale="18" :markers="markers" show-location style="width: 100%; height: 300rpx;"></map>
 					</view>
 				</view>
-				<view class="contact-patient">
+				<view class="contact-patient" v-if="serviceMessage.status > 20 && serviceMessage.status < 60">
 					<view class="contact-patient-title">
 						<text>联系患者</text>
 					</view>
@@ -257,7 +257,7 @@
 							<image src="@/static/img/order-form-phone.png"></image>
 							<text>拨打电话</text>
 						</view>
-						<view class="message-box">
+						<view class="message-box" @click="relationProtectedPersonEvent(serviceMessage)">
 							<image src="@/static/img/order-form-message.png"></image>
 							<text>发送消息</text>
 						</view>
@@ -768,6 +768,13 @@
 			// 拍照页面返回后的回调
 			prevDateFun (id) {
 				this.queryOrderDetail({id, type: 2})
+			},
+			
+			// 给被护人发送消息事件
+			relationProtectedPersonEvent (item) {
+				uni.navigateTo({
+					url: '/messagePackage/pages/chatInterface/chatInterface?transmitData='+item.id
+				})
 			},
 				
 				// 查询订单详情

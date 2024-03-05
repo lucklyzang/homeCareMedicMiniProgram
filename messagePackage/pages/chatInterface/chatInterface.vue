@@ -457,6 +457,13 @@
 						toId: this.userInfo.userId
 					});
 					this.scrollToBottom()
+				} else {
+					if (!obj.hasOwnProperty('content')) {
+						let temporaryIndex = this.fullMsgList.findIndex((item) => { return item.content == this.chatMsg });
+						if (temporaryIndex != -1) {
+							this.fullMsgList[temporaryIndex]['status'] = 'fail'
+						}
+					}
 				}
 			},
 	 
