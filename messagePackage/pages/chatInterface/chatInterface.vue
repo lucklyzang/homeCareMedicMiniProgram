@@ -573,26 +573,26 @@
 			
 			// 发送消息
 			handleSend() {
-				//如果消息不为空
-				if(!this.chatMsg||!/^\s+$/.test(this.chatMsg)){
+				//如果消息为空
+				if(this.chatMsg.match(/^[ ]*$/) || this.chatMsg == ''){
+					this.$refs.uToast.show({
+						message: '不能发送空白消息',
+						type: 'default',
+						position: 'center'
+					})
+				} else {
 					let obj = {
 						content: this.chatMsg,
 						createTime: new Date().getTime(),
 						fromAvatar: this.personPhotoSource,
-						me: true,
-						status: 'sending'
+						status: 'sending',
+						me: true
 					};
 					this.sendSocketMessage(this.chatMsg);
 					this.msgList.push(obj);
 					this.fullMsgList = this.fullMsgList.concat(this.msgList);
 					this.chatMsg = '';
-					this.scrollToBottom();
-				} else {
-					this.$refs.uToast.show({
-						message: '不能发送空白消息',
-						type: 'error',
-						position: 'center'
-					})
+					this.scrollToBottom()
 				}
 			}
 		}
@@ -612,13 +612,6 @@
 		::v-deep .u-popup {
 			flex: none !important
 		};
-		::v-deep .u-loading-icon {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%,-50%);
-			z-index: 20000;
-		};
     .topTabbar {
 			width: 100%;
 			height: 90rpx;
@@ -627,6 +620,7 @@
 			margin-top: 80rpx;
 			padding-right: 190rpx;
 			box-sizing: border-box;
+			position: relative;
 			.icon {
 				margin: 0 4rpx 0 20rpx;
 			};
@@ -642,6 +636,10 @@
 				font-weight: 700;
 				flex: 1;
 				@include no-wrap;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%,-50%);
 			};
 			.button {
 				width: 10%;
