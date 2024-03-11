@@ -91,7 +91,7 @@
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),2) }}</text>
+							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),4) }}</text>
 						</view>
 						<view class="message-number" v-if="latestNewsSummary.unReadCount > 0">
 							<text>{{ latestNewsSummary.unReadCount }}</text>
@@ -120,7 +120,7 @@
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),2) }}</text>
+							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifyMessageSummary.notRead > 0">
 							<text>{{ notifyMessageSummary.notRead }}</text>
@@ -149,7 +149,7 @@
 					</view>
 					<view class="message-content-right">
 						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(notifySummary.time),2) }}</text>
+							<text>{{ getNowFormatDate(new Date(notifySummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifySummary.notRead > 0">
 							<text>{{ notifySummary.notRead }}</text>
@@ -515,7 +515,7 @@
 			
 			// 格式化时间
 			getNowFormatDate(currentDate,type) {
-				// type:1(只显示小时分钟),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟)5(显示月日)
+				// type:1(只显示小时分钟秒),2(只显示年月日)3(只显示年月)4(显示年月日小时分钟秒)5(显示月日)
 				let currentdate;
 				let strDate = currentDate.getDate();
 				let seperator1 = "-";
@@ -524,6 +524,7 @@
 				let month = currentDate.getMonth() + 1;
 				let hour = currentDate.getHours();
 				let minutes = currentDate.getMinutes();
+				let seconds = currentDate.getSeconds();
 				if (month >= 1 && month <= 9) {
 					month = "0" + month;
 				};
@@ -533,11 +534,14 @@
 				if (minutes >= 0 && minutes <= 9) {
 					minutes = "0" + minutes;
 				};
+				if (seconds >= 0 && seconds <= 9) {
+					seconds = "0" + seconds;
+				};
 				if (strDate >= 0 && strDate <= 9) {
 					strDate = "0" + strDate;
 				};
 				if (type == 1) {
-					currentdate = hour + seperator2 + minutes
+					currentdate = hour + seperator2 + minutes + seperator2 + seconds
 				};
 				if (type == 2) {
 					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate
@@ -546,7 +550,7 @@
 					currentdate = currentDate.getFullYear() + seperator1 + month
 				};
 				if (type == 4) {
-					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes
+					currentdate = currentDate.getFullYear() + seperator1 + month + seperator1 + strDate + seperator3 + hour + seperator2 + minutes + seperator2 + seconds
 				};
 				if (type == 5) {
 					currentdate = month + seperator1 + strDate

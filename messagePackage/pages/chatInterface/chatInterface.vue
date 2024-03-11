@@ -559,12 +559,12 @@
 				
 			// 滚动至聊天底部
 			scrollToBottom(e) {
-				setTimeout(()=>{
+				setTimeout(() => {
 					let query = uni.createSelectorQuery().in(this);
 					query.select('#scrollview').boundingClientRect();
 					query.select('#msglistview').boundingClientRect();
-					query.exec((res) =>{
-						if(res[1].height > res[0].height){
+					query.exec((res) => {
+						if(res[1].height > res[0].height) {
 							this.scrollTop = this.rpxTopx(res[1].height - res[0].height)
 						}
 					})
@@ -786,7 +786,7 @@
 					font-size: 32rpx;
 					font-family: PingFang SC;
 					color: #333333;
-					line-height: 74rpx;
+					line-height: 40rpx;
 					padding: 5rpx 8rpx;
           text-indent: 30rpx;
 				}
@@ -795,7 +795,7 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				margin-bottom: 76rpx;
+				margin-bottom: 70rpx;
 				margin-left: 25rpx;
 				width: 120rpx;
 				height: 75rpx;
