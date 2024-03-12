@@ -622,18 +622,26 @@
 						"Content-Type": "application/text"
 					},
 					url: 'https://apis.map.qq.com/ws/geocoder/v1/?location=' + this.latitude + ',' + this.longitude +
-						'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+						'&key=TVDBZ-TDILD-4ON4B-PFDZA-RNLKH-VVF6E',
 					success:(res)=> {
 						//成功获取到经纬度
 						this.locationText = '重新定位';
 						if (res.statusCode == 200) {
-							this.currentAddress = res.data.result.address;
-							this.showLoadingHint = false;
-							this.$refs.uToast.show({
-								message: '已获取最新位置',
-								type: 'success',
-								position: 'bottom'
-							})
+							if (res.data.result) {
+								this.currentAddress = res.data.result.address;
+								this.showLoadingHint = false;
+								this.$refs.uToast.show({
+									message: '已获取最新位置',
+									type: 'success',
+									position: 'bottom'
+								})
+							} else {
+								this.$refs.uToast.show({
+									message: res.data.message,
+									type: 'error',
+									position: 'center'
+								})
+							}
 						} else {
 							this.currentAddress = '获取地理位置失败';
 							this.$refs.uToast.show({

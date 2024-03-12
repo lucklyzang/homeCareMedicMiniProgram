@@ -41,6 +41,7 @@
 						<!-- 文字内容 -->
 						<view class="content right">
 							<text>{{ item.content }}</text>
+							<image src="@/static/img/send-message-load.gif" v-if="item.status == 'sending'"></image>
 							<u-icon name="error-circle-fill" size="20" color="red" v-if="item.status == 'fail'"></u-icon>
 						</view>
 						<!-- 头像 -->
@@ -92,7 +93,7 @@
 		mapGetters,
 		mapMutations
 	} from 'vuex'
-	import { getUserChatPage, getUserMessage } from '@/api/user.js'
+	import { getUserChatPage, getUserMessage, chatMessageRead } from '@/api/user.js'
 	import { getTradeOrderUserCareInfo } from '@/api/orderForm.js'
 	import store from '@/store'
 	export default{
@@ -116,8 +117,10 @@
 				userId:'',
 				//发送的消息
 				chatMsg:"",
-				// 定时器
+				// 定时器(判断socket是否断开)
 				timer: null,
+				// 定时器(socket心跳)
+				socketTimer: null,
 				fromId: '',
 				fromName: '',
 				userAvatar: '',
@@ -192,9 +195,9 @@
 			this.init();
 	 
 			// 定时器，定时判断socket有没有掉线
-			// this.timer = setInterval(() => {
-			// 	this.isSocketConnct()
-			// }, 2000);
+			this.timer = setInterval(() => {
+				this.isSocketConnct()
+			}, 3000);
 
 			uni.onKeyboardHeightChange(res => {
 				//这里正常来讲代码直接写
@@ -207,10 +210,15 @@
 		
 		onUnload(){
 			uni.offKeyboardHeightChange(() =>{});
-			// 关闭定时器
+			// 关闭定时器(定时判断是否断开)
 			if (this.timer) {
 				clearInterval(this.timer);
 				this.timer = null
+			};
+			// 关闭定时器(socket心跳)
+			if (this.socketTimer) {
+				clearInterval(this.socketTimer);
+				this.socketTimer = null
 			};
 			// 关闭Socket
 			this.closeSocket()
@@ -329,6 +337,33 @@
 				},10)
 			},
 			
+			// 发送心跳包
+			startHeartbeat () {
+				const heartbeatMsg = 'ping';
+				const sendHeartbeat = () => {
+					if (this.socketOpen) {
+						uni.sendSocketMessage({
+							data: heartbeatMsg,
+						}).catch(error => {
+							console.log('发送心跳消息失败:', error);
+							this.reconnect()
+						})
+					}
+				};
+				this.socketTimer = setInterval(sendHeartbeat, 2000)
+			},
+			
+			// 开始重连
+			reconnect () {
+				if (!this.socketOpen) {
+					clearTimeout(this.socketTimer);
+					this.socketTimer = setTimeout(() => {
+						console.log('开始重连...');
+						this.init();
+					},200)
+				}
+			},
+			
 			// 发送消息(socket)
 			sendSocketMessage(msg) {
 				let that = this;
@@ -359,12 +394,13 @@
 									position: 'center'
 								})
 							}
-						});
+						})
 					} else {
-						// Socket没有开启，重新连接并重新发送消息
+						// Socket没有开启，重新连接并重新发送消息,并将推入列表的消息的状态变为失败
+						this.fullMsgList[this.fullMsgList.length - 1]['status'] = 'fail';
 						this.init();
 						setTimeout(() => {
-							this.sendSocketMessage(jsonMessage)
+							this.sendSocketMessage(msg)
 						},300)
 					}
 				} catch (err) {
@@ -378,7 +414,6 @@
 	 
 			// 判断是否连接
 			isSocketConnct() {
-				console.log('判断是否连接');
 				if (!this.socketOpen) {
 					this.init()
 				}
@@ -427,14 +462,28 @@
 				let that = this;
 				uni.onSocketOpen((res) => {
 					that.changeSocketOpen(true);
+					that.startHeartbeat();
 					console.log('打开Soceket');
 				})
 			},
+			
+			// 打开Soceket失败
+			openSocketErr() {
+				uni.onSocketError(res => {
+					let that = this;
+					that.changeSocketOpen(false);
+					that.reconnect();
+				})
+			},	
 	 
 			// 接收事件
 			onSocketMessage() {
 				let that = this;
 				uni.onSocketMessage((res) => {
+					// 心跳返回的消息不做处理
+					if (res.data == 'pong') {
+						return
+					};
 					let obj = JSON.parse(res.data)
 					that.onMessageHandle(obj)
 				})
@@ -446,6 +495,7 @@
 					if (!obj.hasOwnProperty('content')) {
 						return
 					};
+					this.chatMessageReadEvent(JSON.parse(obj.content).fromUserId);
 					this.fullMsgList.push({
 						content: JSON.parse(obj.content)['text'],
 						createTime: new Date().getTime(),
@@ -459,12 +509,34 @@
 					this.scrollToBottom()
 				} else {
 					if (!obj.hasOwnProperty('content')) {
-						let temporaryIndex = this.fullMsgList.findIndex((item) => { return item.content == this.chatMsg });
-						if (temporaryIndex != -1) {
-							this.fullMsgList[temporaryIndex]['status'] = 'fail'
+						if (this.fullMsgList[this.fullMsgList.length - 1]['status'] == 'fail') {
+							this.fullMsgList[this.fullMsgList.length - 1]['status'] = ''
+						} else {
+							this.fullMsgList[this.fullMsgList.length - 1]['status'] = ''
 						}
 					}
 				}
+			},
+			
+			// 更新消息为已读
+			chatMessageReadEvent (data) {
+				chatMessageRead(data).then((res) => {
+					if ( res && res.data.code == 0) {
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'center'
+					})
+				})
 			},
 	 
 			// 发送消息后处理的方法
@@ -739,6 +811,14 @@
 							position: absolute;
 							top: 50%;
 							left: -44rpx;
+							transform: translateY(-50%)
+						};
+						image {
+							width: 20px;
+							height: 20px;
+							position: absolute;
+							top: 50%;
+							left: -48rpx;
 							transform: translateY(-50%)
 						}
 					};

@@ -1002,14 +1002,22 @@
 							"Content-Type": "application/text"
 						},
 						url: 'https://apis.map.qq.com/ws/geocoder/v1/?address=' + address +
-														'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+														'&key=TVDBZ-TDILD-4ON4B-PFDZA-RNLKH-VVF6E',
 						success:(res)=> {
 							//成功获取到经纬度
 							if (res.statusCode == 200) {
-								this.latitude = res.data.result.location.lat;
-								this.longitude = res.data.result.location.lng;
-								this.markers[0]['latitude'] = res.data.result.location.lat;
-								this.markers[0]['longitude'] = res.data.result.location.lng
+								if (res.data.result) {
+									this.latitude = res.data.result.location.lat;
+									this.longitude = res.data.result.location.lng;
+									this.markers[0]['latitude'] = res.data.result.location.lat;
+									this.markers[0]['longitude'] = res.data.result.location.lng
+								} else {
+									this.$refs.uToast.show({
+										message: res.data.message,
+										type: 'error',
+										position: 'center'
+									})
+								}
 							} else {
 								uni.showToast({
 									title: '获取经纬度失败，请重试',

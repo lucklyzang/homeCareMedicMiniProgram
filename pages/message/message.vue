@@ -372,6 +372,7 @@
 					if ( res && res.data.code == 0) {
 						if (!res.data.data || res.data.data.length == 0) {
 							this.isNoChat = true;
+							this.chatList = []
 						} else {
 							this.isNoChat = false;
 							this.chatList = res.data.data;

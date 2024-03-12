@@ -1,6 +1,7 @@
 <template>
 	<view class="content-box">
 		<u-toast ref="uToast" />
+		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
 		<u-modal :show="modalShow" :title="modalContent"
 		 :show-cancel-button="true" @confirm="sureCancel" @cancel="cancelSure">
 		</u-modal>
@@ -136,10 +137,9 @@
 			sureCancel () {
 				this.modalContent = '';
 				this.modalShow = false;
+				this.infoText = '';
+				this.showLoadingHint = true;
 				userSignOut().then((res) => {
-					if (this.showLoadingHint) {
-						return
-					};
 					if ( res && res.data.code == 0) {
 						this.$refs.uToast.show({
 							message: '退出登录成功!',
@@ -283,6 +283,13 @@
 		background: #fff;
 		::v-deep .u-popup {
 			flex: none !important
+		};
+		::v-deep .u-loading-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			z-index: 20000;
 		};
 		.top-area-box {
 			position: relative;
