@@ -1,5 +1,20 @@
 <template>
 	<view class="chat">
+		<!-- 拨打电话弹框 -->
+		<view class="call-phone-box">
+			<u-popup :show="showCallPhoneBox" :safeAreaInsetBottom="false" :closeable="true" mode="center"  @close="closeCallPhoneBox">
+				<view class="support-staff-content">
+					<view class="support-staff-top">
+							<image :src="userAvatar"></image>
+							<text>拨打患者虚拟电话</text>
+							<text>{{ userPhone }}</text>
+					</view>
+					<view class="support-staff-bottom" @click="callNumber">
+						<text>拨打电话</text>
+					</view>
+				</view>
+			</u-popup>
+		</view>
 		<u-toast ref="uToast" />
     <!-- 顶部标题 -->
     <view class="topTabbar">
@@ -11,6 +26,10 @@
 			</view> -->
       <!-- 聊天对象名称 -->
       <view class="text">{{ fromName }}</view>
+			<!-- 电话图标 -->
+			<view class="phone-area" @click="openPhoneDialogEvent">
+				<u-icon name="phone-fill" size="24px" color="#101010"></u-icon>
+			</view>
     </view>
 		<u-transition :show="showLoadingHint" mode="fade-down">
 			<view class="loading-box" v-if="showLoadingHint">
@@ -124,6 +143,7 @@
 				fromId: '',
 				fromName: '',
 				userAvatar: '',
+				userPhone: '',
 				msgList: [],
 				fullMsgList:[],
 				status: 'nomore',
@@ -131,7 +151,8 @@
 				pageSize: 15,
 				totalCount: 0,
 				beforePageRoute: '',
-				personPhotoSource: ''
+				personPhotoSource: '',
+				showCallPhoneBox: false
 			}
 		},
 		updated(){},
@@ -182,6 +203,7 @@
 				this.fromId = JSON.parse(options.transmitData).fromId;
 				this.fromName = JSON.parse(options.transmitData).fromName;
 				this.userAvatar = JSON.parse(options.transmitData).avatar;
+				this.userPhone = JSON.parse(options.transmitData).mobile;
 				this.queryChatPageList({
 					pageNo: this.currentPage,
 					pageSize: this.pageSize,
@@ -287,6 +309,63 @@
 				return currentdate
 			},
 			
+			// 关闭拨打电话对话框
+			closeCallPhoneBox () {
+				this.showCallPhoneBox = false
+			},
+			
+			// 打开电话弹框事件
+			openPhoneDialogEvent () {
+				this.showCallPhoneBox = true
+			},
+			
+			// 拨打电话事件
+			dialPhoneEvent () {
+				uni.getSetting({
+					success: (res) => {
+						if (res.authSetting['scope.makePhoneCall']) {
+							this.callNumber();
+						} else {
+							uni.authorize({
+								scope: 'scope.makePhoneCall',
+								success: () => {
+									this.callNumber();
+								},
+								fail: () => {
+									uni.openSetting({
+										success: (res) => {
+											if (res.authSetting['scope.makePhoneCall']) {
+												this.callNumber()
+											}
+										}
+									})
+								}
+							})
+						}
+					},
+					fail:()=> {
+						this.$refs.uToast.show({
+							message: '获取用户设置失败',
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+			},
+			
+			callNumber() {
+				this.showCallPhoneBox = false;
+				uni.makePhoneCall({
+					phoneNumber: this.userPhone,
+					success: () => {
+						console.log('拨打电话成功！');
+					},
+					fail: () => {
+						console.error('拨打电话失败！');
+					}
+				})
+			},
+			
 			// 查询要联系的患者信息(从订单界面进入此页面)
 			getTradeOrderUserCareInfoEvent (data) {
 				this.showLoadingHint = true;
@@ -295,6 +374,7 @@
 						this.fromName = res.data.data.userName;
 						this.fromId = res.data.data.userId;
 						this.userAvatar = res.data.data.userAvatar;
+						this.userPhone = res.data.data.userPhone;
 						this.queryChatPageList({
 							pageNo: this.currentPage,
 							pageSize: this.pageSize,
@@ -684,6 +764,54 @@
 		::v-deep .u-popup {
 			flex: none !important
 		};
+		.call-phone-box {
+			::v-deep .u-popup {
+				.u-popup__content {
+					width: 80%;
+					padding: 30px 10px 20px 10px;
+					box-sizing: border-box;
+					border-radius: 14px;
+					.u-popup__content__close {
+						.u-icon__icon {
+							color: #101010 !important
+						}
+					};
+					.support-staff-content {
+						.support-staff-top {
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+							>image {
+								width: 100px;
+								height: 100px;
+								border-radius: 50%;
+							};
+							>text {
+								font-size: 14px;
+								color: #101010;
+								&:nth-of-type(1) {
+									margin: 14px 0;
+								}
+							}
+						};
+						.support-staff-bottom {
+							display: flex;
+							width: 80%;
+							height: 38px;
+							line-height: 38px;
+							margin: 0 auto;
+							justify-content: center;
+							align-items: center;
+							background: #1E86FD;
+							border-radius: 7px;
+							margin-top: 20px;
+							font-size: 14px;
+							color: #fff;
+						}
+					}
+				}
+			}
+		};
     .topTabbar {
 			width: 100%;
 			height: 90rpx;
@@ -693,7 +821,7 @@
 			padding-right: 190rpx;
 			box-sizing: border-box;
 			position: relative;
-			.icon {
+			> .icon {
 				margin: 0 4rpx 0 20rpx;
 			};
 			.message-count {
@@ -712,6 +840,12 @@
 				left: 50%;
 				top: 50%;
 				transform: translate(-50%,-50%);
+			};
+			.phone-area {
+				position: absolute;
+				right: 200rpx;
+				top: 50%;
+				transform: translateY(-45%);
 			};
 			.button {
 				width: 10%;
