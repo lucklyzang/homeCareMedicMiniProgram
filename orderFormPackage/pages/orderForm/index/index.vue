@@ -62,7 +62,7 @@
 					<image src="@/static/img/view-order-form-details-bottom-icon-one.png"></image>
 					<image src="@/static/img/view-order-form-details-bottom-icon-two.png"></image>
 					<text>已进入服务范围</text>
-					<text @click="realTimeGetLocation">{{ locationText }}</text>
+					<text @click="realTimeGetLocation(true)">{{ locationText }}</text>
 				</view>
 			</u-popup>
 		</view>
@@ -138,9 +138,9 @@
 				<view class="order-form-top">
 					<view class="applay-time">
 						<text>申请时间 :</text>
-						<text>{{ getNowFormatDate(new Date(serviceMessage.createTime),4) }}</text>
+						<text v-if="serviceMessage.createTime">{{ getNowFormatDate(new Date(serviceMessage.createTime),4) }}</text>
 					</view>
-					<view class="order-form-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
+					<view v-if="serviceMessage.status != null" class="order-form-status" :class="{'serviceStyle' : serviceMessage.status == 50,'completeStyle' : serviceMessage.status == 60}">
 						<text>{{ transitionOrderStatusTextOther(serviceMessage) }}</text>
 					</view>
 				</view>
@@ -530,7 +530,7 @@
 			if (options.transmitData == '{}') { return };
 			let temporaryAddress = JSON.parse(options.transmitData);
 			this.serviceMessage.id = temporaryAddress.id;
-			this.realTimeGetLocation();
+			this.realTimeGetLocation(false);
 			this.queryOrderDetail({id:temporaryAddress.id, type: 2})
 		},
 		
@@ -539,9 +539,9 @@
 			]),
 			
 			// 实时获取地理位置
-			realTimeGetLocation () {
+			realTimeGetLocation (flag) {
 				try {
-					this.isGetLocation()
+					this.isGetLocation(flag)
 				} catch(err) {
 					this.$refs.uToast.show({
 						message: `${err}`,
@@ -551,31 +551,31 @@
 				}
 			},
 			
-			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+			isGetLocation(flag,a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
 				let _this = this;
 				uni.getSetting({
 					success(res) {
 						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
-							_this.getAuthorizeInfo()
+							_this.getAuthorizeInfo(flag)
 						} else {
-							_this.getLocation()
+							_this.getLocation(flag)
 						}
 					}
 				})
 			},
 			
-			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+			getAuthorizeInfo(flag,a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
 				let _this = this;
 				uni.authorize({
 					scope: a,
 					success() { //允许授权
-						_this.getLocation()
+						_this.getLocation(flag)
 					}
 				})
 			},
 			
 			//获取当前所在位置的经纬度
-			getLocation() {
+			getLocation(flag) {
 				this.locationText = '定位中···';
 				uni.getLocation({
 					type: 'gcj02',
@@ -584,7 +584,7 @@
 						this.longitudeOther = res.longitude;
 						this.latitudeOther = res.latitude;
 						this.tradeOrderDistanceEvent(this.serviceMessage.id,`${this.latitudeOther},${this.longitudeOther}`)
-						this.getLocationDetail()
+						this.getLocationDetail(flag)
 					},
 					fail: (err) => {
 						this.locationText = '重新定位';
@@ -599,24 +599,35 @@
 			},
 			
 			//根据经纬度获取详细的地址
-			getLocationDetail () {
+			getLocationDetail (flag) {
 				uni.request({
 					header: {
 						"Content-Type": "application/text"
 					},
 					url: 'https://apis.map.qq.com/ws/geocoder/v1/?location=' + this.latitudeOther + ',' + this.longitudeOther +
-						'&key=XOXBZ-MZWWD-CDX4H-PONXN-UA5PJ-D7FJN',
+						'&key=TVDBZ-TDILD-4ON4B-PFDZA-RNLKH-VVF6E',
 					success:(res)=> {
 						//成功获取到经纬度
 						this.locationText = '重新定位';
 						if (res.statusCode == 200) {
-							this.currentAddress = res.data.result.address;
 							this.showLoadingHint = false;
-							this.$refs.uToast.show({
-								message: '已获取最新位置',
-								type: 'success',
-								position: 'bottom'
-							})
+							if (res.data.result) {
+								this.currentAddress = res.data.result.address;
+								if (flag) {
+									this.$refs.uToast.show({
+										message: '已获取最新位置',
+										type: 'success',
+										position: 'bottom'
+									})
+								}
+							} else {
+								this.currentAddress = '获取地理位置异常';
+								this.$refs.uToast.show({
+									message: res.data.message,
+									type: 'error',
+									position: 'center'
+								})
+							}
 						} else {
 							this.currentAddress = '获取地理位置失败';
 							if (flag) {
@@ -785,7 +796,9 @@
 						if ( res && res.data.code == 0) {
 							if (res.data.data) {
 								this.serviceMessage = res.data.data;
-								this.getLocationDetailOrder(this.serviceMessage.receiverDetailAddress);
+								if (this.serviceMessage.receiverDetailAddress) {
+									this.getLocationDetailOrder(this.serviceMessage.receiverDetailAddress);
+								};
 								this.serviceMessage.payPrice = fenToYuan(this.serviceMessage.payPrice);
 								this.currentFlow = this.transitionOrderFlowStatusText(this.serviceMessage.workerStatus,this.serviceMessage);
 							}

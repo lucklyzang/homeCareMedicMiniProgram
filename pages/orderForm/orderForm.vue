@@ -435,7 +435,7 @@
 		onShow() {
 			// 获取当前所在位置
 			try {
-				this.isGetLocation()
+				this.isGetLocation(false);
 			} catch(err) {
 				this.$refs.uToast.show({
 					message: `${err}`,
@@ -471,40 +471,25 @@
 				this.callPoliceDialogShow = true
 			},
 			
-			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
+			isGetLocation(flag,a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
 				let _this = this;
 				uni.getSetting({
 					success(res) {
 						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
-							_this.getAuthorizeInfo()
+							_this.getAuthorizeInfo(flag)
 						} else {
-							_this.getLocation()
+							_this.getLocation(flag)
 						}
 					}
 				})
 			},
 			
-			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
+			getAuthorizeInfo(flag,a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
 				let _this = this;
 				uni.authorize({
 					scope: a,
 					success() { //允许授权
-						_this.getLocation()
-					}
-				})
-			},
-			
-			//获取当前所在位置的经纬度
-			getLocation() {
-				uni.getLocation({
-					type: 'gcj02',
-					isHighAccuracy: true,
-					success: (res) => {
-						this.longitude = res.longitude;
-						this.latitude = res.latitude
-					},
-					fail: (err) => {
-						console.log('err',err)
+						_this.getLocation(flag)
 					}
 				})
 			},
@@ -559,7 +544,7 @@
 			// 实时获取地理位置
 			realTimeGetLocation () {
 				try {
-					this.isGetLocation()
+					this.isGetLocation(true)
 				} catch(err) {
 					this.$refs.uToast.show({
 						message: `${err}`,
@@ -568,32 +553,9 @@
 					})
 				}
 			},
-			
-			isGetLocation(a = "scope.userLocation") { //检查当前是否已经授权访问scope属性
-				let _this = this;
-				uni.getSetting({
-					success(res) {
-						if (!res.authSetting[a]) { //每次进入程序判断当前是否获得授权，如果没有就去获得授权，如果获得授权，就直接获取当前地理位置
-							_this.getAuthorizeInfo()
-						} else {
-							_this.getLocation()
-						}
-					}
-				})
-			},
-			
-			getAuthorizeInfo(a = "scope.userLocation") { // uniapp弹窗弹出获取授权（地理，个人微信信息等授权信息）弹窗
-				let _this = this;
-				uni.authorize({
-					scope: a,
-					success() { //允许授权
-						_this.getLocation()
-					}
-				})
-			},
-			
+
 			//获取当前所在位置的经纬度
-			getLocation() {
+			getLocation(flag) {
 				this.locationText = '定位中···';
 				uni.getLocation({
 					type: 'gcj02',
@@ -601,7 +563,7 @@
 					success: (res) => {
 						this.longitude = res.longitude;
 						this.latitude = res.latitude;
-						this.getLocationDetail()
+						this.getLocationDetail(flag)
 					},
 					fail: (err) => {
 						this.locationText = '重新定位';
@@ -616,7 +578,7 @@
 			},
 			
 			//根据经纬度获取详细的地址
-			getLocationDetail () {
+			getLocationDetail (flag) {
 				uni.request({
 					header: {
 						"Content-Type": "application/text"
@@ -630,11 +592,13 @@
 							if (res.data.result) {
 								this.currentAddress = res.data.result.address;
 								this.showLoadingHint = false;
-								this.$refs.uToast.show({
-									message: '已获取最新位置',
-									type: 'success',
-									position: 'bottom'
-								})
+								if (flag) {
+									this.$refs.uToast.show({
+										message: '已获取最新位置',
+										type: 'success',
+										position: 'bottom'
+									})
+								}
 							} else {
 								this.$refs.uToast.show({
 									message: res.data.message,
