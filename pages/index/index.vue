@@ -305,7 +305,8 @@
 				temporaryCategoriesArr: [],
 				temporarySpuIdsArr: [],
 				currentAddress: '获取位置中···',
-				userCode: ''
+				userCode: '',
+				isCanRequestSubscribeMessage: true
 			}
 		},	
 		onShow() {
@@ -502,33 +503,42 @@
 				this.content = '为了获取更好的使用体验,您是否需要订阅相关消息提醒?' // 弹框提示内容
 				this.confirmText = '开启消息提醒';
 				this.cancelText = '不需要';
-				uni.requestSubscribeMessage({
-					tmplIds: this.tmplId,
-					success: (res) => {
-						let temporaryTemIdArr = [];
-						for (let key in res) {
-							if (res[key] == "accept") {
-								uni.showToast({
-									title: '已允许消息推送'
-								});
-								temporaryTemIdArr.push(key)
-							}
-						};
-						// 创建订阅
-						this.createSubscribeEvent({
-							templateIdList: temporaryTemIdArr,
-							code: this.userCode,
-							type: 0
-						})
-					},
-					fail: (err) => {
-						this.$refs.uToast.show({
-							message: err.errMsg,
-							type: 'error',
-							position: 'bottom'
-						})
-					}
-				})
+				if (this.isCanRequestSubscribeMessage) {
+					this.isCanRequestSubscribeMessage = false;
+					uni.requestSubscribeMessage({
+						tmplIds: this.tmplId,
+						success: (res) => {
+							setTimeout(()=> {
+								this.isCanRequestSubscribeMessage = true;
+							}, 1000);
+							let temporaryTemIdArr = [];
+							for (let key in res) {
+								if (res[key] == "accept") {
+									uni.showToast({
+										title: '已允许消息推送'
+									});
+									temporaryTemIdArr.push(key)
+								}
+							};
+							// 创建订阅
+							this.createSubscribeEvent({
+								templateIdList: temporaryTemIdArr,
+								code: this.userCode,
+								type: 0
+							})
+						},
+						fail: (err) => {
+							setTimeout(()=> {
+								this.isCanRequestSubscribeMessage = true;
+							}, 1000);
+							this.$refs.uToast.show({
+								message: err.errMsg,
+								type: 'error',
+								position: 'bottom'
+							})
+						}
+					})
+				}	
 			},
 			
 			// 轮播图点击事件
