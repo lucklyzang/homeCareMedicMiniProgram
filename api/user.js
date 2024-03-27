@@ -10,6 +10,15 @@ export function getUserBannerList(data) {
   })
 };
 
+// 记录banner浏览次数
+export function recordBannerBrowse(data) {
+  return request({
+    url: '/app-api/promotion/banner/browse',
+    method: 'get',
+		params: data
+  })
+};
+
 
 // 获取商品分类(服务类别首页筛选)
 export function getServiceProductCategory() {
@@ -244,6 +253,14 @@ export function updateNotifymessageRead(ids) {
   })
 }
 
+// 标记站内信全读(通知)
+export function updateNotifymessageAllRead() {
+  return request({
+    url: '/app-api/system/notify-message/update-all-read',
+    method: 'put'
+  })
+}
+
 // 查询通知概要
 export function notifyMessageSummary() {
   return request({
@@ -265,6 +282,14 @@ export function notifyMessageSummaryPage(data) {
 export function updateNotifyRead(id) {
   return request({
     url: `/app-api/system/notice/update-read?id=${id}`,
+    method: 'put'
+  })
+}
+
+// 标记公告全读
+export function updateNotifyAllRead() {
+  return request({
+    url: `/app-api/system/notice/update-all-read`,
     method: 'put'
   })
 }
@@ -305,10 +330,19 @@ export function newsPage(data) {
   })
 }
 
-// 资讯标记已读
+// 资讯标记已读(单条资讯)
 export function updateNewsRead(data) {
   return request({
     url: '/app-api/promotion/information/update/read',
+    method: 'put',
+		data
+  })
+}
+
+// 资讯标记全读
+export function updateInformationRead(data) {
+  return request({
+    url: '/app-api/promotion/information/update/allRead',
     method: 'put',
 		data
   })

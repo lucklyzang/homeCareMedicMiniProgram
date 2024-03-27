@@ -242,7 +242,7 @@
 		formatMsgTime
 	} from '@/common/js/utils'
 	import { getSubscribeTemplateList, createSubscribe } from '@/api/login.js'
-	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getServiceProductCategory, getServiceProductSimpleList } from '@/api/user.js'
+	import { getUserBannerList, createCallPolice, medicalCareHasAuth, getServiceProductCategory, getServiceProductSimpleList, recordBannerBrowse } from '@/api/user.js'
 	import { getRealtimeTradeOrderPage } from '@/api/orderForm.js'
 	import _ from 'lodash'
 	import wSelect from '@/components/w-select/w-select.vue'
@@ -547,6 +547,9 @@
 				let mynavData = {};
 				mynavData['index'] = index;
 				mynavData['content'] = this.bannerList;
+				recordBannerBrowse({id:this.bannerList[index]['id']})
+				.then(() => {})
+				.catch((err) => {});
 				this.changeSelectBannerMessage(mynavData);
 				uni.navigateTo({
 					url: '/messagePackage/pages/advertisingDetails/advertisingDetails'
@@ -1110,7 +1113,8 @@
 								this.bannerList.push({
 									image: item.picUrl,
 									title: '',
-									content: item.content
+									content: item.content,
+									id: item.id
 								})
 							}
 						}

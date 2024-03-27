@@ -62,7 +62,7 @@
 							<text>{{ getNowFormatDate(new Date(item.lastTime),4) }}</text>
 						</view>
 						<view class="message-number" v-if="item.count > 0">
-							<text>{{ item.count }}</text>
+							<text @click.stop="updateChatAllReadEvent(item,index)">{{ item.count }}</text>
 						</view>
 					</view>
 				</view>
@@ -94,7 +94,7 @@
 							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),4) }}</text>
 						</view>
 						<view class="message-number" v-if="latestNewsSummary.unReadCount > 0">
-							<text>{{ latestNewsSummary.unReadCount }}</text>
+							<text @click.stop="updateInformationReadEvent">{{ latestNewsSummary.unReadCount }}</text>
 						</view>
 					</view>
 				</view>
@@ -123,7 +123,7 @@
 							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifyMessageSummary.notRead > 0">
-							<text>{{ notifyMessageSummary.notRead }}</text>
+							<text @click.stop="updateNotifymessageAllReadEvent">{{ notifyMessageSummary.notRead }}</text>
 						</view>
 					</view>
 				</view>
@@ -152,7 +152,7 @@
 							<text>{{ getNowFormatDate(new Date(notifySummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifySummary.notRead > 0">
-							<text>{{ notifySummary.notRead }}</text>
+							<text @click.stop="updateNotifyAllReadEvent">{{ notifySummary.notRead }}</text>
 						</view>
 					</view>
 				</view>
@@ -170,7 +170,7 @@
 		setCache,
 		removeAllLocalStorage
 	} from '@/common/js/utils'
-	import { notifyMessageSummary, notifySummary, latestNews, getUserChatList, chatMessageRead, createCallPolice } from '@/api/user.js'
+	import { notifyMessageSummary, notifySummary, latestNews, getUserChatList, chatMessageRead, createCallPolice, updateInformationRead, updateNotifyAllRead, updateNotifymessageAllRead } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	export default {
 		components: {
@@ -356,11 +356,16 @@
 			
 			// 进入聊天界面事件
 			enterChatInterface (item) {
-				this.chatMessageReadEvent(item.fromId);
+				this.chatMessageReadEvent(item.fromId,false,'');
 				let transmitParameter = JSON.stringify(item);
 				uni.navigateTo({
 					url: '/messagePackage/pages/chatInterface/chatInterface?transmitData='+transmitParameter
 				})
+			},
+			
+			// 清除未读聊天消息
+			updateChatAllReadEvent (item,index) {
+				this.chatMessageReadEvent(item.fromId,true,index);
 			},
 			
 			// 查询聊天列表
@@ -401,9 +406,12 @@
 			},
 			
 			// 更新消息为已读
-			chatMessageReadEvent (data) {
+			chatMessageReadEvent (data,flag,chatIndex) {
 				chatMessageRead(data).then((res) => {
 					if ( res && res.data.code == 0) {
+						if (flag) {
+							this.chatList[chatIndex]['count'] = 0
+						}
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -557,6 +565,72 @@
 					currentdate = month + seperator1 + strDate
 				};
 				return currentdate
+			},
+			
+			// 标记资讯全读
+			updateInformationReadEvent() {
+				updateInformationRead({terminal: 'NURSE'}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.latestNewsSummary.unReadCount = 0
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 标记公告全读
+			updateNotifyAllReadEvent() {
+				updateNotifyAllRead({terminal: 'NURSE'}).then((res) => {
+					if ( res && res.data.code == 0) {
+						this.notifySummary.notRead = 0
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
+			// 标记通知全读
+			updateNotifymessageAllReadEvent() {
+				updateNotifymessageAllRead().then((res) => {
+					if ( res && res.data.code == 0) {
+						this.notifyMessageSummary.notRead = 0
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					}
+				})
+				.catch((err) => {
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
 			},
 			
 			// 进入消息列表事件
