@@ -15,7 +15,7 @@
 					<image :src="personPhotoSource"></image>
 				</view>
 				<view class="qr-code-content">
-					<image :src="qrCodeIconPng"></image>
+					<uv-qrcode @complete="qrcodeComplete" ref="qrcode" :value="codeValue" :options="codeOptions"></uv-qrcode>
 					<text>{{ niceNameValue }}</text>
 					<text>{{ `${defaultOrganizationValue}${defaultProfessionalTitleValue}` }}</text>
 				</view>
@@ -74,12 +74,18 @@
 				niceNameValue: '',
 				personPhotoSource: '',
 				infoText: '加载中···',
-				base64Data: ''
+				qrcodePath: '',
+				base64Data: '',
+				codeOptions: {
+					size: 200
+				},
+				codeValue: ''
 			}
 		},
 		computed: {
 			...mapGetters([
-				'userBasicInfo'
+				'userBasicInfo',
+				'userInfo'
 			]),
 			userName() {
 			},
@@ -88,7 +94,11 @@
 		},
 		onShow() {
 			// 查询医护详细信息
-			this.getMedicalCareDetailsEvent()
+			this.getMedicalCareDetailsEvent();
+			this.codeValue = JSON.stringify({
+				id: this.userInfo.careId,
+				type: 'nurse'
+			})
 		},
 		methods: {
 			...mapMutations([
@@ -97,6 +107,19 @@
 			// 顶部导航返回事件
 			backTo () {
 				uni.navigateBack()
+			},
+			
+			// 医护二维码生成完毕事件
+			qrcodeComplete (res) {
+				if (res.success) {
+					this.$refs.qrcode.toTempFilePath({
+					 success: (res) => {
+						if (res.tempFilePath) {
+							this.qrcodePath = res.tempFilePath;
+						}
+					 }
+					})
+				}
 			},
 			
 			// 获取医护详细信息
@@ -268,12 +291,13 @@
 			},
 			
 			//保存图片到相册
-			async saveBase64ImageToPhotosAlbum() {
-				await this.imgPathTobase64('/static/img/qr-code-black-icon.png');
+			saveBase64ImageToPhotosAlbum() {
 				let that = this;
+				console.log('二维码1',this.qrcodePath);
 				var timestamp = new Date().getTime();
-				let base64 = this.base64Data.replace(/^data:image\/\w+;base64,/, ""); //去掉data:image/png;base64,
+				let base64 = that.qrcodePath.replace(/^data:image\/\w+;base64,/, ""); //去掉data:image/png;base64,
 				let filePath = wx.env.USER_DATA_PATH + `/addFriends_${timestamp}_qrcode.png`;
+				console.log('二维码2',this.qrcodePath);
 				uni.showLoading({
 					title: '保存中',
 					mask: true
@@ -316,10 +340,9 @@
 			},
 			
 			//分享图片给好友按钮的点击事件函数
-			async sharePic() {
-				await this.imgPathTobase64('/static/img/qr-code-black-icon.png');
+			sharePic() {
 				let that = this;
-				this.base64ToFilePath(this.base64Data, (filePath) => {
+				this.base64ToFilePath(this.qrcodePath, (filePath) => {
 					this.getAuth(
 						wx.showShareImageMenu({ //分享给朋友
 							path: filePath,

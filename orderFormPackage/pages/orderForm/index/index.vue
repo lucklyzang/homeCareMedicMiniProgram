@@ -3,6 +3,21 @@
 		<u-toast ref="uToast" />
 		<u-overlay :show="showLoadingHint"></u-overlay>
 		<u-loading-icon :show="showLoadingHint" color="#fff" textColor="#fff" :text="infoText" size="20" textSize="18"></u-loading-icon>
+		<!-- 拨打电话弹框 -->
+		<view class="call-phone-box">
+			<u-popup :show="showCallPhoneBox" :safeAreaInsetBottom="false" :closeable="true" mode="center"  @close="closeCallPhoneBox">
+				<view class="support-staff-content">
+					<view class="support-staff-top">
+							<image :src="serviceMessage.avatar"></image>
+							<text>拨打患者虚拟电话</text>
+							<text>{{ serviceMessage.serverPerson.mobile }}</text>
+					</view>
+					<view class="support-staff-bottom" @click="callNumber">
+						<text>拨打电话</text>
+					</view>
+				</view>
+			</u-popup>
+		</view>
 		<!-- 放大图片弹框 -->
 		<view class="magnify-img-box">
 			<u-popup :show="magnifyImgDialogShow" @close="magnifyImgDialogShow = false" :closeable="true" mode="center" round="6" :closeOnClickOverlay="true" :safeAreaInsetTop="true">
@@ -253,7 +268,7 @@
 						<text>联系患者</text>
 					</view>
 					<view class="contact-patient-content">
-						<view class="phone-box">
+						<view class="phone-box" @click="openPhoneDialogEvent">
 							<image src="@/static/img/order-form-phone.png"></image>
 							<text>拨打电话</text>
 						</view>
@@ -382,6 +397,7 @@
 				magnifyImgDialogShow: false,
 				currentImgUrl: '',
 				currentFlow: null,
+				showCallPhoneBox: false,
 				orderFormDetailsDialogShow: false,
 				refuseOrderFormDialogShow: false,
 				refuseOrderFormSuccessDialogShow: false,
@@ -537,6 +553,63 @@
 		methods: {
 			...mapMutations([
 			]),
+			
+			// 关闭拨打电话对话框
+			closeCallPhoneBox () {
+				this.showCallPhoneBox = false
+			},
+			
+			// 打开电话弹框事件
+			openPhoneDialogEvent () {
+				this.showCallPhoneBox = true
+			},
+			
+			// 拨打电话事件
+			dialPhoneEvent () {
+				uni.getSetting({
+					success: (res) => {
+						if (res.authSetting['scope.makePhoneCall']) {
+							this.callNumber();
+						} else {
+							uni.authorize({
+								scope: 'scope.makePhoneCall',
+								success: () => {
+									this.callNumber();
+								},
+								fail: () => {
+									uni.openSetting({
+										success: (res) => {
+											if (res.authSetting['scope.makePhoneCall']) {
+												this.callNumber()
+											}
+										}
+									})
+								}
+							})
+						}
+					},
+					fail:()=> {
+						this.$refs.uToast.show({
+							message: '获取用户设置失败',
+							type: 'error',
+							position: 'center'
+						})
+					}
+				})
+			},
+			
+			callNumber() {
+				this.showCallPhoneBox = false;
+				uni.makePhoneCall({
+					phoneNumber: this.serviceMessage.serverPerson.mobile,
+					success: () => {
+						console.log('拨打电话成功！');
+					},
+					fail: () => {
+						console.error('拨打电话失败！');
+					}
+				})
+			},
 			
 			// 实时获取地理位置
 			realTimeGetLocation (flag) {
@@ -1237,6 +1310,54 @@
 		};
 		::v-deep .u-transition {
 			z-index: 100000 !important;
+		};
+		.call-phone-box {
+			::v-deep .u-popup {
+				.u-popup__content {
+					width: 80%;
+					padding: 30px 10px 20px 10px;
+					box-sizing: border-box;
+					border-radius: 14px;
+					.u-popup__content__close {
+						.u-icon__icon {
+							color: #101010 !important
+						}
+					};
+					.support-staff-content {
+						.support-staff-top {
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+							>image {
+								width: 100px;
+								height: 100px;
+								border-radius: 50%;
+							};
+							>text {
+								font-size: 14px;
+								color: #101010;
+								&:nth-of-type(1) {
+									margin: 14px 0;
+								}
+							}
+						};
+						.support-staff-bottom {
+							display: flex;
+							width: 80%;
+							height: 38px;
+							line-height: 38px;
+							margin: 0 auto;
+							justify-content: center;
+							align-items: center;
+							background: #1E86FD;
+							border-radius: 7px;
+							margin-top: 20px;
+							font-size: 14px;
+							color: #fff;
+						}
+					}
+				}
+			}
 		};
 		.magnify-img-box {
 			::v-deep .u-popup {

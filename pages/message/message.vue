@@ -47,19 +47,19 @@
 					</u-image>
 				</view>
 				<view class="message-content">
-					<view class="message-content-left">
+					<view class="message-content-top">
 						<view class="message-title">
 							<text>{{ item.fromName }}</text>
 						</view>
+						<view class="message-date">
+							<text>{{ getNowFormatDate(new Date(item.lastTime),4) }}</text>
+						</view>
+					</view>
+					<view class="message-content-bottom">
 						<view class="message-overview">
 							<text>
 								{{ item.content }}
 							</text>
-						</view>
-					</view>
-					<view class="message-content-right">
-						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(item.lastTime),4) }}</text>
 						</view>
 						<view class="message-number" v-if="item.count > 0">
 							<text @click.stop="updateChatAllReadEvent(item,index)">{{ item.count }}</text>
@@ -79,19 +79,19 @@
 					</u-image>
 				</view>
 				<view class="message-content">
-					<view class="message-content-left">
+					<view class="message-content-top">
 						<view class="message-title">
 							<text>资讯</text>
 						</view>
+						<view class="message-date">
+							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),4) }}</text>
+						</view>
+					</view>
+					<view class="message-content-bottom">
 						<view class="message-overview">
 							<text>
 								{{ latestNewsSummary.title }}
 							</text>
-						</view>
-					</view>
-					<view class="message-content-right">
-						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(latestNewsSummary.createTime),4) }}</text>
 						</view>
 						<view class="message-number" v-if="latestNewsSummary.unReadCount > 0">
 							<text @click.stop="updateInformationReadEvent">{{ latestNewsSummary.unReadCount }}</text>
@@ -108,19 +108,19 @@
 					</u-image>
 				</view>
 				<view class="message-content">
-					<view class="message-content-left">
+					<view class="message-content-top">
 						<view class="message-title">
 							<text>通知消息</text>
 						</view>
+						<view class="message-date">
+							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),4) }}</text>
+						</view>
+					</view>
+					<view class="message-content-bottom">
 						<view class="message-overview">
 							<text>
 								{{ notifyMessageSummary.title }}
 							</text>
-						</view>
-					</view>
-					<view class="message-content-right">
-						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(notifyMessageSummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifyMessageSummary.notRead > 0">
 							<text @click.stop="updateNotifymessageAllReadEvent">{{ notifyMessageSummary.notRead }}</text>
@@ -137,19 +137,19 @@
 					</u-image>
 				</view>
 				<view class="message-content">
-					<view class="message-content-left">
+					<view class="message-content-top">
 						<view class="message-title">
 							<text>公告消息</text>
 						</view>
+						<view class="message-date">
+							<text>{{ getNowFormatDate(new Date(notifySummary.time),4) }}</text>
+						</view>
+					</view>
+					<view class="message-content-bottom">
 						<view class="message-overview">
 							<text>
 								{{ notifySummary.title }}
 							</text>
-						</view>
-					</view>
-					<view class="message-content-right">
-						<view class="message-date">
-							<text>{{ getNowFormatDate(new Date(notifySummary.time),4) }}</text>
 						</view>
 						<view class="message-number" v-if="notifySummary.notRead > 0">
 							<text @click.stop="updateNotifyAllReadEvent">{{ notifySummary.notRead }}</text>
@@ -794,38 +794,51 @@
 				.message-content {
 					flex: 1;
 					width: 0;
-					display: flex;
-					align-items: center;
-					justify-content: space-between;
-					.message-content-left {
-						flex: 1;
-						@include no-wrap();
+					.message-content-top {
+						width: 100%;
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
 						.message-title {
+							flex: 1;
+							padding-right: 4px;
+							box-sizing: border-box;
 							@include no-wrap();
 							margin-bottom: 10px;
 							>text {
+								@include no-wrap();
+								display: inline-block;
 								width: 100%;
 								font-size: 16px;
 								color: #101010;
 								font-weight: bold
 							}
 						};
-						.message-overview {
-							@include no-wrap();
-							>text {
-								width: 100%;
-								font-size: 14px;
-								color: #898C8C;
-							}	
-						}
-					};
-					.message-content-right {
 						.message-date {
 							margin-bottom: 10px;
 							>text {
 								font-size: 14px;
 								color: #8A8A8A
 							}
+						}
+					};
+					.message-content-bottom {
+						width: 100%;
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						.message-overview {
+							flex: 1;
+							// padding-right: 4px;
+							// box-sizing: border-box;
+							@include no-wrap();
+							>text {
+								@include no-wrap();
+								display: inline-block;
+								width: 100%;
+								font-size: 14px;
+								color: #898C8C;
+							}	
 						};
 						.message-number {
 							text-align: right;
