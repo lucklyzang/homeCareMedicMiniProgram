@@ -21,15 +21,15 @@
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
 			</view>
-			<view class="new-message-inform">
+			<!-- <view class="new-message-inform">
 				<view class="new-message-inform-left">
 					<text>新消息通知</text>
 				</view>
 				<view class="new-message-inform-right">
 					<u-switch @change="switchChange" v-model="isNewMessageInformValue" activeColor="#88BFFF"></u-switch>
 				</view>
-			</view>
-			<view class="weixin-binding">
+			</view> -->
+		<!-- 	<view class="weixin-binding">
 				<view class="weixin-binding-left">
 					<text>微信绑定</text>
 				</view>
@@ -64,7 +64,7 @@
 				<view class="weixin-binding-right">
 					<u-icon name="arrow-right" color="#C6C9CC" size="18"></u-icon>
 				</view>
-			</view>
+			</view> -->
 		</view>
 		<view class="quit-login-btn-box">
 			<view class="quit-login-btn" @click="logOutEvent" :class="{'quitLoginBtnStyle' : showLoadingHint }">

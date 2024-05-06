@@ -662,7 +662,7 @@
 						'Authorization': `Bearer ${store.getters.token}`
 					 },
 					 success: (res) => {
-						if (res.statusCode == 200) {
+						if (res.statusCode == 200 && JSON.parse(res.data).code == 0) {
 							let temporaryData = JSON.parse(res.data);
 							this.photoImageOnlinePath = temporaryData.data;
 							resolve()

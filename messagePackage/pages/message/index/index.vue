@@ -346,9 +346,13 @@
 						padding: 0 6px 0 6px;
 						box-sizing: border-box;
 						height: 46px;
+						@include no-wrap();
+						text-align: left;
 						@include bottom-border-1px(#BBBBBB);
 						>text {
+							width: 100%;
 							color: #101010;
+							@include no-wrap();
 							font-size: 16px;
 							vertical-align: middle
 						}
@@ -360,6 +364,7 @@
 						font-size: 14px;
 						margin-top: 10px;
 						text-align: justify;
+						@include no-wrap-line(3);
 						.mystyle {
 							width: 100%;
 							display: block;

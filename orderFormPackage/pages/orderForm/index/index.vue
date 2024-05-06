@@ -299,7 +299,9 @@
 			</view>
 			<view class="notice-box">
 				<view class="notice-content">
-					<view class="notice-list">
+					<text v-if="!serviceMessage.notice">暂无</text>
+					<rich-text v-else class="rich-content" :nodes="serviceMessage.notice"></rich-text>
+				<!-- 	<view class="notice-list">
 						1.啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
 					</view>
 					<view class="notice-list">
@@ -307,7 +309,7 @@
 					</view>
 					<view class="notice-list">
 						3.啥稍稍杀手评价啊三篇u就飒飒飒飒飒飒
-					</view>
+					</view> -->
 				</view>
 			</view>
 			<view class="order-message-top">
@@ -455,6 +457,7 @@
 					couponId: '',
 					couponPrice: '',
 					pointPrice: '',
+					notice: '',
 					items: [
 						{
 							id: '',
@@ -2154,6 +2157,15 @@
 				background: #fff;
 				padding: 10px;
 				box-sizing: border-box;
+				.rich-content {
+					font-size: 13px;
+					color: #999999;
+					letter-spacing: 0;
+					text-align: justify;
+					line-height: 18px;
+					font-weight: 400;
+					word-break: break-all;
+				};
 				.notice-list {
 					font-size: 13px;
 					color: #999999;
