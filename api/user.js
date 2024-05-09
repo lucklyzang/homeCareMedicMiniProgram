@@ -116,7 +116,7 @@ export function deleteInformationFavorite(data) {
   })
 }
 
-// 获取我的收藏列表
+// 获取我的资讯收藏列表
 export function myCollectInformationList(data) {
   return request({
     url: '/app-api/promotion/information/page/favorites',

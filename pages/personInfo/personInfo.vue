@@ -183,6 +183,14 @@
 					{
 						name: '设置中心',
 						iconImg: require("@/static/img/set-center.png")
+					},
+					{
+						name: '银行卡',
+						iconImg: require("@/static/img/my-bank-icon.png")
+					},
+					{
+						name: '收藏',
+						iconImg: require("@/static/img/my-collect.png")
 					}
 				]
 			}
@@ -483,6 +491,14 @@
 				} else if (name == '设置中心') {
 					uni.navigateTo({
 						url: '/minePackage/pages/setCenter/setCenter'
+					})
+				} else if (name == '收藏') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myCollect/myCollect'
+					})
+				} else if (name == '银行卡') {
+					uni.navigateTo({
+						url: '/minePackage/pages/myBankList/myBankList'
 					})
 				} else if (name == '身份认证') {
 					uni.navigateTo({

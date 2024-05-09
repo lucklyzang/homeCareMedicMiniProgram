@@ -190,6 +190,15 @@
 					}
 				},
 				{
+					"path": "pages/myCollect/myCollect",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/faceDetection/faceDetection",
 					"style": {
 						"navigationBarTitleText": "",
@@ -263,6 +272,33 @@
 				},
 				{
 					"path": "pages/selectBankCard/selectBankCard",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/myBankList/myBankList",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/facialAuthentication/facialAuthentication",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/myBankCardDetails/myBankCardDetails",
 					"style": {
 						"navigationBarTitleText": "",
 						"navigationBarBackgroundColor": "#ffffff",
