@@ -21,7 +21,8 @@
 								<text>{{ item.title }}</text>
 						</view>
 						<view class="message-inner-list-bottom">
-							{{ item.introduction }}
+							<rich-text :nodes="item.description"></rich-text>
+							<!-- {{ item.introduction }} -->
 						</view>
 					</view>
 				</view>
