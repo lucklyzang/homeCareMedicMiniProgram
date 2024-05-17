@@ -443,7 +443,7 @@
 					flex-wrap: wrap;
 					.feedback-category-list {
 						padding: 10px 20px;
-						box-sizing: border;
+						box-sizing: border-box;
 						margin-right: 10px;
 						margin-bottom: 10px;
 						height: 43px;

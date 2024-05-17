@@ -141,6 +141,11 @@
 		type: String,
 		default: '#fff'
 	  },
+		// 是否可以切换隐藏显示
+		isCutShow: {
+		type: Boolean,
+		default: true
+		},
 	  // 是否多选
 	  multiple: {
 		type: Boolean,
@@ -278,6 +283,7 @@
 		// }
 	  },
 	  changeShow () {
+			if (!this.isCutShow) { return };
 			this.isShow = !this.isShow;
 			if (this.isShow === false) {
 				this.filterList = this.list

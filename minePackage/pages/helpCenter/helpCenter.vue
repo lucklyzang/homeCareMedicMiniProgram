@@ -111,7 +111,8 @@
 				pageNo: this.currentPageNum,
 				pageSize: this.pageSize,
 				type: 0,
-				status: 0
+				status: 0,
+				invest: 2
 			},true)
 		},
 		methods: {
@@ -127,14 +128,16 @@
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
 						type: 0,
-						status: 0
+						status: 0,
+						invest: 2
 					},true)
 				} else if (this.topCutIndex === 1) {
 					this.queryIssueListEvent({
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
 						type: 1,
-						status: 0
+						status: 0,
+						invest: 2
 					},true)
 				}
 			},
@@ -163,7 +166,8 @@
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
 						type: 0,
-						status: 0
+						status: 0,
+						invest: 2
 					},false)
 				}
 			},
@@ -180,7 +184,8 @@
 						pageNo: this.currentPageNum,
 						pageSize: this.pageSize,
 						type: 1,
-						status: 0
+						status: 0,
+						invest: 2
 					},false)
 				}
 			},

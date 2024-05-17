@@ -39,6 +39,7 @@
 						<u--input
 							placeholder="请输入姓名"
 							fontSize="14px"
+							disabled
 							color="#979797"
 							v-model="personNameValue"
 							border="none"
@@ -53,6 +54,7 @@
 						<u--input
 							placeholder="身份证号"
 							@blur="idcardBlurEvent"
+							disabled
 							fontSize="14px"
 							color="#979797"
 							readonly
@@ -92,6 +94,10 @@
 						></u--input>
 					</view>
 				</view>
+				<view class="no-authentication-box" v-if="perfect != 'YES'">
+					<text>还未进行实名认证</text>
+					<text>去认证</text>
+				</view>
 				<view class="person-name age-box">
 					<view class="person-name-left">
 						<text>年龄</text>
@@ -108,6 +114,42 @@
 						></u--input>
 					</view>
 				</view>
+				<view class="professional-title">
+					<view class="professional-title-left professional-title-left-other">
+						<text>职称</text>
+					</view>
+					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
+						<w-select
+								style="margin-left:10px;"
+								:defaultValue="defaultProfessionalTitleValue"
+								v-model='professionalTitleValue'
+								:list='professionalTitleList'
+								valueName='content'
+								:isCutShow="false"
+								keyName="id"
+								@change='professionalTitleChange'
+							>
+						</w-select>
+					</view>
+				</view>
+				<view class="professional-title organization-box">
+					<view class="professional-title-left professional-title-left-other">
+						<text>机构</text>
+					</view>
+					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
+						<w-select
+								style="margin-left:10px;"
+								:defaultValue="defaultOrganizationValue"
+								v-model='organizationValue'
+								:isCutShow="false"
+								:list='organizationList'
+								valueName='content' 
+								keyName="id"
+								@change='organizationChange'
+							>
+						</w-select>
+					</view>
+				</view>
 				<view class="emergency-contact-number">
 					<view class="emergency-contact-number-left">
 						<text>*</text>
@@ -122,42 +164,6 @@
 							border="none"
 							type="number"
 						></u--input>
-					</view>
-				</view>
-				<view class="professional-title">
-					<view class="professional-title-left">
-						<text>*</text>
-						<text>职称</text>
-					</view>
-					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
-						<w-select
-								style="margin-left:10px;"
-								:defaultValue="defaultProfessionalTitleValue"
-								v-model='professionalTitleValue'
-								:list='professionalTitleList'
-								valueName='content' 
-								keyName="id"
-								@change='professionalTitleChange'
-							>
-						</w-select>
-					</view>
-				</view>
-				<view class="professional-title organization-box">
-					<view class="professional-title-left">
-						<text>*</text>
-						<text>机构</text>
-					</view>
-					<view class="professional-title-right" v-if="nurseMessageLoadComplete">
-						<w-select
-								style="margin-left:10px;"
-								:defaultValue="defaultOrganizationValue"
-								v-model='organizationValue'
-								:list='organizationList'
-								valueName='content' 
-								keyName="id"
-								@change='organizationChange'
-							>
-						</w-select>
 					</view>
 				</view>
 				<view class="professional-title organization-box">
@@ -236,7 +242,7 @@
 		IdCard
 	} from '@/common/js/utils'
 	import { getUserDictData } from '@/api/login.js'
-	import { getUserMessage ,medicalCarePerfect, getMedicalCareDetails, getOrganizationList } from '@/api/user.js'
+	import { getUserMessage ,medicalCarePerfect, getMedicalCareDetails, getOrganizationList, getServiceProductSimpleList } from '@/api/user.js'
 	import navBar from "@/components/zhouWei-navBar"
 	import wSelect from '@/components/w-select/w-select.vue'
 	export default {
@@ -251,25 +257,27 @@
 				workingSeniorityDefaultValue: '请选择从业时间',
 				workingSeniorityDialogShow: false,
 				workingSeniorityValue: Number(new Date()),
-				personNameValue: '',
-				idCardValue: '',
-				genderValue: '',
-				birthdayValue: '',
-				ageValue: '',
+				perfect: '',
+				personNameValue: '—',
+				idCardValue: '—',
+				genderValue: '—',
+				birthdayValue: '—',
+				ageValue: '—',
 				emergencyContactNumberValue: '',
 				serviceQuantityValue: '',
 				serviceDurationValue: '',
 				introValue: '',
 				professionalTitleValue: "",
-				defaultProfessionalTitleValue: "请选择您的职称",
+				defaultProfessionalTitleValue: "",
 				professionalTitleList: [],
 				organizationValue: '',
-				defaultOrganizationValue: '请选择您挂靠的机构',
+				defaultOrganizationValue: '',
 				organizationList: [],
 				personPhotoSource: '',
 				personPhotoFile: '',
 				photoImageOnlinePath: '',
 				personPhotoBase64: '',
+				serviceProjectList: [],
 				nurseMessageLoadComplete: false,
 				defaultPersonPhotoIconPng: require("@/static/img/default-person-photo.png")
 			}
@@ -286,7 +294,9 @@
 		},
 		onShow () {
 			// 查询医护详细信息
-			this.getMedicalCareDetailsEvent()
+			this.getMedicalCareDetailsEvent();
+			// 查询服务特长
+			this.queryServiceProductSimpleList()
 		},
 		onReady() {
 			this.$refs.textarea.setFormatter(this.formatter)
@@ -306,6 +316,42 @@
 				return value.replace(/\s*/g,"")
 			},
 			
+			// 获取服务特长
+			queryServiceProductSimpleList() {
+				this.showLoadingHint = true;
+				this.infoText = '加载中...';
+				this.serviceProjectList = [];
+				getServiceProductSimpleList().then((res) => {
+					if ( res && res.data.code == 0) {
+						let productTypeList = res.data.data;
+						for (let item of productTypeList) {
+							this.serviceProjectList.push({
+								id: item.id,
+								content: item.name,
+								selected: false
+							})
+						};
+						if (res.data.data.length == 0) {
+						}
+					} else {
+						this.$refs.uToast.show({
+							message: res.data.msg,
+							type: 'error',
+							position: 'bottom'
+						})
+					};
+					this.showLoadingHint = false
+				})
+				.catch((err) => {
+					this.showLoadingHint = false;
+					this.$refs.uToast.show({
+						message: err.message,
+						type: 'error',
+						position: 'bottom'
+					})
+				})
+			},
+			
 			// 获取医护详细信息
 			getMedicalCareDetailsEvent () {
 				this.showLoadingHint = true;
@@ -319,11 +365,19 @@
 						this.getUserDictDataEvent();
 						this.personPhotoSource = !res.data.data.avatar ? this.defaultPersonPhotoIconPng : res.data.data.avatar;
 						this.photoImageOnlinePath = !res.data.data.avatar ? '' : res.data.data.avatar;
-						this.personNameValue = res.data.data.name;
-						this.idCardValue = res.data.data.idCard;
-						this.genderValue = res.data.data.sex == 1 ? '男' : res.data.data.sex == 2 ? '女' : '';
-						this.birthdayValue = res.data.data.birthday;
-						this.ageValue = res.data.data.age;
+						if (res.data.data.perfect != 'YES') {
+							this.personNameValue = '—';
+							this.idCardValue = '—';
+							this.genderValue = '—';
+							this.birthdayValue = '—';
+							this.ageValue = '—';
+						} else {
+							this.personNameValue = res.data.data.name;
+							this.idCardValue = res.data.data.idCard;
+							this.genderValue = res.data.data.sex == 1 ? '男' : res.data.data.sex == 2 ? '女' : '';
+							this.birthdayValue = res.data.data.birthday;
+							this.ageValue = res.data.data.age;
+						};
 						this.emergencyContactNumberValue = res.data.data.critical;
 						this.professionalTitleValue = res.data.data.title ? res.data.data.title.toString() : '';
 						this.organizationValue = res.data.data.organization ? res.data.data.organization.toString() : '';
@@ -331,7 +385,8 @@
 						this.workingSeniorityValue = !res.data.data.practiceTime ? Number(new Date()) : Number(new Date(res.data.data.practiceTime));
 						this.serviceQuantityValue = res.data.data.quantity;
 						this.serviceDurationValue = res.data.data.timeLength;
-						this.introValue =  res.data.data.introduction
+						this.introValue =  res.data.data.introduction;
+						this.perfect = res.data.data.perfect
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -363,9 +418,9 @@
 							type: 'error',
 							position: 'center'
 						});
-						this.birthdayValue = '';
-						this.genderValue = '';
-						this.ageValue = ''
+						this.birthdayValue = '—';
+						this.genderValue = '—';
+						this.ageValue = '—'
 					}  
 				} else {
 					this.birthdayValue = IdCard(this.idCardValue,1);
@@ -455,7 +510,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultOrganizationValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultOrganizationValue = '请选择您挂靠的机构'
+								this.defaultOrganizationValue = ''
 							}
 						}
 					}
@@ -489,7 +544,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultProfessionalTitleValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultProfessionalTitleValue = "请选择您的职称"
+								this.defaultProfessionalTitleValue = ""
 							}
 						}
 					}
@@ -514,22 +569,22 @@
 					});
 					return
 				};
-				if (!this.professionalTitleValue && this.professionalTitleValue !== 0) {
-					this.$refs.uToast.show({
-						message: '请选择您的职称',
-						type: 'error',
-						position: 'center'
-					});
-					return
-				};
-				if (!this.organizationValue && this.organizationValue !== 0) {
-					this.$refs.uToast.show({
-						message: '请选择您挂靠的机构',
-						type: 'error',
-						position: 'center'
-					});
-					return
-				};
+				// if (!this.professionalTitleValue && this.professionalTitleValue !== 0) {
+				// 	this.$refs.uToast.show({
+				// 		message: '请选择您的职称',
+				// 		type: 'error',
+				// 		position: 'center'
+				// 	});
+				// 	return
+				// };
+				// if (!this.organizationValue && this.organizationValue !== 0) {
+				// 	this.$refs.uToast.show({
+				// 		message: '请选择您挂靠的机构',
+				// 		type: 'error',
+				// 		position: 'center'
+				// 	});
+				// 	return
+				// };
 				if (this.workingSeniorityDefaultValue == '请选择从业时间') {
 					this.$refs.uToast.show({
 						message: '请选择从业时间',
@@ -585,7 +640,7 @@
 					name: this.personNameValue,
 					idCard: this.idCardValue,
 					birthday: this.birthdayValue,
-					sex: this.genderValue == '男' ? 1 : 2,
+					sex: this.genderValue == '—' ? '' : this.genderValue == '男' ? 1 : 2,
 					critical: this.emergencyContactNumberValue,
 					title: this.professionalTitleValue,
 					organization: this.organizationValue,
@@ -766,7 +821,7 @@
 		.personal-message-box {
 			flex: 1;
 			overflow: auto;
-			padding: 10px;
+			padding: 10px 0;
 			box-sizing: border-box;
 			background: #fff;
 			.personal-message-top {
@@ -785,7 +840,7 @@
 				.account-number {
 					display: flex;
 					align-items: center;
-					padding: 8px 0;
+					padding: 8px 10px;
 					box-sizing: border-box;
 					.account-number-left {
 						font-size: 16px;
@@ -799,10 +854,36 @@
 						color: #979797
 					}
 				};
+				.no-authentication-box {
+					height: 46px;
+					background: #F9F9F9;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					border-bottom: 1px solid #e6e6e6;
+					>text {
+						display: inline-block;
+						&:first-child {
+							font-size: 14px;
+							color: #979797;
+							margin-right: 20px;
+						};
+						&:last-child {
+							width: 84px;
+							height: 31px;
+							font-size: 14px;
+							color: #fff;
+							background: #5064EB;
+							border-radius: 18px;
+							line-height: 31px;
+							text-align: center
+						}
+					}
+				};
 				.person-name {
 					display: flex;
 					align-items: center;
-					padding: 8px 0;
+					padding: 8px 10px;
 					box-sizing: border-box;
 					@include bottom-border-1px(#BBBBBB);
 					.person-name-left {
@@ -820,7 +901,7 @@
 				.emergency-contact-number {
 					display: flex;
 					align-items: center;
-					padding: 8px 0;
+					padding: 8px 10px;
 					box-sizing: border-box;
 					@include bottom-border-1px(#BBBBBB);
 					.emergency-contact-number-left {
@@ -847,7 +928,7 @@
 				.professional-title {
 					display: flex;
 					align-items: center;
-					padding: 8px 0;
+					padding: 8px 10px;
 					box-sizing: border-box;
 					border-bottom: 6px solid #f6f6f6;
 					.professional-title-left {
@@ -862,6 +943,14 @@
 								color: #101010;
 								font-weight: bold
 							}
+						}
+					};
+					.professional-title-left-other {
+						width: 100px;
+						>text {
+							font-size: 16px;
+							color: #101010;
+							font-weight: bold
 						}
 					};
 					.professional-title-right {
@@ -882,6 +971,9 @@
 								// 	top: 46px;
 								// 	bottom: none !important
 								// };
+								.w-select-arrow {
+									display: none;
+								};
 								.uni-input-placeholder {
 									font-size: 14px !important;
 									color: #979797 !important
@@ -946,7 +1038,7 @@
 				.service-duration {
 					display: flex;
 					align-items: center;
-					padding: 8px 0;
+					padding: 8px 10px;
 					box-sizing: border-box;
 					.service-duration-left {
 						>text {
@@ -978,7 +1070,8 @@
 					padding-left: 10px;
 					box-sizing: border-box;
 					font-size: 16px;
-					color: #101010
+					color: #101010;
+					font-weight: bold;
 				};
 				.intro-content {
 					margin-top: 10px;
