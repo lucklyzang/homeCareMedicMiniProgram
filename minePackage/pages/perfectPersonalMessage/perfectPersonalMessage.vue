@@ -39,6 +39,7 @@
 						<u--input
 							placeholder="请输入姓名"
 							fontSize="14px"
+							disabledColor="#fff"
 							disabled
 							color="#979797"
 							v-model="personNameValue"
@@ -55,6 +56,7 @@
 							placeholder="身份证号"
 							@blur="idcardBlurEvent"
 							disabled
+							disabledColor="#fff"
 							fontSize="14px"
 							color="#979797"
 							readonly
@@ -72,6 +74,7 @@
 						<u--input
 							placeholder="性别"
 							disabled
+							disabledColor="#fff"
 							fontSize="14px"
 							color="#979797"
 							v-model="genderValue"
@@ -87,16 +90,13 @@
 						<u--input
 							placeholder="生日"
 							disabled
+							disabledColor="#fff"
 							fontSize="14px"
 							color="#979797"
 							v-model="birthdayValue"
 							border="none"
 						></u--input>
 					</view>
-				</view>
-				<view class="no-authentication-box" v-if="perfect != 'YES'">
-					<text>还未进行实名认证</text>
-					<text>去认证</text>
 				</view>
 				<view class="person-name age-box">
 					<view class="person-name-left">
@@ -106,6 +106,7 @@
 						<u--input
 							placeholder="年龄"
 							disabled
+							disabledColor="#fff"
 							fontSize="14px"
 							color="#979797"
 							v-model="ageValue"
@@ -113,6 +114,10 @@
 							type="number"
 						></u--input>
 					</view>
+				</view>
+				<view class="no-authentication-box" v-if="perfect != 'YES'">
+					<text>还未进行实名认证</text>
+					<text>去认证</text>
 				</view>
 				<view class="professional-title">
 					<view class="professional-title-left professional-title-left-other">
