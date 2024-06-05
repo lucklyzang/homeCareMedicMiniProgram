@@ -13,7 +13,7 @@
 		  </view>
 		</view>
 		<view class="real-name-authentication-box">
-			<view class="real-name-authentication-step">
+			<view class="real-name-authentication-step" v-if="stepActive === 0 || stepActive === 1">
 				<view class="real-name-authentication-step-top">
 					<view class="circle-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 || stepActive === 2 }"></view>
 					<view class="line-one" :class="{'stepStyle' : stepActive === 0 || stepActive === 1 || stepActive === 2 }"></view>
@@ -60,7 +60,7 @@
 							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'back')"></u-icon>
 						</view>
 					</view>
-					<view class="real-name-authentication-upload-one real-name-authentication-upload-three">
+					<!-- <view class="real-name-authentication-upload-one real-name-authentication-upload-three">
 						<view class="upload-before" v-if="handImageBase64Arr.length == 0" @click="getImg('hand')">
 							<view class="upload-image">
 								<image src="@/static/img/camera-white-icon.png"></image>
@@ -73,7 +73,7 @@
 							<image :src="item" mode="aspectFit"></image>
 							<u-icon name="close" color="#2979ff" size="28" @click="photoDelete(item,index,'hand')"></u-icon>
 						</view>
-					</view>
+					</view> -->
 				</view>
 				<view class="real-name-authentication-standard">
 					<view class="real-name-authentication-standard-title">
@@ -154,6 +154,21 @@
 					</view>
 				</view>	
 			</view>
+			<view class="step-three step-four" v-if="stepActive === 3">
+				<view class="authentication-success">
+					<view class="step-two-content">
+						<view class="image-area">
+							<image src="@/static/img/real-name-authentication-fail.png"></image>
+						</view>
+						<view class="step-two-explain-one">
+							<text>认证失败!</text>
+						</view>
+					</view>
+					<view class="step-two-btn" @click="againAuthenticationEvent">
+						<text>重新认证</text>
+					</view>
+				</view>	
+			</view>
 			<view class="step-btn-box" v-if="stepActive == 0">
 				<view class="step-btn" @click="stepEvent">
 					<text>下一步</text>
@@ -218,6 +233,30 @@
 			
 			prevDateFun() {
 				this.stepActive = 2
+			},
+			
+			prevDateFunFailBack() {
+				this.stepActive = 3
+			},
+			
+			// 重新认证事件
+			againAuthenticationEvent () {
+				this.stepActive = 0;
+				this.authenticationName = '';
+				this.authenticationNum = '';
+				this.frontImageFileArr = [];
+				this.backImageFileArr = [];
+				this.handImageFileArr = [];
+				this.frontImageOnlineArr = [];
+				this.backImageOnlineArr = [];
+				this.handImageOnlineArr = [];
+				this.frontImageBase64Arr = [];
+				this.backImageBase64Arr = [];
+				this.handImageBase64Arr = [];
+				this.text = '';
+				this.content = '';
+				this.sureCancelShow = false;
+				this.imgIndex = null
 			},
 			
 			// 图片删除事件
@@ -408,14 +447,14 @@
 						});
 						return
 					};
-					if (this.handImageFileArr.length == 0) {
-						this.$refs.uToast.show({
-							message: '请上传手持身份证图片',
-							type: 'error',
-							position: 'center'
-						});
-						return
-					};
+					// if (this.handImageFileArr.length == 0) {
+					// 	this.$refs.uToast.show({
+					// 		message: '请上传手持身份证图片',
+					// 		type: 'error',
+					// 		position: 'center'
+					// 	});
+					// 	return
+					// };
 					// 上传图片文件流到服务端(身份证正面)
 					if (this.frontImageFileArr.length > 0) {
 						for (let imgI of this.frontImageFileArr) {
@@ -428,18 +467,18 @@
 							await this.uploadFileEvent(imgI,'back')
 						}
 					};
-					// 上传图片文件流到服务端(手持身份证)
-					if (this.handImageFileArr.length > 0) {
-						for (let imgI of this.handImageFileArr) {
-							await this.uploadFileEvent(imgI,'hand')
-						}
-					};
+					// // 上传图片文件流到服务端(手持身份证)
+					// if (this.handImageFileArr.length > 0) {
+					// 	for (let imgI of this.handImageFileArr) {
+					// 		await this.uploadFileEvent(imgI,'hand')
+					// 	}
+					// };
 					// 实名认证
 					this.medicalCareRealNameEvent({
 						id: this.userInfo.careId,
 						front: this.frontImageOnlineArr[0],
 						back: this.backImageOnlineArr[0],
-						hand: this.handImageOnlineArr[0]
+						hand: []
 					})
 				} else if (this.stepActive === 1) {
 					
@@ -826,6 +865,11 @@
 						align-items: center;
 						justify-content: center;
 					}
+				}
+			};
+			.step-four {
+				.step-two-content {
+					margin-top: 140px;
 				}
 			};
 			.step-btn-box {

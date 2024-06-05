@@ -424,6 +424,24 @@
 					}
 				},
 				{
+					"path": "pages/nurseIdentityAuthenticationMesage/nurseIdentityAuthenticationMesage",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
+					"path": "pages/nameIdentityAuthenticationMesage/nameIdentityAuthenticationMesage",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/identityAuthenticationHome/identityAuthenticationHome",
 					"style": {
 						"navigationBarTitleText": "",

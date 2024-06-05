@@ -187,17 +187,18 @@
 				 },
 				 success: (res) => {
 					this.showLoadingHint = false;
+					let pages = getCurrentPages(); // 当前页页⾯实例
+					let nowPage = pages[pages.length -1]; //当前页⾯实例
+					let prevPage = pages[pages.length -2]; // 上一页面实例
 					if (res.statusCode == 200) {
 						let temporaryData = JSON.parse(res.data);
 						if ( res && temporaryData.code == 0) {
 							if ( res && temporaryData.data.passed == true) {
-								let pages = getCurrentPages(); // 当前页页⾯实例
-								let nowPage = pages[pages.length -1]; //当前页⾯实例
-								let prevPage = pages[pages.length -2]; // 上一页面实例
 								prevPage.$vm.prevDateFun(); // 调用上一页 定义的方法
-								uni.navigateBack()
 							} else {
 								this.initData();
+								prevPage.$vm.prevDateFunFailBack(); // 调用上一页 定义的方法
+								uni.navigateBack();
 								this.$refs.uToast.show({
 									message: `${temporaryData.data.message}`,
 									type: 'error',
@@ -206,6 +207,8 @@
 							}
 						}	else {
 							this.initData();
+							prevPage.$vm.prevDateFunFailBack(); // 调用上一页 定义的方法
+							uni.navigateBack();
 							this.$refs.uToast.show({
 								message: `${temporaryData.msg}`,
 								type: 'error',
@@ -214,6 +217,8 @@
 						}
 					} else {
 						this.initData();
+						prevPage.$vm.prevDateFunFailBack(); // 调用上一页 定义的方法
+						uni.navigateBack();
 						this.$refs.uToast.show({
 							message: '上传失败',
 							type: 'error',
@@ -222,7 +227,12 @@
 					}
 				 },
 				 fail: (err) => {
+					let pages = getCurrentPages(); // 当前页页⾯实例
+					let nowPage = pages[pages.length -1]; //当前页⾯实例
+					let prevPage = pages[pages.length -2]; // 上一页面实例
 					this.initData();
+					prevPage.$vm.prevDateFunFailBack(); // 调用上一页 定义的方法
+					uni.navigateBack();
 					this.showLoadingHint = false;
 					this.$refs.uToast.show({
 						message: `${err}`,

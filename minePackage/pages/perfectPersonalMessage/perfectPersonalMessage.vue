@@ -217,6 +217,21 @@
 						></u--input>
 					</view>
 				</view>
+				<view class="service-point">
+					<view class="service-point-left">
+						<text>服务特长</text>
+					</view>
+					<view class="service-point-right" @click="servicePointRightClickEvent">
+						<view class="service-point-content">{{ selectServicePoint }}</view>
+						<u-icon :name="isShowServicePointDropDown ? 'arrow-down' : 'arrow-up'"></u-icon>
+						<view class="service-point-drop-down-wrapper" v-if="isShowServicePointDropDown">
+							<view class="service-point-drop-down-list" v-for="(item,index) in serviceProjectList" :key="index" :class="{'servicePointDropdownListStyle':item.selected}" @click.stop="servicePointItemClickEvent(item,index)">
+								<text :class="{'checkTextStyle':item.selected}">{{ item.content }}</text>
+								<u-icon name="checkmark" color="#3B9DF9" size="20" v-if="item.selected"></u-icon>
+							</view>
+						</view>
+					</view>
+				</view>
 			</view>
 			<view class="personal-message-bottom">
 				<view class="intro-title">
@@ -259,6 +274,8 @@
 			return {
 				showLoadingHint: false,
 				infoText: '保存中···',
+				isShowServicePointDropDown: false,
+				selectServicePoint: '请选择服务特长',
 				workingSeniorityDefaultValue: '请选择从业时间',
 				workingSeniorityDialogShow: false,
 				workingSeniorityValue: Number(new Date()),
@@ -273,10 +290,10 @@
 				serviceDurationValue: '',
 				introValue: '',
 				professionalTitleValue: "",
-				defaultProfessionalTitleValue: "",
+				defaultProfessionalTitleValue: "— (请联系管理员填写)",
 				professionalTitleList: [],
 				organizationValue: '',
-				defaultOrganizationValue: '',
+				defaultOrganizationValue: '— (请联系管理员填写)',
 				organizationList: [],
 				personPhotoSource: '',
 				personPhotoFile: '',
@@ -299,9 +316,7 @@
 		},
 		onShow () {
 			// 查询医护详细信息
-			this.getMedicalCareDetailsEvent();
-			// 查询服务特长
-			this.queryServiceProductSimpleList()
+			this.getMedicalCareDetailsEvent()
 		},
 		onReady() {
 			this.$refs.textarea.setFormatter(this.formatter)
@@ -321,6 +336,36 @@
 				return value.replace(/\s*/g,"")
 			},
 			
+			// 服务特长下拉框切换事件
+			servicePointRightClickEvent () {
+				this.isShowServicePointDropDown = !this.isShowServicePointDropDown
+			},
+			
+			// 服务特长项点击事件
+			servicePointItemClickEvent (item,index) {
+				if (!item.selected) {
+					if (this.serviceProjectList.filter((el) => { return el.selected == true }).length >= 4) {
+						this.$refs.uToast.show({
+							message: '不能超出4项服务特长!',
+							type: 'error',
+							position: 'bottom'
+						});
+						return
+					}
+				};	
+				item.selected = !item.selected;
+				let temporarySelectServicePointList = this.serviceProjectList.filter((el) => { return el.selected == true });
+				let temporarySelectServicePoint = [];
+				for ( let elItem of temporarySelectServicePointList) {
+					temporarySelectServicePoint.push(elItem.content)
+				};
+				if (temporarySelectServicePoint.length == 0) {
+					this.selectServicePoint = '请选择服务特长'
+				} else {
+					this.selectServicePoint = temporarySelectServicePoint.join(';');
+				}
+			},
+			
 			// 获取服务特长
 			queryServiceProductSimpleList() {
 				this.showLoadingHint = true;
@@ -335,6 +380,17 @@
 								content: item.name,
 								selected: false
 							})
+						};
+						let temporarySelectServicePointArr = '';
+						if (this.selectServicePoint != '请选择服务特长') {
+							let temporarySelectServicePointArr = this.selectServicePoint.split(';');
+							for (let item of temporarySelectServicePointArr) {
+								this.serviceProjectList.forEach((el) => {
+									if (el.content == item) {
+										el.selected = true
+									}
+								})
+							}
 						};
 						if (res.data.data.length == 0) {
 						}
@@ -368,6 +424,8 @@
 						this.getOrganizationListEvent();
 						// 查询职称信息
 						this.getUserDictDataEvent();
+						// 查询服务特长
+						this.queryServiceProductSimpleList();
 						this.personPhotoSource = !res.data.data.avatar ? this.defaultPersonPhotoIconPng : res.data.data.avatar;
 						this.photoImageOnlinePath = !res.data.data.avatar ? '' : res.data.data.avatar;
 						if (res.data.data.perfect != 'YES') {
@@ -384,6 +442,7 @@
 							this.ageValue = res.data.data.age;
 						};
 						this.emergencyContactNumberValue = res.data.data.critical;
+						this.selectServicePoint = res.data.data.genius.length == 0 ? '请选择服务特长' : res.data.data.genius.join(';');
 						this.professionalTitleValue = res.data.data.title ? res.data.data.title.toString() : '';
 						this.organizationValue = res.data.data.organization ? res.data.data.organization.toString() : '';
 						this.workingSeniorityDefaultValue = !res.data.data.practiceTime ? '请选择从业时间' : this.getNowFormatDate(new Date(res.data.data.practiceTime),2);
@@ -515,7 +574,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultOrganizationValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultOrganizationValue = ''
+								this.defaultOrganizationValue = '— (请联系管理员填写)'
 							}
 						}
 					}
@@ -549,7 +608,7 @@
 							if (temporaryMessageArr.length > 0) {
 								this.defaultProfessionalTitleValue = temporaryMessageArr[0]['content']
 							} else {
-								this.defaultProfessionalTitleValue = ""
+								this.defaultProfessionalTitleValue = "— (请联系管理员填写)"
 							}
 						}
 					}
@@ -642,9 +701,9 @@
 				};	
 				this.medicalCarePerfectEvent({
 					id: this.userInfo.careId,
-					name: this.personNameValue,
-					idCard: this.idCardValue,
-					birthday: this.birthdayValue,
+					name: this.personNameValue == '—' ? '' : this.personNameValue,
+					idCard: this.idCardValue == '—' ? '' : this.idCardValue,
+					birthday: this.birthdayValue == '—' ? '' : this.birthdayValue,
 					sex: this.genderValue == '—' ? '' : this.genderValue == '男' ? 1 : 2,
 					critical: this.emergencyContactNumberValue,
 					title: this.professionalTitleValue,
@@ -652,7 +711,7 @@
 					quantity: this.serviceQuantityValue,
 					timeLength: this.serviceDurationValue,
 					practiceTime: this.workingSeniorityDefaultValue == '请选择从业时间' ? '' : this.workingSeniorityDefaultValue,
-					genius: [],
+					genius: this.selectServicePoint == '请选择服务特长' ? [] : this.selectServicePoint.split(';'),
 					introduction: this.introValue,
 					avatar: !this.photoImageOnlinePath ? '' : this.photoImageOnlinePath,
 					email: ""
@@ -1045,6 +1104,7 @@
 					align-items: center;
 					padding: 8px 10px;
 					box-sizing: border-box;
+					@include bottom-border-1px(#BBBBBB);
 					.service-duration-left {
 						>text {
 							&:first-child {
@@ -1065,6 +1125,75 @@
 						font-size: 14px;
 						color: #979797
 					}
+				};
+				.service-point {
+					display: flex;
+					align-items: center;
+					padding: 8px 10px;
+					box-sizing: border-box;
+					@include bottom-border-1px(#BBBBBB);
+					.service-point-left {
+						margin-right: 20px;
+						>text {
+							&:first-child {
+								padding-left: 14px;
+								box-sizing: border-box;
+								font-size: 16px;
+								color: #101010;
+								font-weight: bold
+							}
+						}
+					};
+					.service-point-right {
+						flex: 1;
+						position: relative;
+						width: 0;
+						margin-left: 20px;
+						font-size: 14px;
+						color: #979797;
+						display: flex;
+						align-items: center;
+						.service-point-content {
+							flex: 1;
+							font-size: 14px;
+							color: #979797;
+							@include no-wrap;
+						};
+						.service-point-drop-down-wrapper {
+							position: absolute;
+							z-index: 100;
+							top: 28px;
+							left: 0;
+							width: 100%;
+							padding: 6px 4px;
+							box-sizing: border-box;
+							max-height: 154px;
+							overflow-y: auto;
+							background: #fff;
+							border-radius: 7px;
+							box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.4);
+							.service-point-drop-down-list {
+								height: 25px;
+								padding: 0 2px;
+								box-sizing: border-box;
+								width: 100%;
+								display: flex;
+								margin-bottom: 2px;
+								>text {
+									flex: 1;
+									@include no-wrap;
+									font-size: 14px;
+									color: #BBBBBB;
+								};
+								.checkTextStyle {
+									color: #3B9DF9 !important
+								}
+							};
+							.servicePointDropdownListStyle {
+								background: #F5F7FA
+							}
+						}
+					}
 				}
 			};
 			.personal-message-bottom {
@@ -1072,7 +1201,7 @@
 				box-sizing: border-box;
 				background: #f6f6f6;
 				.intro-title {
-					padding-left: 10px;
+					padding-left: 14px;
 					box-sizing: border-box;
 					font-size: 16px;
 					color: #101010;
@@ -1080,6 +1209,9 @@
 				};
 				.intro-content {
 					margin-top: 10px;
+					::v-deep .u-textarea {
+						padding: 9px 14px !important;
+					}
 				}
 			}
 		};

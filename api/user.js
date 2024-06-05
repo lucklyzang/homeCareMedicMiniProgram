@@ -44,6 +44,23 @@ export function getUserMessage() {
   })
 };
 
+// 获取医护认证信息(当前登录医护)
+export function getRealNameMessage() {
+  return request({
+    url: '/app-api/hospital/medical-care/real-name-info',
+    method: 'get'
+  })
+};
+
+// 获取医护资质
+export function getCareaptitudeMessage(id) {
+  return request({
+    url: '/app-api/app-api/hospital/care-aptitude/get',
+    method: 'get',
+		params: id
+  })
+};
+
 // 修改用户信息
 export function updateUserMessage(data) {
   return request({

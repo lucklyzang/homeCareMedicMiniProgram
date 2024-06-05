@@ -193,7 +193,12 @@
 			
 			// 实名认证事件
 			realNameAuthenticationEvent () {
-				if (this.realname == 'YES') { return };
+				if (this.realname == 'YES') {
+					uni.navigateTo({
+						url: '/minePackage/pages/nameIdentityAuthenticationMesage/nameIdentityAuthenticationMesage'
+					});
+					return;
+				};
 				uni.navigateTo({
 					url: '/minePackage/pages/realNameAuthentication/realNameAuthentication'
 				})
@@ -201,10 +206,13 @@
 			
 			// 护士资格认证事件
 			nurseQualificationAuthenticationEvent (item,index) {
+				let mynavData = JSON.stringify(item);
 				if (item.passed == 'OPEN' || item.passed == 'APPLYING') {
+					uni.navigateTo({
+						url: '/minePackage/pages/nurseIdentityAuthenticationMesage/nurseIdentityAuthenticationMesage?transmitData='+mynavData
+					});
 					return
 				};
-				let mynavData = JSON.stringify(item);
 				if (item.name == '护士资格证') {
 					uni.navigateTo({
 						url: '/minePackage/pages/nurseQualificationAuthentication/nurseQualificationAuthentication?transmitData='+mynavData
