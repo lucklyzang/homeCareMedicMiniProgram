@@ -54,10 +54,10 @@ export function getRealNameMessage() {
 
 // 获取医护资质
 export function getCareaptitudeMessage(id) {
+	console.log('12',id);
   return request({
-    url: '/app-api/app-api/hospital/care-aptitude/get',
-    method: 'get',
-		params: id
+    url: `/app-api/hospital/care-aptitude/get?id=${id}`,
+    method: 'get'
   })
 };
 

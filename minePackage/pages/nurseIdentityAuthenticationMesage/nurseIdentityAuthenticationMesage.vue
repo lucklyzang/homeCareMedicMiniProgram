@@ -74,8 +74,7 @@
 		},
 		onLoad(options) {
 			this.medicalCareAptitudeMessage = JSON.parse(options.transmitData);
-			this.getCareaptitudeMessageEvent();
-			console.log('护士信息',this.medicalCareAptitudeMessage)
+			this.getCareaptitudeMessageEvent()
 		},
 		methods: {
 			...mapMutations([
@@ -110,6 +109,7 @@
 			// 获取医护资质信息
 			getCareaptitudeMessageEvent () {
 				this.showLoadingHint = true;
+				console.log('护士信息',this.medicalCareAptitudeMessage.id);
 				getCareaptitudeMessage(this.medicalCareAptitudeMessage.id).then((res) => {
 					if ( res && res.data.code == 0) {
 						this.careaptitudeMessage = res.data.data

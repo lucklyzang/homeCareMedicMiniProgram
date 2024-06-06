@@ -14,7 +14,7 @@
 			<view class="identity-authentication-text-message">
 				<view class="name-message">
 					<view class="name-message-left">
-						姓名
+						姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名
 					</view>
 					<view class="name-message-right">
 						{{ realNameMessage.name }}
@@ -55,7 +55,7 @@
 			</view>
 		</view>
 		<view class="back-previous-page-box">
-			<text>返回主页</text>
+			<text @click="backTo">返回主页</text>
 		</view>
 	</view>
 </template>
