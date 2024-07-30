@@ -45,7 +45,7 @@
 				<view class="weixin-top-area">
 					<view class="weixin-top-area-left">
 						<image :src="logoSmallIcon"></image>
-						<text>守护家</text>
+						<text>护享家</text>
 					</view>
 					<view class="weixin-top-area-right">
 						<u-icon name="info-circle" size="24" color="#dbdbdb"></u-icon>
@@ -85,7 +85,7 @@
 						<image src="@/static/img/app-logo.png"></image>
 					</view>
 					<view>
-						<text>守&nbsp;&nbsp;护&nbsp;&nbsp;家</text>
+						<text>护&nbsp;&nbsp;享&nbsp;&nbsp;家</text>
 					</view>
 				</view>
 			</view>

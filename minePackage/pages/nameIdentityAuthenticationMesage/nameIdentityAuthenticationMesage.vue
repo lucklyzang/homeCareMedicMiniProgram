@@ -12,7 +12,7 @@
 		</view>
 		<view class="identity-authentication-box">
 			<view class="identity-authentication-text-message">
-				<view class="name-message">
+				/<view class="name-message">
 					<view class="name-message-left">
 						姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名
 					</view>
@@ -28,7 +28,7 @@
 					<view class="certificate-number-left">证件号码</view>
 					<view class="certificate-number-right">{{ realNameMessage.cardNo }}</view>
 				</view>
-			</view>
+			</view> 
 			<view class="identity-authentication-image-front">
 				<view class="identity-authentication-image-front-left">
 					身份证正面

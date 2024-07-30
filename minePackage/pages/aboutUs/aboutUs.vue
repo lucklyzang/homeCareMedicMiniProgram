@@ -14,7 +14,7 @@
 				</view>
 				<view class="about-us-content">
 					<view class="about-us-title">
-						<text>关于守护家APP</text>
+						<text>关于护享家APP</text>
 					</view>
 					<view class="brief-introduction-box">
 						<view>
