@@ -148,6 +148,15 @@
 					}
 			  },
 				{
+					"path": "pages/tradeOrderSearch/tradeOrderSearch",
+					"style": {
+						"navigationBarTitleText": "",
+						"navigationBarBackgroundColor": "#ffffff",
+						"backgroundColorTop": "#fff,",
+						"backgroundColorBottom": "#fff"
+					}
+				},
+				{
 					"path": "pages/orderForm/orderFormMapEnlarge/orderFormMapEnlarge",
 					"style": {
 						"navigationBarTitleText": "",

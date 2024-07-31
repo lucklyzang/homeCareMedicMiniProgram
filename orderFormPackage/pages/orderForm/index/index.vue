@@ -249,6 +249,14 @@
 						</view>
 					</view>
 				</view>
+				<view class="patient-data patient-remark-data">
+					<view class="patient-data-title">
+						<text>备注信息</text>
+					</view>
+					<view class="patient-remark-data-content">
+						当哈利等哈昆德拉获得快乐和
+					</view>
+				</view>
 				<view class="service-site">
 					<view class="service-site-title">
 						<view>
@@ -1969,6 +1977,13 @@
 							height: auto !important
 						}
 					}
+				}
+			};
+			.patient-remark-data {
+				.patient-remark-data-content {
+					color: #000000;
+					font-weight: 400;
+					word-break: break-all
 				}
 			};
 			.service-site {

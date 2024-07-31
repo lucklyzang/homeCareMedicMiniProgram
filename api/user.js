@@ -10,6 +10,32 @@ export function getUserBannerList(data) {
   })
 };
 
+// 获取搜索词组记录
+export function getSearchPhrase(data) {
+  return request({
+    url: '/app-api/promotion/search-phrase/showSearchPhrase',
+    method: 'get',
+		params: data
+  })
+};
+
+// 删除单个搜索词组记录
+export function deleteHisOne(type,data) {
+  return request({
+    url: `/app-api/promotion/search-phrase/deleteHisOne/${type}`,
+    method: 'delete',
+		params: data
+  })
+};
+
+// 删除全部搜索词组记录
+export function deleteHisAll(type) {
+  return request({
+    url: `/app-api/promotion/search-phrase/deleteHisAll/${type}`,
+    method: 'delete'
+  })
+};
+
 // 记录banner浏览次数
 export function recordBannerBrowse(data) {
   return request({

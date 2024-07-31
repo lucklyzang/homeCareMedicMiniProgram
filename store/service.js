@@ -17,7 +17,8 @@ export default {
 			state.selectedBankMessage = getCache('selectedBankMessage') ? getCache('selectedBankMessage') : {};
 			return state.selectedBankMessage
 		},
-		selectBannerMessage: state => state.selectBannerMessage
+		selectBannerMessage: state => state.selectBannerMessage,
+		tradeorderSearchMessage: state => state.tradeorderSearchMessage
   },
   mutations:{
 		changeTimeMessage (state, playLoad) {
@@ -45,6 +46,13 @@ export default {
 			if (playLoad && playLoad != 'null') {
 				setCache('selectedBankMessage', playLoad);
 				state.selectedBankMessage = playLoad
+			}
+		},
+		// 保存搜索订单信息
+		saveTradeorderSearchMessage(state, playLoad) {
+			if (playLoad && playLoad != 'null') {
+				setCache('tradeorderSearchMessage', playLoad);
+				state.tradeorderSearchMessage = playLoad
 			}
 		},
 		//重置设备的状态

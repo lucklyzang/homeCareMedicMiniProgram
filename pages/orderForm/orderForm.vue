@@ -141,6 +141,11 @@
 		<view class="top-area-box">
 			<view class="nav">
 				<nav-bar :home="false" backState='2000' bgColor="none" title="我的订单">
+					<template slot="left">
+						<view @click="searhEvent">
+							<u-icon name="search" color="#fff" size="28"></u-icon>
+						</view>
+					</template>
 				</nav-bar> 
 		  </view>
 			<image :src="loginBackgroundPng"></image>
@@ -369,6 +374,7 @@
 				infoText: '加载中···',
 				showLoadingHint: false,
 				showRefuseReasonInput: false,
+				beforePageRoute: '',
 				currentPageNum: 1,
 				pageSize: 5,
 				totalCount: 0,
@@ -425,7 +431,8 @@
 			...mapGetters([
 				'userInfo',
 				'userBasicInfo',
-				'editServiceOrderFormSureChooseMessage'
+				'editServiceOrderFormSureChooseMessage',
+				'tradeorderSearchMessage'
 			]),
 			userName() {
 			},
@@ -433,6 +440,7 @@
 			}
 		},
 		onShow() {
+			console.log('获取搜索信息',this.tradeorderSearchMessage);
 			// 获取当前所在位置
 			try {
 				this.isGetLocation(false);
@@ -442,6 +450,13 @@
 					type: 'error',
 					position: 'center'
 				})
+			};
+			// 从订单搜索页跳转过来
+			if (this.tradeorderSearchMessage['currentPageRoute'] == 'orderFormPackage/pages/tradeOrderSearch/tradeOrderSearch' && this.tradeorderSearchMessage['tradeOrderContent'] !== '') {
+				this.current = 2;
+				return
+			} else {
+				this.current = 0;
 			};
 			if (this.editServiceOrderFormSureChooseMessage.hasOwnProperty('current')) {
 				this.current = this.editServiceOrderFormSureChooseMessage.current;
@@ -463,7 +478,8 @@
 		},
 		methods: {
 			...mapMutations([
-				'storeEditServiceOrderFormSureChooseMessage'
+				'storeEditServiceOrderFormSureChooseMessage',
+				'saveTradeorderSearchMessage'
 			]),
 			
 			// 报警弹框弹出事件
@@ -491,6 +507,18 @@
 					success() { //允许授权
 						_this.getLocation(flag)
 					}
+				})
+			},
+			
+			// 顶部导航左侧搜索事件
+			searhEvent () {
+				// 重置搜索历史信息
+				this.saveTradeorderSearchMessage({
+					currentPageRoute: '',
+					tradeOrderContent: ''
+				});
+				uni.navigateTo({
+					url: '/orderFormPackage/pages/tradeOrderSearch/tradeOrderSearch'
 				})
 			},
 			
@@ -809,6 +837,11 @@
 				this.status = 'nomore';
 				this.isShowNoData = false;
 				this.fullTradeList = [];
+				// 重置搜索历史信息
+				this.saveTradeorderSearchMessage({
+					currentPageRoute: '',
+					tradeOrderContent: ''
+				});
 				this.queryTradeOrderPage({
 					pageNo: this.currentPageNum,
 					pageSize: this.pageSize,
@@ -1418,12 +1451,20 @@
 				position: absolute;
 				top: 0;
 				left: 0;
-				.header_title_center {
-					color: #fff !important;
-					text {
+				.header_content {
+					.header_title_center {
 						color: #fff !important;
+						text {
+							color: #fff !important;
+						}
+					};
+					.header_left_box {
+						>view {
+							padding-left: 10px;
+							box-sizing: border-box
+						}
 					}
-				}
+				}	
 			};
 			> image {
 				position: absolute;
