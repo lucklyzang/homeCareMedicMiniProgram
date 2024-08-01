@@ -454,6 +454,12 @@
 			// 从订单搜索页跳转过来
 			if (this.tradeorderSearchMessage['currentPageRoute'] == 'orderFormPackage/pages/tradeOrderSearch/tradeOrderSearch' && this.tradeorderSearchMessage['tradeOrderContent'] !== '') {
 				this.current = 2;
+				this.queryTradeOrderPage({
+					pageNo: this.currentPageNum,
+					pageSize: this.pageSize,
+					status: '',
+					search: this.tradeorderSearchMessage['tradeOrderContent']
+				},true)
 				return
 			} else {
 				this.current = 0;
@@ -753,11 +759,21 @@
 				} else {
 					this.status = 'loadmore';
 					this.currentPageNum = this.currentPageNum + 1;
-					this.queryTradeOrderPage({
-						pageNo: this.currentPageNum,
-						pageSize: this.pageSize,
-						status: this.transitionOrderStatus(this.current)
-					},false)
+					// 从搜索页跳转过来的情况
+					if (this.tradeorderSearchMessage['currentPageRoute'] == 'orderFormPackage/pages/tradeOrderSearch/tradeOrderSearch' && this.tradeorderSearchMessage['tradeOrderContent'] !== '') {
+						this.queryTradeOrderPage({
+							pageNo: this.currentPageNum,
+							pageSize: this.pageSize,
+							status: '',
+							search: this.tradeorderSearchMessage['tradeOrderContent']
+						},false)
+					} else {
+						this.queryTradeOrderPage({
+							pageNo: this.currentPageNum,
+							pageSize: this.pageSize,
+							status: this.transitionOrderStatus(this.current)
+						},false)
+					}
 				}
 			},
 			

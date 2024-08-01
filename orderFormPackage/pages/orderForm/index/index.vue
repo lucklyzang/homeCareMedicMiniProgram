@@ -249,12 +249,14 @@
 						</view>
 					</view>
 				</view>
-				<view class="patient-data patient-remark-data">
-					<view class="patient-data-title">
-						<text>备注信息</text>
-					</view>
-					<view class="patient-remark-data-content">
-						当哈利等哈昆德拉获得快乐和
+				<view class="patient-remark-data">
+					<view class="patient-remark-data-title">
+						<view>
+							<text>备注信息</text>
+						</view>
+						<view class="patient-remark-data-content">
+							<text>患者备注信息</text>
+						</view>
 					</view>
 				</view>
 				<view class="service-site">
@@ -1979,13 +1981,6 @@
 					}
 				}
 			};
-			.patient-remark-data {
-				.patient-remark-data-content {
-					color: #000000;
-					font-weight: 400;
-					word-break: break-all
-				}
-			};
 			.service-site {
 				background: #fff;
 				padding: 6px 16px;
@@ -2042,6 +2037,54 @@
 					}
 				};
 				.service-site-map-area {
+				}
+			};
+			.patient-remark-data {
+				background: #fff;
+				padding: 6px 16px;
+				box-sizing: border-box;
+				.patient-remark-data-title {
+					padding-left: 8px;
+					box-sizing: border-box;
+					display: flex;
+					font-size: 14px;
+					color: #3E4248;
+					font-weight: bold;
+					margin-bottom: 10px;
+					>view {
+						&:nth-child(1) {
+							position: relative;
+							border: none;
+							height: 20px;
+							margin-right: 4px;
+							&:after {
+							  content: '';
+							  position: absolute;
+							  left: -8px;
+							  top: 50%;
+								transform: translateY(-50%);
+							  width: 3px;
+							  height: 11px;
+							  background-color: #5064EB;
+							};
+							>text {
+								display: inline-block;
+								font-size: 14px;
+								color: #666666;
+								font-weight: 400;
+							}
+						}
+					};
+					.patient-remark-data-content {
+						flex: 1;
+						text-align: right;
+						word-break: break-all;
+						>text {
+							font-size: 14px;
+							color: #000000;
+							font-weight: 400;
+						}
+					}
 				}
 			};
 			.contact-patient {

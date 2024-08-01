@@ -10,12 +10,11 @@ export function getUserBannerList(data) {
   })
 };
 
-// 获取搜索词组记录
+// 获取搜索词组记录(订单搜索历史)
 export function getSearchPhrase(data) {
   return request({
-    url: '/app-api/promotion/search-phrase/showSearchPhrase',
-    method: 'get',
-		params: data
+    url: '/app-api/promotion/search-phrase/care-search-history',
+    method: 'get'
   })
 };
 
@@ -28,10 +27,10 @@ export function deleteHisOne(type,data) {
   })
 };
 
-// 删除全部搜索词组记录
-export function deleteHisAll(type) {
+// 删除全部搜索词组记录(订单搜索历史)
+export function deleteHisAll() {
   return request({
-    url: `/app-api/promotion/search-phrase/deleteHisAll/${type}`,
+    url: '/app-api/promotion/search-phrase/remove-care-search',
     method: 'delete'
   })
 };

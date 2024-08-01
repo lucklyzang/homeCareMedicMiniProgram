@@ -34,7 +34,11 @@
 				<view class="search-history-item-content">
 					<view class="search-history-list" :key="index" v-for="(item,index) in searchHistoryList" @click="searchItemClickEvent(item,index,'history')">
 						<text>{{ item }}</text>
-						<u-icon name="close" color="#101010" size="18" @click.native.stop="deleteSingleEvent(item,index)"></u-icon>
+						<!-- <u-icon name="close" color="#101010" size="18" @click.native.stop="deleteSingleEvent(item,index)"></u-icon> -->
+					</view>
+					<view class="no-data-box" v-if="searchHistoryList.length == 0">
+						<u-empty mode="history" iconSize="60">  
+						</u-empty>
 					</view>
 				</view>
 			</view>
@@ -78,7 +82,7 @@
 			}
 		},
 		onLoad() {
-			this.getSearchPhraseEvent(1)
+			this.getSearchPhraseEvent()
 		},
 		onReady() {
 		},
@@ -161,7 +165,7 @@
 			
 			// 删除全部历史搜索记录弹框确定事件
 			deleteSearchSureEvent () {
-				deleteHisAll(this.current === 0 ? 1 : this.current === 1 ? 3 : 2).then((res) => {
+				deleteHisAll().then((res) => {
 					if ( res && res.data.data) {
 						this.deleteSearchShow = false;
 						this.searchHistoryList = []
@@ -183,10 +187,10 @@
 			},
 			
 			// 查询搜索词组事件
-			getSearchPhraseEvent(type) {
-				getSearchPhrase({type}).then((res) => {
+			getSearchPhraseEvent() {
+				getSearchPhrase().then((res) => {
 					if ( res && res.data.code == 0) {
-						this.searchHistoryList = res.data.data.hot;
+						this.searchHistoryList = res.data.data;
 					} else {
 						this.$refs.uToast.show({
 							message: res.data.msg,
@@ -311,6 +315,9 @@
 								right: -8px !important;
 							}
 						}
+					};
+					.no-data-box {
+						width: 100%;
 					}
 				}
 			}
