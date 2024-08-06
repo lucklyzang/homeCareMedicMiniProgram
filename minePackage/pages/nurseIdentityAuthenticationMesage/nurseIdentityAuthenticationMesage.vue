@@ -16,7 +16,7 @@
 					资格证正面
 				</view>
 				<view class="identity-authentication-image-front-right">
-					<text v-if="medicalCareAptitudeMessage.passed == 'APPLYING'">审核中</text>
+					<text v-if="medicalCareAptitudeMessage.passed == 'APPLYING' || careaptitudeMessage.checkStatus == 'APPLYING'">审核中</text>
 					<image :src="careaptitudeMessage.imageFront" mode=""></image>
 				</view>
 			</view>
@@ -25,13 +25,13 @@
 					资格证反面
 				</view>
 				<view class="identity-authentication-image-front-right">
-					<text v-if="medicalCareAptitudeMessage.passed == 'APPLYING'">审核中</text>
+					<text v-if="medicalCareAptitudeMessage.passed == 'APPLYING' || careaptitudeMessage.checkStatus == 'APPLYING'">审核中</text>
 					<image :src="careaptitudeMessage.imageBack" mode=""></image>
 				</view>
 			</view>
 		</view>
 		<view class="back-previous-page-box">
-			<text :class="{'textStyle' : medicalCareAptitudeMessage.passed == 'APPLYING' }" @click="againUploadEvent">重新上传资格证</text>
+			<text :class="{'textStyle' : medicalCareAptitudeMessage.passed == 'APPLYING' || careaptitudeMessage.checkStatus == 'APPLYING' }" @click="againUploadEvent">重新上传资格证</text>
 		</view>
 	</view>
 </template>
@@ -58,7 +58,8 @@
 				loginBackgroundPng: require("@/static/img/login-background.png"),
 				careaptitudeMessage: {
 					imageFront: '',
-					imageBack: ''
+					imageBack: '',
+					checkStatus: ''
 				},
 				medicalCareAptitudeMessage: {}
 			}
@@ -74,6 +75,8 @@
 		},
 		onLoad(options) {
 			this.medicalCareAptitudeMessage = JSON.parse(options.transmitData);
+		},
+		onShow () {
 			this.getCareaptitudeMessageEvent()
 		},
 		methods: {
@@ -87,7 +90,7 @@
 			
 			// 重新上传资格证事件
 			againUploadEvent () {
-				if (this.medicalCareAptitudeMessage.passed == 'APPLYING') {
+				if (this.medicalCareAptitudeMessage.passed == 'APPLYING' || this.careaptitudeMessage.checkStatus == 'APPLYING') {
 					return
 				};
 				let mynavData = JSON.stringify(this.medicalCareAptitudeMessage);

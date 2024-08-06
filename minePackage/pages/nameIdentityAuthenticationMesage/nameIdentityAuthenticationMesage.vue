@@ -12,7 +12,7 @@
 		</view>
 		<view class="identity-authentication-box">
 			<view class="identity-authentication-text-message">
-				/<view class="name-message">
+				<view class="name-message">
 					<view class="name-message-left">
 						姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名
 					</view>

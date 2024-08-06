@@ -455,7 +455,7 @@
 			if (this.tradeorderSearchMessage['currentPageRoute'] == 'orderFormPackage/pages/tradeOrderSearch/tradeOrderSearch' && this.tradeorderSearchMessage['tradeOrderContent'] !== '') {
 				this.current = 2;
 				this.queryTradeOrderPage({
-					pageNo: this.currentPageNum,
+					pageNo: 1,
 					pageSize: this.pageSize,
 					status: '',
 					search: this.tradeorderSearchMessage['tradeOrderContent']
